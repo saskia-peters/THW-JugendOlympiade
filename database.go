@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // initDatabase creates the SQLite database and table
 func initDatabase() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dbFile)
+	db, err := sql.Open("sqlite", dbFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
@@ -21,7 +21,7 @@ func initDatabase() (*sql.DB, error) {
 		teilnehmer_id INTEGER,
 		name TEXT,
 		ortsverband TEXT,
-		alter INTEGER,
+		age INTEGER,
 		geschlecht TEXT
 	);`
 
@@ -88,7 +88,7 @@ func insertData(db *sql.DB, rows [][]string) error {
 	defer tx.Rollback()
 
 	// Prepare insert statement
-	stmt, err := tx.Prepare("INSERT INTO " + tableName + " (teilnehmer_id, name, ortsverband, alter, geschlecht) VALUES (?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO " + tableName + " (teilnehmer_id, name, ortsverband, age, geschlecht) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
@@ -133,7 +133,7 @@ func insertData(db *sql.DB, rows [][]string) error {
 
 // getAllTeilnehmers reads all participants from the database
 func getAllTeilnehmers(db *sql.DB) ([]Teilnehmer, error) {
-	rows, err := db.Query("SELECT id, teilnehmer_id, name, ortsverband, alter, geschlecht FROM " + tableName + " ORDER BY id")
+	rows, err := db.Query("SELECT id, teilnehmer_id, name, ortsverband, age, geschlecht FROM " + tableName + " ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ func getGroupsForReport(db *sql.DB) ([]Group, error) {
 	var groups []Group
 	for _, groupID := range groupIDs {
 		query := `
-			SELECT t.id, t.teilnehmer_id, t.name, t.ortsverband, t.alter, t.geschlecht
+			SELECT t.id, t.teilnehmer_id, t.name, t.ortsverband, t.age, t.geschlecht
 			FROM teilnehmer t
 			INNER JOIN rel_tn_grp r ON t.teilnehmer_id = r.teilnehmer_id
 			WHERE r.group_id = ?
