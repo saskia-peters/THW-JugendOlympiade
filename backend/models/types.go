@@ -48,9 +48,10 @@ type GroupEvaluation struct {
 	StationCount int
 }
 
-// OrtsverbandEvaluation represents an ortsverband's total score across all stations
+// OrtsverbandEvaluation represents an ortsverband's score statistics
 type OrtsverbandEvaluation struct {
-	Ortsverband     string
-	TotalScore      int
-	StationsVisited int
+	Ortsverband      string
+	TotalScore       int
+	ParticipantCount int
+	AverageScore     float64
 }

@@ -47,7 +47,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "Group Distribution Tool",
+		Title:  "JJugendolympiade Verwaltung",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
@@ -374,5 +374,59 @@ func (a *App) GeneratePDF() map[string]interface{} {
 		"message": "PDF report generated successfully",
 		"file":    "groups_report.pdf",
 		"path":    absPath + string(os.PathSeparator) + "groups_report.pdf",
+	}
+}
+
+// GenerateGroupEvaluationPDF generates a PDF report for group rankings
+func (a *App) GenerateGroupEvaluationPDF() map[string]interface{} {
+	if currentDB == nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": "Please load an Excel file first",
+		}
+	}
+
+	// Generate PDF report
+	if err := io.GenerateGroupEvaluationPDF(currentDB); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Failed to generate PDF report: %v", err),
+		}
+	}
+
+	absPath, _ := os.Getwd()
+
+	return map[string]interface{}{
+		"status":  "success",
+		"message": "Group evaluation PDF generated successfully",
+		"file":    "group_evaluations.pdf",
+		"path":    absPath + string(os.PathSeparator) + "group_evaluations.pdf",
+	}
+}
+
+// GenerateOrtsverbandEvaluationPDF generates a PDF report for ortsverband rankings
+func (a *App) GenerateOrtsverbandEvaluationPDF() map[string]interface{} {
+	if currentDB == nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": "Please load an Excel file first",
+		}
+	}
+
+	// Generate PDF report
+	if err := io.GenerateOrtsverbandEvaluationPDF(currentDB); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Failed to generate PDF report: %v", err),
+		}
+	}
+
+	absPath, _ := os.Getwd()
+
+	return map[string]interface{}{
+		"status":  "success",
+		"message": "Ortsverband evaluation PDF generated successfully",
+		"file":    "ortsverband_evaluations.pdf",
+		"path":    absPath + string(os.PathSeparator) + "ortsverband_evaluations.pdf",
 	}
 }

@@ -50,7 +50,51 @@ The application will:
 
 ## Database Schema
 
-The application creates three tables:
+The application creates five tables with the following structure:
+
+```mermaid
+erDiagram
+    teilnehmer ||--o{ gruppe : "has"
+    teilnehmer ||--o| rel_tn_grp : "assigned to"
+    gruppe ||--o{ rel_tn_grp : "contains"
+    gruppe ||--o{ group_station_scores : "visits"
+    stations ||--o{ group_station_scores : "scored by"
+
+    teilnehmer {
+        INTEGER id PK "Auto-increment"
+        INTEGER teilnehmer_id "Sequential participant ID"
+        TEXT name "Participant name"
+        TEXT ortsverband "Location/District"
+        INTEGER age "Age"
+        TEXT geschlecht "Gender"
+    }
+
+    gruppe {
+        INTEGER id PK "Auto-increment"
+        INTEGER group_id "Group identifier"
+        INTEGER teilnehmer_id FK "References teilnehmer.id"
+    }
+
+    rel_tn_grp {
+        INTEGER id PK "Auto-increment"
+        INTEGER teilnehmer_id UK "References teilnehmer.teilnehmer_id"
+        INTEGER group_id FK "References gruppe.group_id"
+    }
+
+    stations {
+        INTEGER station_id PK "Auto-increment"
+        TEXT station_name "Station name"
+    }
+
+    group_station_scores {
+        INTEGER id PK "Auto-increment"
+        INTEGER group_id FK "References gruppe.group_id"
+        INTEGER station_id FK "References stations.station_id"
+        INTEGER score "Score value"
+    }
+```
+
+### Table Details
 
 **teilnehmer table:**
 ```sql
@@ -59,7 +103,7 @@ CREATE TABLE teilnehmer (
     teilnehmer_id INTEGER,
     name TEXT,
     ortsverband TEXT,
-    alter INTEGER,
+    age INTEGER,
     geschlecht TEXT
 );
 ```
@@ -69,7 +113,7 @@ The columns map to:
 - **teilnehmer_id**: Sequential participant ID (based on row number)
 - **name**: NAME (Column 1) - Text
 - **ortsverband**: ORTSVERBAND (Column 2) - Text
-- **alter**: ALTER (Column 3) - Integer
+- **age**: ALTER (Column 3) - Integer
 - **geschlecht**: GESCHLECHT (Column 4) - Text
 
 **gruppe table:**
@@ -98,6 +142,33 @@ CREATE TABLE rel_tn_grp (
 The rel_tn_grp table is a relationship table that connects teilnehmer to gruppe:
 - Each teilnehmer can appear only once (UNIQUE constraint on teilnehmer_id)
 - Each group_id can appear multiple times (many participants can be in the same group)
+
+**stations table:**
+```sql
+CREATE TABLE stations (
+    station_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    station_name TEXT NOT NULL
+);
+```
+
+The stations table stores information about different stations/locations.
+
+**group_station_scores table:**
+```sql
+CREATE TABLE group_station_scores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    group_id INTEGER NOT NULL,
+    station_id INTEGER NOT NULL,
+    score INTEGER,
+    FOREIGN KEY (group_id) REFERENCES gruppe(group_id),
+    FOREIGN KEY (station_id) REFERENCES stations(station_id),
+    UNIQUE(group_id, station_id)
+);
+```
+
+The group_station_scores table records scores for each group at each station:
+- Each group-station combination can only have one score (UNIQUE constraint)
+- Enables ranking by group and by ortsverband
 
 ## Grouping Algorithm
 

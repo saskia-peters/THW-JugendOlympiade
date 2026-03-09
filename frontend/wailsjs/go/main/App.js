@@ -10,6 +10,14 @@ export function CheckDB() {
   return window['go']['main']['App']['CheckDB']();
 }
 
+export function GenerateGroupEvaluationPDF() {
+  return window['go']['main']['App']['GenerateGroupEvaluationPDF']();
+}
+
+export function GenerateOrtsverbandEvaluationPDF() {
+  return window['go']['main']['App']['GenerateOrtsverbandEvaluationPDF']();
+}
+
 export function GeneratePDF() {
   return window['go']['main']['App']['GeneratePDF']();
 }

@@ -5,6 +5,10 @@ export function AssignScore(arg1:number,arg2:number,arg3:number):Promise<Record<
 
 export function CheckDB():Promise<Record<string, any>>;
 
+export function GenerateGroupEvaluationPDF():Promise<Record<string, any>>;
+
+export function GenerateOrtsverbandEvaluationPDF():Promise<Record<string, any>>;
+
 export function GeneratePDF():Promise<Record<string, any>>;
 
 export function GetAllGroups():Promise<Record<string, any>>;
