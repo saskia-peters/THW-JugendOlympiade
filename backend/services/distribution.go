@@ -1,16 +1,19 @@
-package main
+package services
 
 import (
 	"database/sql"
 	"fmt"
 	"math"
 	"sort"
+
+	"experiment1/backend/database"
+	"experiment1/backend/models"
 )
 
-// createBalancedGroups creates groups with balanced distribution
-func createBalancedGroups(db *sql.DB) error {
+// CreateBalancedGroups creates groups with balanced distribution
+func CreateBalancedGroups(db *sql.DB) error {
 	// Read all participants from database
-	teilnehmers, err := getAllTeilnehmers(db)
+	teilnehmers, err := database.GetAllTeilnehmers(db)
 	if err != nil {
 		return fmt.Errorf("failed to read teilnehmers: %w", err)
 	}
@@ -23,7 +26,7 @@ func createBalancedGroups(db *sql.DB) error {
 	groups := distributeIntoGroups(teilnehmers)
 
 	// Save groups to database
-	if err := saveGroups(db, groups); err != nil {
+	if err := database.SaveGroups(db, groups); err != nil {
 		return fmt.Errorf("failed to save groups: %w", err)
 	}
 
@@ -36,20 +39,20 @@ func createBalancedGroups(db *sql.DB) error {
 }
 
 // distributeIntoGroups distributes participants into balanced groups
-func distributeIntoGroups(teilnehmers []Teilnehmer) []Group {
+func distributeIntoGroups(teilnehmers []models.Teilnehmer) []models.Group {
 	if len(teilnehmers) == 0 {
 		return nil
 	}
 
 	// Calculate number of groups needed
-	numGroups := int(math.Ceil(float64(len(teilnehmers)) / float64(maxGroupSize)))
+	numGroups := int(math.Ceil(float64(len(teilnehmers)) / float64(models.MaxGroupSize)))
 
 	// Initialize groups
-	groups := make([]Group, numGroups)
+	groups := make([]models.Group, numGroups)
 	for i := range groups {
-		groups[i] = Group{
+		groups[i] = models.Group{
 			GroupID:      i + 1,
-			Teilnehmers:  make([]Teilnehmer, 0, maxGroupSize),
+			Teilnehmers:  make([]models.Teilnehmer, 0, models.MaxGroupSize),
 			Ortsverbands: make(map[string]int),
 			Geschlechts:  make(map[string]int),
 		}
@@ -70,20 +73,20 @@ func distributeIntoGroups(teilnehmers []Teilnehmer) []Group {
 	// Distribute participants using round-robin with diversity scoring
 	for _, teilnehmer := range teilnehmers {
 		bestGroupIdx := findBestGroup(groups, teilnehmer)
-		groups[bestGroupIdx].addTeilnehmer(teilnehmer)
+		addTeilnehmerToGroup(&groups[bestGroupIdx], teilnehmer)
 	}
 
 	return groups
 }
 
 // findBestGroup finds the best group for a participant based on diversity
-func findBestGroup(groups []Group, teilnehmer Teilnehmer) int {
+func findBestGroup(groups []models.Group, teilnehmer models.Teilnehmer) int {
 	bestIdx := 0
 	bestScore := math.MaxFloat64
 
 	for i, group := range groups {
 		// Skip if group is full
-		if len(group.Teilnehmers) >= maxGroupSize {
+		if len(group.Teilnehmers) >= models.MaxGroupSize {
 			continue
 		}
 
@@ -106,7 +109,7 @@ func findBestGroup(groups []Group, teilnehmer Teilnehmer) int {
 
 // calculateDiversityScore calculates how well a participant fits in a group
 // Lower score means better diversity
-func calculateDiversityScore(group Group, teilnehmer Teilnehmer) float64 {
+func calculateDiversityScore(group models.Group, teilnehmer models.Teilnehmer) float64 {
 	if len(group.Teilnehmers) == 0 {
 		return 0
 	}
@@ -133,8 +136,8 @@ func calculateDiversityScore(group Group, teilnehmer Teilnehmer) float64 {
 	return score
 }
 
-// addTeilnehmer adds a participant to the group and updates statistics
-func (g *Group) addTeilnehmer(t Teilnehmer) {
+// addTeilnehmerToGroup adds a participant to the group and updates statistics
+func addTeilnehmerToGroup(g *models.Group, t models.Teilnehmer) {
 	g.Teilnehmers = append(g.Teilnehmers, t)
 	g.Ortsverbands[t.Ortsverband]++
 	g.Geschlechts[t.Geschlecht]++

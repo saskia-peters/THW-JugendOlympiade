@@ -1,0 +1,18 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "experiment1",
+  "outputfilename": "experiment1",
+  "frontend:install": "",
+  "frontend:build": "",
+  "author": {
+    "name": "",
+    "email": ""
+  },
+  "info": {
+    "companyName": "",
+    "productName": "Group Distribution Tool",
+    "productVersion": "1.0.0",
+    "copyright": "",
+    "comments": ""
+  }
+}

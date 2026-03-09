@@ -1,16 +1,18 @@
-package main
+package io
 
 import (
 	"database/sql"
 	"fmt"
 
+	"experiment1/backend/database"
+
 	"github.com/jung-kurt/gofpdf"
 )
 
-// generatePDFReport creates a PDF report with one group per page
-func generatePDFReport(db *sql.DB) error {
+// GeneratePDFReport creates a PDF report with one group per page
+func GeneratePDFReport(db *sql.DB) error {
 	// Get all groups with their participants
-	groups, err := getGroupsForReport(db)
+	groups, err := database.GetGroupsForReport(db)
 	if err != nil {
 		return fmt.Errorf("failed to get groups: %w", err)
 	}
