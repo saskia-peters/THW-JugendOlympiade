@@ -11,6 +11,8 @@ export function GenerateOrtsverbandEvaluationPDF():Promise<Record<string, any>>;
 
 export function GeneratePDF():Promise<Record<string, any>>;
 
+export function GenerateParticipantCertificates():Promise<Record<string, any>>;
+
 export function GetAllGroups():Promise<Record<string, any>>;
 
 export function GetGroupEvaluations():Promise<Record<string, any>>;

@@ -8,6 +8,7 @@ const btnStations = document.getElementById('btnStations');
 const btnEvaluation = document.getElementById('btnEvaluation');
 const btnOrtsverband = document.getElementById('btnOrtsverband');
 const btnPDF = document.getElementById('btnPDF');
+const btnCertificates = document.getElementById('btnCertificates');
 
 function setStatus(msg, type = 'info') {
     status.textContent = msg;
@@ -50,9 +51,10 @@ async function openFileDialog() {
             btnEvaluation.disabled = false;
             btnOrtsverband.disabled = false;
             btnPDF.disabled = false;
+            btnCertificates.disabled = false;
             output.style.display = 'block';
             tabs.style.display = 'none';
-            output.textContent = `✔ Successfully loaded ${uploadResult.count} participants and created balanced groups!\n\nNext steps:\n• Click "Show Groups" to view the groups\n• Click "Auswertung nach Gruppen" for group evaluation\n• Click "Auswertung nach Ortsverband" for location-based evaluation\n• Click "Generate PDF" to export groups to PDF`;
+            output.textContent = `✔ Successfully loaded ${uploadResult.count} participants and created balanced groups!\n\nNext steps:\n• Click "Show Groups" to view the groups\n• Click "Auswertung nach Gruppen" for group evaluation\n• Click "Auswertung nach Ortsverband" for location-based evaluation\n• Click "Generate PDF" to export groups to PDF\n• Click "Teilnehmer-Zertifikate" to generate participant certificates`;
         }
     } catch (err) {
         setStatus('ERROR: ' + err, 'error');
@@ -879,6 +881,25 @@ async function handleGenerateOrtsverbandEvaluationPDF() {
     } catch (err) {
         setStatus('ERROR: ' + err, 'error');
         alert('Error generating PDF: ' + err);
+    }
+}
+
+async function handleGenerateCertificates() {
+    setStatus('Generating participant certificates...', 'info');
+    
+    try {
+        const result = await window.go.main.App.GenerateParticipantCertificates();
+        
+        if (result.status === 'error') {
+            setStatus('ERROR: ' + result.message, 'error');
+            alert('Failed to generate certificates: ' + result.message);
+        } else {
+            setStatus('✔ ' + result.message + ': ' + result.file, 'success');
+            alert('Certificates PDF generated successfully!\n\nFile: ' + result.file + '\nLocation: ' + result.path);
+        }
+    } catch (err) {
+        setStatus('ERROR: ' + err, 'error');
+        alert('Error generating certificates: ' + err);
     }
 }
 

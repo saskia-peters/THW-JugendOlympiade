@@ -430,3 +430,30 @@ func (a *App) GenerateOrtsverbandEvaluationPDF() map[string]interface{} {
 		"path":    absPath + string(os.PathSeparator) + "ortsverband_evaluations.pdf",
 	}
 }
+
+// GenerateParticipantCertificates generates participant certificates PDF
+func (a *App) GenerateParticipantCertificates() map[string]interface{} {
+	if currentDB == nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": "Please load an Excel file first",
+		}
+	}
+
+	// Generate PDF report
+	if err := io.GenerateParticipantCertificates(currentDB); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Failed to generate PDF certificates: %v", err),
+		}
+	}
+
+	absPath, _ := os.Getwd()
+
+	return map[string]interface{}{
+		"status":  "success",
+		"message": "Participant certificates PDF generated successfully",
+		"file":    "participant_certificates.pdf",
+		"path":    absPath + string(os.PathSeparator) + "participant_certificates.pdf",
+	}
+}

@@ -3,6 +3,7 @@ package io
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	"experiment1/backend/database"
 
@@ -263,7 +264,7 @@ func GenerateOrtsverbandEvaluationPDF(db *sql.DB) error {
 	pdf.SetFillColor(250, 112, 154) // Pink color
 	pdf.SetTextColor(255, 255, 255)
 
-	colWidths := []float64{25, 65, 35, 35, 40}
+	colWidths := []float64{20, 60, 30, 35, 35}
 	headers := []string{"Platz", "Ortsverband", "Teiln.", "Gesamt", "O Score"}
 
 	for i, header := range headers {
@@ -320,6 +321,221 @@ func GenerateOrtsverbandEvaluationPDF(db *sql.DB) error {
 
 	// Save PDF
 	err = pdf.OutputFileAndClose("ortsverband_evaluations.pdf")
+	if err != nil {
+		return fmt.Errorf("failed to save PDF: %w", err)
+	}
+
+	return nil
+}
+
+// GenerateParticipantCertificates creates a PDF with one page per participant
+// If certificate_template.png or certificate_template.jpg exists, it will be used as a background
+func GenerateParticipantCertificates(db *sql.DB) error {
+	// Get all groups with their participants
+	groups, err := database.GetGroupsForReport(db)
+	if err != nil {
+		return fmt.Errorf("failed to get groups: %w", err)
+	}
+
+	if len(groups) == 0 {
+		return fmt.Errorf("no groups found to generate certificates")
+	}
+
+	// Get group evaluations to determine rankings
+	evaluations, err := database.GetGroupEvaluations(db)
+	if err != nil {
+		return fmt.Errorf("failed to get group evaluations: %w", err)
+	}
+
+	// Create a map of group ID to rank
+	groupRanks := make(map[int]int)
+	for i, eval := range evaluations {
+		groupRanks[eval.GroupID] = i + 1
+	}
+
+	// Check if template image exists (PNG or JPG only)
+	templateFile := ""
+	if _, err := os.Stat("certificate_template.png"); err == nil {
+		templateFile = "certificate_template.png"
+	} else if _, err := os.Stat("certificate_template.jpg"); err == nil {
+		templateFile = "certificate_template.jpg"
+	}
+	useTemplate := templateFile != ""
+
+	// Initialize PDF with A4 portrait
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetMargins(15, 15, 15)
+	pdf.SetAutoPageBreak(true, 15)
+
+	// Get current year
+	currentYear := 2026 // You can use time.Now().Year() if needed
+
+	// Generate one page per participant
+	for _, group := range groups {
+		rank := groupRanks[group.GroupID]
+
+		for _, participant := range group.Teilnehmers {
+			pdf.AddPage()
+
+			if useTemplate {
+				// Use image template as background (full A4 page)
+				// A4 size: 210mm x 297mm
+				pdf.Image(templateFile, 0, 0, 210, 297, false, "", 0, "")
+
+				// Overlay dynamic content at specific positions
+				// Adjust these Y positions based on your template design
+
+				// Position: Year - Top center
+				pdf.SetXY(0, 35)
+				pdf.SetFont("Arial", "B", 20)
+				pdf.SetTextColor(102, 126, 234)
+				pdf.CellFormat(210, 10, fmt.Sprintf("%d", currentYear), "", 0, "C", false, 0, "")
+
+				// Position: Participant Name - Center
+				pdf.SetXY(0, 85)
+				pdf.SetFont("Arial", "B", 28)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(210, 10, participant.Name, "", 0, "C", false, 0, "")
+
+				// Position: Ortsverband
+				pdf.SetXY(0, 105)
+				pdf.SetFont("Arial", "", 14)
+				pdf.SetTextColor(80, 80, 80)
+				pdf.CellFormat(210, 8, participant.Ortsverband, "", 0, "C", false, 0, "")
+
+				// Position: Group number
+				pdf.SetXY(0, 125)
+				pdf.SetFont("Arial", "B", 16)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(210, 10, fmt.Sprintf("Gruppe %d", group.GroupID), "", 0, "C", false, 0, "")
+
+				// Position: Rank
+				pdf.SetXY(0, 140)
+				pdf.SetFont("Arial", "", 14)
+				pdf.SetTextColor(102, 126, 234)
+				rankText := fmt.Sprintf("Platz %d", rank)
+				if rank == 1 {
+					rankText = "1. Platz"
+				} else if rank == 2 {
+					rankText = "2. Platz"
+				} else if rank == 3 {
+					rankText = "3. Platz"
+				}
+				pdf.CellFormat(210, 8, rankText, "", 0, "C", false, 0, "")
+
+				// Position: Group members table (starting position)
+				pdf.SetXY(15, 165)
+				pdf.SetFont("Arial", "B", 12)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(0, 8, "Gruppenmitglieder:", "", 1, "L", false, 0, "")
+
+				// Table header
+				pdf.SetXY(15, 175)
+				pdf.SetFont("Arial", "B", 10)
+				pdf.SetFillColor(200, 200, 200)
+				pdf.SetTextColor(0, 0, 0)
+
+				colWidths := []float64{70, 60, 25, 25}
+				headers := []string{"Name", "Ortsverband", "Alter", "Geschl."}
+
+				for i, header := range headers {
+					pdf.CellFormat(colWidths[i], 8, header, "1", 0, "C", true, 0, "")
+				}
+				pdf.Ln(-1)
+
+				// Table rows
+				pdf.SetFont("Arial", "", 9)
+				pdf.SetFillColor(240, 240, 240)
+
+				for i, member := range group.Teilnehmers {
+					fill := i%2 == 0
+
+					pdf.CellFormat(colWidths[0], 7, member.Name, "1", 0, "L", fill, 0, "")
+					pdf.CellFormat(colWidths[1], 7, member.Ortsverband, "1", 0, "L", fill, 0, "")
+					pdf.CellFormat(colWidths[2], 7, fmt.Sprintf("%d", member.Alter), "1", 0, "C", fill, 0, "")
+					pdf.CellFormat(colWidths[3], 7, member.Geschlecht, "1", 0, "C", fill, 0, "")
+					pdf.Ln(-1)
+				}
+
+			} else {
+				// Programmatic approach (no template)
+				// Main title
+				pdf.SetFont("Arial", "B", 28)
+				pdf.SetTextColor(102, 126, 234)
+				pdf.CellFormat(0, 20, "Jugendolympiade", "", 1, "C", false, 0, "")
+
+				pdf.SetFont("Arial", "B", 20)
+				pdf.CellFormat(0, 12, fmt.Sprintf("%d", currentYear), "", 1, "C", false, 0, "")
+				pdf.Ln(10)
+
+				// Participant name (large)
+				pdf.SetFont("Arial", "B", 24)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(0, 15, participant.Name, "", 1, "C", false, 0, "")
+				pdf.Ln(5)
+
+				// Ortsverband
+				pdf.SetFont("Arial", "", 14)
+				pdf.SetTextColor(80, 80, 80)
+				pdf.CellFormat(0, 8, fmt.Sprintf("Ortsverband: %s", participant.Ortsverband), "", 1, "C", false, 0, "")
+				pdf.Ln(8)
+
+				// Group and rank
+				pdf.SetFont("Arial", "B", 16)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(0, 10, fmt.Sprintf("Gruppe %d", group.GroupID), "", 1, "C", false, 0, "")
+
+				pdf.SetFont("Arial", "", 14)
+				pdf.SetTextColor(102, 126, 234)
+				rankText := fmt.Sprintf("Platz %d", rank)
+				if rank == 1 {
+					rankText = "1. Platz"
+				} else if rank == 2 {
+					rankText = "2. Platz"
+				} else if rank == 3 {
+					rankText = "3. Platz"
+				}
+				pdf.CellFormat(0, 8, rankText, "", 1, "C", false, 0, "")
+				pdf.Ln(12)
+
+				// Group members section
+				pdf.SetFont("Arial", "B", 14)
+				pdf.SetTextColor(0, 0, 0)
+				pdf.CellFormat(0, 10, "Gruppenmitglieder:", "", 1, "L", false, 0, "")
+				pdf.Ln(3)
+
+				// Table header
+				pdf.SetFont("Arial", "B", 10)
+				pdf.SetFillColor(200, 200, 200)
+				pdf.SetTextColor(0, 0, 0)
+
+				colWidths := []float64{70, 60, 25, 25}
+				headers := []string{"Name", "Ortsverband", "Alter", "Geschl."}
+
+				for i, header := range headers {
+					pdf.CellFormat(colWidths[i], 8, header, "1", 0, "C", true, 0, "")
+				}
+				pdf.Ln(-1)
+
+				// Table rows
+				pdf.SetFont("Arial", "", 9)
+				pdf.SetFillColor(240, 240, 240)
+
+				for i, member := range group.Teilnehmers {
+					fill := i%2 == 0
+
+					pdf.CellFormat(colWidths[0], 7, member.Name, "1", 0, "L", fill, 0, "")
+					pdf.CellFormat(colWidths[1], 7, member.Ortsverband, "1", 0, "L", fill, 0, "")
+					pdf.CellFormat(colWidths[2], 7, fmt.Sprintf("%d", member.Alter), "1", 0, "C", fill, 0, "")
+					pdf.CellFormat(colWidths[3], 7, member.Geschlecht, "1", 0, "C", fill, 0, "")
+					pdf.Ln(-1)
+				}
+			}
+		}
+	}
+
+	// Save PDF
+	err = pdf.OutputFileAndClose("participant_certificates.pdf")
 	if err != nil {
 		return fmt.Errorf("failed to save PDF: %w", err)
 	}

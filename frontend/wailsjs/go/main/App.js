@@ -22,6 +22,10 @@ export function GeneratePDF() {
   return window['go']['main']['App']['GeneratePDF']();
 }
 
+export function GenerateParticipantCertificates() {
+  return window['go']['main']['App']['GenerateParticipantCertificates']();
+}
+
 export function GetAllGroups() {
   return window['go']['main']['App']['GetAllGroups']();
 }
