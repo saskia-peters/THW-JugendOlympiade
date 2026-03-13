@@ -1,5 +1,5 @@
 // PDF generation handlers
-import { setStatus } from './dom.js';
+import { setStatus } from '../shared/dom.js';
 
 export async function handleGeneratePDF() {
     setStatus('Generating groups report PDF...', 'info');

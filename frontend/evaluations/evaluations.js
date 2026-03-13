@@ -1,6 +1,6 @@
 // Evaluation management and display
-import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from './dom.js';
-import { escapeHtml } from './utils.js';
+import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from '../shared/dom.js';
+import { escapeHtml } from '../shared/utils.js';
 
 export async function handleGroupEvaluation() {
     setStatus('Loading group evaluations...', 'info');

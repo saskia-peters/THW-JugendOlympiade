@@ -1,5 +1,5 @@
 // File loading and management
-import { setStatus, output, tabs, btnShow, btnStations, btnEvaluation, btnOrtsverband, btnPDF, btnCertificates } from './dom.js';
+import { setStatus, output, tabs, btnShow, btnStations, btnEvaluation, btnOrtsverband, btnPDF, btnCertificates } from '../shared/dom.js';
 
 export async function openFileDialog() {
     try {

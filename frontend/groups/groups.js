@@ -1,6 +1,6 @@
 // Group display and rendering
-import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from './dom.js';
-import { escapeHtml, switchTab } from './utils.js';
+import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from '../shared/dom.js';
+import { escapeHtml, switchTab } from '../shared/utils.js';
 
 export async function handleShowGroups() {
     setStatus('Loading groups...', 'info');

@@ -1,6 +1,6 @@
 // Station management and display - Group-based results entry
-import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from './dom.js';
-import { escapeHtml } from './utils.js';
+import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from '../shared/dom.js';
+import { escapeHtml } from '../shared/utils.js';
 
 export async function handleShowStations() {
     await handleShowStationsForGroup(null);

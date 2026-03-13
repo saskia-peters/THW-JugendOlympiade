@@ -1,5 +1,5 @@
 // Score assignment functionality
-import { setStatus } from './dom.js';
+import { setStatus } from '../shared/dom.js';
 
 export function checkForExistingScore() {
     const groupSelect = document.getElementById('global-group-select');
