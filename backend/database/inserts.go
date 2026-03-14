@@ -137,11 +137,6 @@ func SaveGroups(db *sql.DB, groups []models.Group) error {
 	defer tx.Rollback()
 
 	// Clear existing groups first
-	_, err = tx.Exec("DELETE FROM rel_tn_grp")
-	if err != nil {
-		return fmt.Errorf("failed to clear rel_tn_grp: %w", err)
-	}
-
 	_, err = tx.Exec("DELETE FROM gruppe")
 	if err != nil {
 		return fmt.Errorf("failed to clear gruppe: %w", err)
@@ -154,25 +149,11 @@ func SaveGroups(db *sql.DB, groups []models.Group) error {
 	}
 	defer gruppeStmt.Close()
 
-	// Insert into rel_tn_grp table
-	relStmt, err := tx.Prepare("INSERT INTO rel_tn_grp (teilnehmer_id, group_id) VALUES (?, ?)")
-	if err != nil {
-		return fmt.Errorf("failed to prepare rel_tn_grp statement: %w", err)
-	}
-	defer relStmt.Close()
-
 	for _, group := range groups {
 		for _, teilnehmer := range group.Teilnehmers {
-			// Insert into gruppe
 			_, err = gruppeStmt.Exec(group.GroupID, teilnehmer.TeilnehmerID)
 			if err != nil {
 				return fmt.Errorf("failed to insert into gruppe: %w", err)
-			}
-
-			// Insert into rel_tn_grp
-			_, err = relStmt.Exec(teilnehmer.TeilnehmerID, group.GroupID)
-			if err != nil {
-				return fmt.Errorf("failed to insert into rel_tn_grp: %w", err)
 			}
 		}
 	}

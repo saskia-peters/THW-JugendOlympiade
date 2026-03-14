@@ -36,7 +36,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 	// Single query to get all groups and participants with JOIN
 	query := `
 		SELECT r.group_id, t.id, t.teilnehmer_id, t.name, t.ortsverband, t.age, t.geschlecht, t.pregroup
-		FROM rel_tn_grp r
+		FROM gruppe r
 		INNER JOIN teilnehmer t ON t.teilnehmer_id = r.teilnehmer_id
 		ORDER BY r.group_id, t.name
 	`

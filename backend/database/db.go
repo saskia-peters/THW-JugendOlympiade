@@ -22,11 +22,15 @@ func InitDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
+	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
+	}
+
 	// Create teilnehmer table
 	createTableSQL := `
 	CREATE TABLE IF NOT EXISTS teilnehmer (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		teilnehmer_id INTEGER,
+		teilnehmer_id INTEGER UNIQUE,
 		name TEXT,
 		ortsverband TEXT,
 		age INTEGER,
@@ -43,29 +47,14 @@ func InitDatabase() (*sql.DB, error) {
 	createGruppeTableSQL := `
 	CREATE TABLE IF NOT EXISTS gruppe (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		group_id INTEGER,
-		teilnehmer_id INTEGER,
-		FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(id)
+		group_id INTEGER NOT NULL,
+		teilnehmer_id INTEGER UNIQUE NOT NULL,
+		FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id)
 	);`
 
 	_, err = db.Exec(createGruppeTableSQL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create gruppe table: %w", err)
-	}
-
-	// Create rel_tn_grp relationship table
-	createRelTableSQL := `
-	CREATE TABLE IF NOT EXISTS rel_tn_grp (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		teilnehmer_id INTEGER UNIQUE NOT NULL,
-		group_id INTEGER NOT NULL,
-		FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id),
-		FOREIGN KEY (group_id) REFERENCES gruppe(group_id)
-	);`
-
-	_, err = db.Exec(createRelTableSQL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create rel_tn_grp table: %w", err)
 	}
 
 	// Create stations table
@@ -81,13 +70,14 @@ func InitDatabase() (*sql.DB, error) {
 	}
 
 	// Create group_station_scores relation table
+	// Note: group_id has no FK constraint because gruppe.group_id is not unique
+	// (multiple participants share the same group_id); integrity is enforced at application level
 	createGroupStationScoresTableSQL := `
 	CREATE TABLE IF NOT EXISTS group_station_scores (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		group_id INTEGER NOT NULL,
 		station_id INTEGER NOT NULL,
 		score INTEGER,
-		FOREIGN KEY (group_id) REFERENCES gruppe(group_id),
 		FOREIGN KEY (station_id) REFERENCES stations(station_id),
 		UNIQUE(group_id, station_id)
 	);`
@@ -108,11 +98,6 @@ func InitDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to clear gruppe table: %w", err)
 	}
 
-	_, err = db.Exec("DELETE FROM rel_tn_grp")
-	if err != nil {
-		return nil, fmt.Errorf("failed to clear rel_tn_grp table: %w", err)
-	}
-
 	_, err = db.Exec("DELETE FROM stations")
 	if err != nil {
 		return nil, fmt.Errorf("failed to clear stations table: %w", err)
@@ -127,7 +112,6 @@ func InitDatabase() (*sql.DB, error) {
 	indexes := []string{
 		"CREATE INDEX IF NOT EXISTS idx_gruppe_group_id ON gruppe(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_gruppe_teilnehmer_id ON gruppe(teilnehmer_id)",
-		"CREATE INDEX IF NOT EXISTS idx_rel_group_id ON rel_tn_grp(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_scores_group_id ON group_station_scores(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_scores_station_id ON group_station_scores(station_id)",
 	}

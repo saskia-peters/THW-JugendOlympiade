@@ -60,9 +60,9 @@ func GetOrtsverbandEvaluations(db *sql.DB) ([]models.OrtsverbandEvaluation, erro
 				with base as (
 					select    t.ortsverband
 							, sum(gss.score) as total_score
-							, count(t.teilnehmer_id) as participant_count
+							, count(distinct t.teilnehmer_id) as participant_count
 					from teilnehmer t
-					join rel_tn_grp r on t.teilnehmer_id = r.teilnehmer_id
+					join gruppe r on t.teilnehmer_id = r.teilnehmer_id
 					join group_station_scores gss on r.group_id = gss.group_id        
 					group by t.ortsverband
 				)

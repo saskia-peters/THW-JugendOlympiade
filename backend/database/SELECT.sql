@@ -8,7 +8,7 @@
 				ELSE 0 
 			END as average_score
 		FROM teilnehmer t
-		LEFT JOIN rel_tn_grp r ON t.teilnehmer_id = r.teilnehmer_id
+		LEFT JOIN gruppe r ON t.teilnehmer_id = r.teilnehmer_id
 		LEFT JOIN (
 			SELECT group_id, SUM(score) as total_group_score
 			FROM group_station_scores
@@ -22,7 +22,7 @@ with base as (
 	, sum(gss.score) as total_score
 	, count(t.teilnehmer_id) as participant_count
 	from teilnehmer t
-	join rel_tn_grp r on t.teilnehmer_id = r.teilnehmer_id
+	join gruppe r on t.teilnehmer_id = r.teilnehmer_id
 	join group_station_scores gss on r.group_id = gss.group_id        
 	group by t.ortsverband
 )

@@ -22,7 +22,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 	tables := []string{
 		`CREATE TABLE IF NOT EXISTS teilnehmer (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			teilnehmer_id INTEGER,
+			teilnehmer_id INTEGER UNIQUE,
 			name TEXT,
 			ortsverband TEXT,
 			age INTEGER,
@@ -31,17 +31,11 @@ func setupTestDB(t *testing.T) *sql.DB {
 		)`,
 		`CREATE TABLE IF NOT EXISTS gruppe (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			group_id INTEGER,
-			teilnehmer_id INTEGER,
-			FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(id)
-		)`,
-		`CREATE TABLE IF NOT EXISTS rel_tn_grp (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			teilnehmer_id INTEGER UNIQUE NOT NULL,
 			group_id INTEGER NOT NULL,
-			FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id),
-			FOREIGN KEY (group_id) REFERENCES gruppe(group_id)
+			teilnehmer_id INTEGER UNIQUE NOT NULL,
+			FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id)
 		)`,
+
 		`CREATE TABLE IF NOT EXISTS stations (
 			station_id INTEGER PRIMARY KEY AUTOINCREMENT,
 			station_name TEXT NOT NULL
@@ -51,7 +45,6 @@ func setupTestDB(t *testing.T) *sql.DB {
 			group_id INTEGER NOT NULL,
 			station_id INTEGER NOT NULL,
 			score INTEGER,
-			FOREIGN KEY (group_id) REFERENCES gruppe(group_id),
 			FOREIGN KEY (station_id) REFERENCES stations(station_id),
 			UNIQUE(group_id, station_id)
 		)`,
@@ -67,7 +60,6 @@ func setupTestDB(t *testing.T) *sql.DB {
 	indexes := []string{
 		"CREATE INDEX IF NOT EXISTS idx_gruppe_group_id ON gruppe(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_gruppe_teilnehmer_id ON gruppe(teilnehmer_id)",
-		"CREATE INDEX IF NOT EXISTS idx_rel_group_id ON rel_tn_grp(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_scores_group_id ON group_station_scores(group_id)",
 		"CREATE INDEX IF NOT EXISTS idx_scores_station_id ON group_station_scores(station_id)",
 	}
@@ -94,7 +86,7 @@ func TestInitDatabase(t *testing.T) {
 	defer teardownTestDB(t, db)
 
 	// Verify tables exist by querying sqlite_master
-	tables := []string{"teilnehmer", "gruppe", "rel_tn_grp", "stations", "group_station_scores"}
+	tables := []string{"teilnehmer", "gruppe", "stations", "group_station_scores"}
 
 	for _, tableName := range tables {
 		var count int
@@ -116,7 +108,6 @@ func TestInitDatabase_IndexesCreated(t *testing.T) {
 	expectedIndexes := []string{
 		"idx_gruppe_group_id",
 		"idx_gruppe_teilnehmer_id",
-		"idx_rel_group_id",
 		"idx_scores_group_id",
 		"idx_scores_station_id",
 	}
@@ -373,16 +364,6 @@ func TestSaveGroups(t *testing.T) {
 		t.Errorf("Expected 4 gruppe entries, got %d", gruppeCount)
 	}
 
-	// Verify groups were saved in rel_tn_grp table
-	var relCount int
-	err = db.QueryRow("SELECT COUNT(*) FROM rel_tn_grp").Scan(&relCount)
-	if err != nil {
-		t.Fatalf("Failed to count rel_tn_grp entries: %v", err)
-	}
-
-	if relCount != 4 {
-		t.Errorf("Expected 4 rel_tn_grp entries, got %d", relCount)
-	}
 }
 
 // TestGetGroupsForReport tests retrieving groups with participants

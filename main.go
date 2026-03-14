@@ -664,6 +664,12 @@ func (a *App) RestoreDatabase(backupFilename string) map[string]interface{} {
 			"message": fmt.Sprintf("Failed to open restored database: %v", err),
 		}
 	}
+	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Failed to enable foreign keys: %v", err),
+		}
+	}
 	a.db = db
 
 	return map[string]interface{}{
