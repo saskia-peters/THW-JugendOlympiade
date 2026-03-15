@@ -2,6 +2,37 @@
 import { setStatus, output, tabs, tabButtons, tabContents, clearAllTabs } from '../shared/dom.js';
 import { escapeHtml } from '../shared/utils.js';
 
+const SCORE_MIN = 100;
+const SCORE_MAX = 1200;
+
+// Dirty-tracking state – reset each time a new group table is rendered
+let savedScoreMap = {};   // { stationID: number|'' } last persisted value per station
+let currentGroupID = null;
+let pendingGroupID = null;
+
+// Centralised score validation. Returns an error string or null if valid.
+function validateScore(value, stationName) {
+    const score = parseInt(value, 10);
+    if (isNaN(score)) return 'Bitte geben Sie ein gültiges Ergebnis ein' + (stationName ? ' für Station ' + stationName : '') + '.';
+    if (score < SCORE_MIN || score > SCORE_MAX) return 'Das Ergebnis bei ' + (stationName || 'dieser Station') + ' muss zwischen ' + SCORE_MIN + ' und ' + SCORE_MAX + ' liegen.';
+    return null;
+}
+
+// Keep window.currentStations in sync after any successful DB save so that
+// switching between groups always pre-fills with the latest persisted values.
+function updateStationCache(stationID, groupID, score) {
+    if (!window.currentStations) return;
+    const station = window.currentStations.find(s => s.StationID === stationID);
+    if (!station) return;
+    if (!station.GroupScores) station.GroupScores = [];
+    const existing = station.GroupScores.find(gs => gs.GroupID === groupID);
+    if (existing) {
+        existing.Score = score;
+    } else {
+        station.GroupScores.push({ GroupID: groupID, Score: score });
+    }
+}
+
 export async function handleShowStations() {
     await handleShowStationsForGroup(null);
 }
@@ -86,28 +117,34 @@ function renderGroupBasedEntry(stations, groups, preselectedGroupID = null) {
     container.innerHTML = html;
     tabContents.appendChild(container);
     
-    // Add event listener to group selector
-    setTimeout(() => {
-        const groupSelector = document.getElementById('group-selector');
-        if (groupSelector) {
-            groupSelector.addEventListener('change', (e) => {
-                const groupID = parseInt(e.target.value);
-                const resultsContainer = document.getElementById('results-table-container');
-                if (groupID && !isNaN(groupID)) {
-                    renderStationTable(groupID, stations);
-                } else {
-                    resultsContainer.classList.remove('visible');
-                }
-            });
-            // If a group was preselected, show its table immediately
-            if (preselectedGroupID) {
-                renderStationTable(preselectedGroupID, stations);
+    // Attach event listener synchronously — the DOM node exists after appendChild
+    const groupSelector = document.getElementById('group-selector');
+    if (groupSelector) {
+        groupSelector.addEventListener('change', (e) => {
+            const newGroupID = parseInt(e.target.value, 10);
+            if (!newGroupID || isNaN(newGroupID)) {
+                document.getElementById('results-table-container').classList.remove('visible');
+                return;
             }
+            if (hasDirtyScores()) {
+                groupSelector.value = currentGroupID || '';
+                pendingGroupID = newGroupID;
+                showUnsavedWarning(groupSelector, stations);
+            } else {
+                renderStationTable(newGroupID, stations);
+            }
+        });
+        // If a group was preselected, show its table immediately
+        if (preselectedGroupID) {
+            renderStationTable(preselectedGroupID, stations);
         }
-    }, 0);
+    }
 }
 
 function renderStationTable(groupID, stations) {
+    currentGroupID = groupID;
+    savedScoreMap = {};
+    setStatus('Gruppe ' + groupID + ' – Ergebnisse eingeben', 'info');
     const container = document.getElementById('results-table-container');
     if (!container) return;
     
@@ -130,6 +167,7 @@ function renderStationTable(groupID, stations) {
                 existingScore = scoreEntry.Score;
             }
         }
+        savedScoreMap[station.StationID] = existingScore;
         
         html += '<tr id="row-' + station.StationID + '">';
         html += '<td class="station-name">' + escapeHtml(station.StationName) + '</td>';
@@ -163,29 +201,21 @@ function renderStationTable(groupID, stations) {
 window.saveStationScore = async function(groupID, stationID) {
     const scoreInput = document.getElementById('score-' + stationID);
     if (!scoreInput) return;
-    
-    const score = parseInt(scoreInput.value);
-    
-    if (!score || isNaN(score)) {
-        alert('Bitte geben Sie ein gültiges Ergebnis ein.');
-        return;
-    }
-    
-    if (score < 100 || score > 1200) {
-        alert('Das Ergebnis muss zwischen 100 und 1200 liegen.');
-        return;
-    }
-    
+
+    const error = validateScore(scoreInput.value, null);
+    if (error) { alert(error); return; }
+
+    const score = parseInt(scoreInput.value, 10);
     try {
         setStatus('Speichere Ergebnis...', 'info');
         const result = await window.go.main.App.AssignScore(groupID, stationID, score);
-        
         if (result.status === 'error') {
             setStatus('ERROR: ' + result.message, 'error');
             alert('Fehler beim Speichern: ' + result.message);
         } else {
             setStatus('✔ Ergebnis gespeichert', 'success');
-            // Highlight the row briefly
+            savedScoreMap[stationID] = score;
+            updateStationCache(stationID, groupID, score);
             const row = document.getElementById('row-' + stationID);
             if (row) {
                 row.classList.add('row-saved');
@@ -198,88 +228,141 @@ window.saveStationScore = async function(groupID, stationID) {
     }
 };
 
-// Save all scores for the selected group
-window.saveAllScores = async function(groupID) {
+// Core save logic: collects, validates and persists all filled-in scores for groupID.
+// Updates savedScoreMap and row highlights. Returns { saved, errors }.
+async function doSaveAll(groupID) {
     const stations = window.currentStations;
-    if (!stations) return;
-    
+    if (!stations) return { saved: 0, errors: 0 };
+
     const scoresToSave = [];
-    let hasErrors = false;
-    
-    // Collect all scores
-    stations.forEach(station => {
+    for (const station of stations) {
         const scoreInput = document.getElementById('score-' + station.StationID);
-        if (scoreInput && scoreInput.value) {
-            const score = parseInt(scoreInput.value);
-            
-            if (isNaN(score) || score < 100 || score > 1200) {
-                alert('Ungültiges Ergebnis bei Station ' + station.StationName + '. Muss zwischen 100 und 1200 liegen.');
-                hasErrors = true;
-                return;
-            }
-            
-            scoresToSave.push({
-                stationID: station.StationID,
-                stationName: station.StationName,
-                score: score
-            });
+        if (!scoreInput || scoreInput.value.trim() === '') continue;
+        const error = validateScore(scoreInput.value, station.StationName);
+        if (error) {
+            alert(error);
+            return { saved: 0, errors: 1 };
         }
-    });
-    
-    if (hasErrors) return;
-    
-    if (scoresToSave.length === 0) {
-        alert('Keine Ergebnisse zum Speichern eingegeben.');
-        return;
+        scoresToSave.push({ stationID: station.StationID, stationName: station.StationName, score: parseInt(scoreInput.value, 10) });
     }
-    
-    // Confirm before saving all
-    const confirmed = confirm(
-        'Möchten Sie ' + scoresToSave.length + ' Ergebnis(se) für Gruppe ' + groupID + ' speichern?'
-    );
-    
-    if (!confirmed) return;
-    
-    try {
-        setStatus('Speichere alle Ergebnisse...', 'info');
-        let savedCount = 0;
-        let errorCount = 0;
-        
-        // Save each score
-        for (const scoreData of scoresToSave) {
+
+    if (scoresToSave.length === 0) return { saved: 0, errors: 0 };
+
+    let savedCount = 0, errorCount = 0;
+    for (const scoreData of scoresToSave) {
+        try {
             const result = await window.go.main.App.AssignScore(groupID, scoreData.stationID, scoreData.score);
-            
             if (result.status === 'error') {
                 errorCount++;
                 console.error('Error saving score for station ' + scoreData.stationName + ': ' + result.message);
             } else {
                 savedCount++;
-                // Highlight the row
+                savedScoreMap[scoreData.stationID] = scoreData.score;
+                updateStationCache(scoreData.stationID, groupID, scoreData.score);
                 const row = document.getElementById('row-' + scoreData.stationID);
                 if (row) {
                     row.classList.add('row-saved');
+                    setTimeout(() => { row.classList.remove('row-saved'); }, 2000);
                 }
             }
+        } catch (err) {
+            errorCount++;
+            console.error('Exception saving score: ' + err);
         }
-        
-        if (errorCount > 0) {
-            setStatus('⚠ ' + savedCount + ' gespeichert, ' + errorCount + ' Fehler', 'error');
-            alert('Es gab Fehler beim Speichern einiger Ergebnisse.\nGespeichert: ' + savedCount + '\nFehler: ' + errorCount);
+    }
+    return { saved: savedCount, errors: errorCount };
+}
+
+// Save all scores for the selected group ("Alle Ergebnisse speichern" button).
+window.saveAllScores = async function(groupID) {
+    const stations = window.currentStations;
+    if (!stations) return;
+
+    let count = 0;
+    for (const station of stations) {
+        const input = document.getElementById('score-' + station.StationID);
+        if (input && input.value.trim() !== '') count++;
+    }
+    if (count === 0) { alert('Keine Ergebnisse zum Speichern eingegeben.'); return; }
+
+    const confirmed = confirm('Möchten Sie ' + count + ' Ergebnis(se) für Gruppe ' + groupID + ' speichern?');
+    if (!confirmed) return;
+
+    setStatus('Speichere alle Ergebnisse...', 'info');
+    try {
+        const { saved, errors } = await doSaveAll(groupID);
+        if (errors > 0) {
+            setStatus('⚠ ' + saved + ' gespeichert, ' + errors + ' Fehler', 'error');
+            alert('Es gab Fehler beim Speichern.\nGespeichert: ' + saved + '\nFehler: ' + errors);
         } else {
-            setStatus('✔ Alle ' + savedCount + ' Ergebnisse gespeichert', 'success');
-            alert('Alle Ergebnisse erfolgreich gespeichert!');
+            setStatus('✔ Alle ' + saved + ' Ergebnisse gespeichert', 'success');
         }
-        
-        // Remove highlights after a delay
-        setTimeout(() => {
-            scoresToSave.forEach(scoreData => {
-                const row = document.getElementById('row-' + scoreData.stationID);
-                if (row) row.classList.remove('row-saved');
-            });
-        }, 2000);
-        
     } catch (err) {
         setStatus('ERROR: ' + err, 'error');
         alert('Fehler: ' + err);
     }
 };
+
+// Returns true if any score input differs from its last saved (persisted) value.
+function hasDirtyScores() {
+    const stations = window.currentStations;
+    if (!stations || !currentGroupID) return false;
+    for (const station of stations) {
+        const input = document.getElementById('score-' + station.StationID);
+        if (!input) continue;
+        const rawVal = input.value.trim();
+        const inputVal = rawVal === '' ? '' : parseInt(rawVal, 10);
+        const savedVal = savedScoreMap[station.StationID] !== undefined
+            ? savedScoreMap[station.StationID]
+            : '';
+        if (String(inputVal) !== String(savedVal)) return true;
+    }
+    return false;
+}
+
+// Shows a modal warning when unsaved scores exist and the user tries to switch groups.
+function showUnsavedWarning(groupSelector, stations) {
+    // Prevent stacking duplicate modals
+    if (document.querySelector('.unsaved-modal-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'unsaved-modal-overlay';
+    overlay.innerHTML =
+        '<div class="unsaved-modal">' +
+            '<h3>&#9888;&#65039; Ungespeicherte Ergebnisse</h3>' +
+            '<p>Für <strong>Gruppe ' + currentGroupID + '</strong> gibt es Ergebnisse, die noch nicht ' +
+            'gespeichert wurden. Möchten Sie trotzdem wechseln oder zuerst alle Ergebnisse speichern?</p>' +
+            '<div class="unsaved-modal-buttons">' +
+                '<button class="btn-modal-discard" id="modal-discard">Ohne Speichern wechseln</button>' +
+                '<button class="btn-modal-save" id="modal-save">&#128190; Alle speichern &amp; wechseln</button>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(overlay);
+
+    document.getElementById('modal-discard').addEventListener('click', () => {
+        overlay.remove();
+        const target = pendingGroupID;
+        pendingGroupID = null;
+        groupSelector.value = target;
+        renderStationTable(target, stations);
+    });
+
+    document.getElementById('modal-save').addEventListener('click', async () => {
+        overlay.remove();
+        const target = pendingGroupID;
+        pendingGroupID = null;
+        setStatus('Speichere alle Ergebnisse...', 'info');
+        try {
+            const { saved, errors } = await doSaveAll(currentGroupID);
+            if (errors > 0) {
+                setStatus('⚠ ' + saved + ' gespeichert, ' + errors + ' Fehler', 'error');
+            } else {
+                setStatus('✔ Alle ' + saved + ' Ergebnisse gespeichert', 'success');
+            }
+        } catch (err) {
+            setStatus('ERROR: ' + err, 'error');
+        }
+        groupSelector.value = target;
+        renderStationTable(target, stations);
+    });
+}

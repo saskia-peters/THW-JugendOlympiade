@@ -2,7 +2,6 @@ package models
 
 const (
 	DbFile            = "data.db"
-	XlsxFile          = "data.xlsx"
 	SheetName         = "Teilnehmer"
 	StationsSheetName = "Stationen"
 	TableName         = "teilnehmer"

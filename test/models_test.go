@@ -21,14 +21,6 @@ func TestDbFileConstant(t *testing.T) {
 	}
 }
 
-// TestXlsxFileConstant tests the XlsxFile constant
-func TestXlsxFileConstant(t *testing.T) {
-	expected := "data.xlsx"
-	if models.XlsxFile != expected {
-		t.Errorf("Expected XlsxFile to be %q, got %q", expected, models.XlsxFile)
-	}
-}
-
 // TestSheetNameConstant tests the SheetName constant
 func TestSheetNameConstant(t *testing.T) {
 	expected := "Teilnehmer"

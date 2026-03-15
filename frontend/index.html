@@ -11,50 +11,48 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎯 Jugendolympiade - Verwaltung</h1>
-        <p style="color: #666; margin-bottom: 20px;">Create balanced groups from Excel participant data</p>
-        
-        <div class="status" id="status">Ready. Please load an Excel file.</div>
-        
-        <div class="buttons">
-            <div class="button-section">
-                <details class="category-dropdown" open>
-                    <summary class="section-title">⚙️ Admin</summary>
-                    <div class="button-group">
-                        <button class="btn-load" onclick="openFileDialog()">Lade Excel Datei</button>
-                        <button class="btn-backup" onclick="handleBackupDatabase()">Backup Database</button>
-                        <button class="btn-restore" onclick="handleRestoreDatabase()">Restore Database</button>
-                    </div>
-                </details>
-            </div>
-            
-            <div class="button-section">
-                <details class="category-dropdown">
-                    <summary class="section-title">📝 Daten</summary>
-                    <div class="button-group">
-                        <button class="btn-show" id="btnShow" onclick="handleShowGroups()" disabled>Gruppen</button>
-                        <button class="btn-stations" id="btnStations" onclick="handleShowStations()" disabled>Ergebniseingabe</button>
-                    </div>
-                </details>
-            </div>
-            
-            <div class="button-section">
-                <details class="category-dropdown">
-                    <summary class="section-title">📊 Ausgabe</summary>
-                    <div class="button-group">
-                        <button class="btn-pdf" id="btnPDF" onclick="handleGeneratePDF()" disabled>Gruppen-PDF erstellen</button>
-                        <button class="btn-evaluation" id="btnEvaluation" onclick="handleEvaluation()" disabled>Auswertung nach Gruppen</button>
-                        <button class="btn-ortsverband" id="btnOrtsverband" onclick="handleOrtsverbandEvaluation()" disabled>Auswertung nach Ortsverband</button>
-                        <button class="btn-certificates" id="btnCertificates" onclick="handleGenerateCertificates()" disabled>Teilnehmer-Zertifikate</button>
-                    </div>
-                </details>
-            </div>
+        <div class="app-header">
+            <h1>🎯 Jugendolympiade - Verwaltung</h1>
+            <div class="status" id="status">Ready. Please load an Excel file.</div>
         </div>
-        
-        <div class="output" id="output">Groups will be displayed here...</div>
-        <div class="tabs" id="tabs" style="display: none;">
-            <div class="tab-buttons" id="tabButtons"></div>
-            <div id="tabContents"></div>
+        <div class="app-content">
+            <div class="buttons">
+                <div class="button-section">
+                    <details class="category-dropdown" open>
+                        <summary class="section-title">⚙️ Admin</summary>
+                        <div class="button-group">
+                            <button class="btn-load" onclick="openFileDialog()">Lade Excel Datei</button>
+                            <button class="btn-backup" onclick="handleBackupDatabase()">Backup Database</button>
+                            <button class="btn-restore" onclick="handleRestoreDatabase()">Restore Database</button>
+                        </div>
+                    </details>
+                </div>
+                <div class="button-section">
+                    <details class="category-dropdown">
+                        <summary class="section-title">📝 Daten</summary>
+                        <div class="button-group">
+                            <button class="btn-show" id="btnShow" onclick="handleShowGroups()" disabled>Gruppen</button>
+                            <button class="btn-stations" id="btnStations" onclick="handleShowStations()" disabled>Ergebniseingabe</button>
+                        </div>
+                    </details>
+                </div>
+                <div class="button-section">
+                    <details class="category-dropdown">
+                        <summary class="section-title">📊 Ausgabe</summary>
+                        <div class="button-group">
+                            <button class="btn-pdf" id="btnPDF" onclick="handleGeneratePDF()" disabled>Gruppen-PDF erstellen</button>
+                            <button class="btn-evaluation" id="btnEvaluation" onclick="handleEvaluation()" disabled>Auswertung nach Gruppen</button>
+                            <button class="btn-ortsverband" id="btnOrtsverband" onclick="handleOrtsverbandEvaluation()" disabled>Auswertung nach Ortsverband</button>
+                            <button class="btn-certificates" id="btnCertificates" onclick="handleGenerateCertificates()" disabled>Teilnehmer-Zertifikate</button>
+                        </div>
+                    </details>
+                </div>
+            </div>
+            <div class="output" id="output">Groups will be displayed here...</div>
+            <div class="tabs" id="tabs" style="display: none;">
+                <div class="tab-buttons" id="tabButtons"></div>
+                <div id="tabContents"></div>
+            </div>
         </div>
     </div>
     

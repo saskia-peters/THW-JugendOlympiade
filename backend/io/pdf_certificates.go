@@ -13,7 +13,7 @@ import (
 )
 
 // GenerateParticipantCertificates creates a PDF with one certificate per participant.
-// If certificate_template.png or certificate_template.jpg exists it is used as background.
+// If certificate_template.png exists in the working directory it is used as background.
 func GenerateParticipantCertificates(db *sql.DB) error {
 	if err := ensurePDFDirectory(); err != nil {
 		return err
@@ -37,13 +37,9 @@ func GenerateParticipantCertificates(db *sql.DB) error {
 		groupRanks[eval.GroupID] = i + 1
 	}
 
-	templateFile := ""
-	if _, err := os.Stat("certificate_template.png"); err == nil {
-		templateFile = "certificate_template.png"
-	} else if _, err := os.Stat("certificate_template.jpg"); err == nil {
-		templateFile = "certificate_template.jpg"
-	}
-	useTemplate := templateFile != ""
+	_, err = os.Stat("certificate_template.png")
+	useTemplate := err == nil
+	const templateFile = "certificate_template.png"
 
 	theme := DefaultTheme
 	pdf := gofpdf.New("P", "mm", "A4", "")

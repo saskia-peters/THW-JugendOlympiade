@@ -4,7 +4,7 @@
 
 ## Voraussetzung: Die Excel-Datei vorbereiten
 
-Bevor die Anwendung gestartet wird, muss eine Excel-Datei im Format **XLSX** bereitgestellt werden. Die Datei muss den Namen **`data.xlsx`** tragen und im selben Verzeichnis wie die Anwendung gespeichert sein.
+Bevor die Anwendung gestartet wird, muss eine Excel-Datei im Format **XLSX** bereitgestellt werden. Der Dateiname ist frei wählbar – die Datei wird beim Import über einen Dateidialog ausgewählt. Entscheidend ist ausschließlich die korrekte Struktur der Datei.
 
 Die Datei muss **zwei Tabellenblätter** enthalten:
 
@@ -50,7 +50,7 @@ Wird das Blatt weggelassen oder ist es leer, können Stationen später nicht ben
 
 1. Anwendung starten (Doppelklick auf `THW-JugendOlympiade.exe`).
 2. Im Abschnitt **⚙️ Admin** auf **„Lade Excel Datei"** klicken.
-3. Im Dateidialog die vorbereitete `data.xlsx` auswählen und öffnen.
+3. Im Dateidialog die vorbereitete XLSX-Datei auswählen und öffnen.
 4. Die Anwendung liest alle Teilnehmenden ein, prüft die Dateistruktur und verteilt sie automatisch auf **ausgewogene Gruppen**.
 
 Die automatische Gruppenverteilung berücksichtigt:
@@ -127,7 +127,7 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
    - Erreichter Platz der Gruppe
    - Liste aller Gruppenmitglieder
 
-> **Hinweis:** Falls die Datei `certificate_template.png` oder `certificate_template.jpg` im Programmverzeichnis liegt, wird sie als Hintergrundbild für die Urkunden genutzt.
+> **Hinweis:** Falls die Datei `certificate_template.png` im Programmverzeichnis liegt, wird sie als Hintergrundbild für die Urkunden genutzt.
 
 ---
 
