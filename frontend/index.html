@@ -21,7 +21,6 @@
                     <details class="category-dropdown" open>
                         <summary class="section-title">⚙️ Admin</summary>
                         <div class="button-group">
-                            <button class="btn-load" onclick="openFileDialog()">Lade Excel Datei</button>
                             <button class="btn-backup" onclick="handleBackupDatabase()">Datenbank sichern</button>
                             <button class="btn-restore" onclick="handleRestoreDatabase()">Datenbank wiederherstellen</button>
                             <button class="btn-config" onclick="handleEditConfig()">Konfiguration bearbeiten</button>
@@ -32,6 +31,7 @@
                     <details class="category-dropdown">
                         <summary class="section-title">📝 Daten</summary>
                         <div class="button-group">
+                            <button class="btn-load" onclick="openFileDialog()">Excel einlesen</button>
                             <button class="btn-distribute" id="btnDistribute" onclick="handleDistributeGroups()" disabled>Teilnehmer zu Gruppen</button>
                             <button class="btn-show" id="btnShow" onclick="handleShowGroups()" disabled>Gruppen anzeigen</button>
                             <button class="btn-stations" id="btnStations" onclick="handleShowStations()" disabled>Ergebniseingabe</button>

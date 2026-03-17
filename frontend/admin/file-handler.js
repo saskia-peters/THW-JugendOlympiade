@@ -165,17 +165,18 @@ window.confirmRestore = async function(backupFilename) {
             setStatus('✅ ' + result.message, 'success');
             alert('Datenbank erfolgreich wiederhergestellt!\n\nDie Anwendung wird jetzt aktualisiert.');
             
-            // Enable all buttons since we now have data
+            // Enable core buttons
             btnShow.disabled = false;
             btnStations.disabled = false;
-            btnEvaluation.disabled = false;
-            btnOrtsverband.disabled = false;
             btnPDF.disabled = false;
-            btnCertificates.disabled = false;
-            btnOVCertificates.disabled = false;
             // Only enable redistribution if no scores exist yet
             const hasScores = await window.go.main.App.HasScores();
             btnDistribute.disabled = hasScores;
+            // Evaluation and certificates only available once scores exist
+            btnEvaluation.disabled = !hasScores;
+            btnOrtsverband.disabled = !hasScores;
+            btnCertificates.disabled = !hasScores;
+            btnOVCertificates.disabled = !hasScores;
             
             // Refresh the view
             output.style.display = 'block';
@@ -199,14 +200,15 @@ export async function handleDistributeGroups() {
         setStatus('✅ ' + result.message, 'success');
         btnShow.disabled = false;
         btnStations.disabled = false;
-        btnEvaluation.disabled = false;
-        btnOrtsverband.disabled = false;
         btnPDF.disabled = false;
-        btnCertificates.disabled = false;
-        btnOVCertificates.disabled = false;
+        // Evaluation and certificates stay disabled until the first score is entered
+        btnEvaluation.disabled = true;
+        btnOrtsverband.disabled = true;
+        btnCertificates.disabled = true;
+        btnOVCertificates.disabled = true;
         output.style.display = 'block';
         tabs.style.display = 'none';
-        output.textContent = `✔ ${result.message}\n\nNächste Schritte:\n• Klicken Sie auf "Gruppen anzeigen" um die Gruppen anzuzeigen\n• Klicken Sie auf "Auswertung nach Gruppen" für die Gruppenauswertung\n• Klicken Sie auf "Auswertung nach Ortsverband" für die ortsverbandsbasierte Auswertung\n• Klicken Sie auf "Gruppen-PDF erstellen" um die Gruppen als PDF zu exportieren\n• Klicken Sie auf "Teilnehmer-Zertifikate" um Zertifikate zu erstellen`;
+        output.textContent = `✔ ${result.message}\n\nNächste Schritte:\n• Klicken Sie auf "Gruppen anzeigen" um die Gruppen anzuzeigen\n• Klicken Sie auf "Ergebniseingabe" um Ergebnisse einzugeben\n• Klicken Sie auf "Gruppen-PDF erstellen" um die Gruppen als PDF zu exportieren\n• Auswertung und Urkunden sind verfügbar sobald das erste Ergebnis gespeichert wurde`;
 
         const ausgabeDropdown = document.querySelector('.button-section:nth-child(3) .category-dropdown');
         if (ausgabeDropdown) ausgabeDropdown.setAttribute('open', 'open');
