@@ -57,18 +57,38 @@ THW-JugendOlympiade/
 │   │   └── scores.go       # Score management
 │   ├── io/                 # Input/Output operations
 │   │   ├── input.go        # Excel import with validation
-│   │   └── output.go       # PDF generation
+│   │   ├── output.go       # Shared PDF helpers (enc(), directory setup)
+│   │   ├── pdf_groups.go   # Groups report PDF generation
+│   │   ├── pdf_evaluations.go # Evaluation PDFs (group + ortsverband)
+│   │   └── pdf_certificates.go # Participant certificates PDF
 │   ├── models/             # Data models
 │   │   └── types.go        # Structs and type definitions
 │   └── services/           # Business logic
 │       └── distribution.go # Group distribution algorithm
-├── frontend/               # Web frontend (vanilla JS)
+├── frontend/               # Web frontend (vanilla ES6 modules)
 │   ├── index.html         # Main UI structure
-│   ├── app.js             # Application logic & Wails bindings
-│   └── styles.css         # Styling
+│   ├── app.js             # Orchestrator: imports modules, exposes to window
+│   ├── admin/
+│   │   └── file-handler.js # File load, backup, restore
+│   ├── groups/
+│   │   ├── groups.js       # Group display with tabs and statistics
+│   │   └── groups.css
+│   ├── stations/
+│   │   ├── stations.js     # Group-based results entry with dirty-tracking
+│   │   ├── scores.js       # Legacy per-station score assignment helpers
+│   │   └── stations.css
+│   ├── evaluations/
+│   │   ├── evaluations.js  # Group and ortsverband rankings
+│   │   └── evaluations.css
+│   ├── reports/
+│   │   └── pdf-handlers.js # PDF generation wrappers
+│   └── shared/
+│       ├── dom.js          # DOM element references and setStatus()
+│       ├── utils.js        # escapeHtml(), switchTab()
+│       ├── styles.css      # Global styles
+│       └── components.css  # Shared component styles
 ├── build/                  # Build outputs
 │   ├── bin/               # Compiled executables
-│   ├── appicon.png        # Application icon (PNG)
 │   └── windows/           
 │       └── icon.ico       # Windows icon (ICO)
 ├── dev_utils/              # Development utilities
@@ -77,15 +97,18 @@ THW-JugendOlympiade/
 │   └── README.md          # Utility documentation
 ├── pdfdocs/                # PDF outputs (auto-created at runtime)
 ├── test/                   # Unit and integration tests
-│   ├── input_test.go      # Excel import validation tests
+│   ├── database_test.go   # Database operation tests
 │   ├── distribution_test.go # Group distribution tests
+│   ├── input_test.go      # Excel import validation tests
+│   ├── models_test.go     # Data model tests
+│   ├── scores_test.go     # Score assignment tests
 │   └── README.md          # Test documentation
 ├── main.go                 # Application entry point & Wails setup
 ├── wails.json             # Wails build configuration
 ├── go.mod                 # Go module definition
 ├── go.sum                 # Go module checksums
 ├── README.md              # User documentation
-└── README_DEVELOPER.md    # This file
+└── documentation/         # Extended documentation
 ```
 
 ### Backend Architecture
@@ -98,7 +121,7 @@ THW-JugendOlympiade/
 5. **backend/models**: Shared data structures
 
 **Key Design Patterns:**
-- **Singleton DB Connection**: Global `currentDB` variable (consider refactoring)
+- **App-scoped DB Connection**: `a.db` on the App struct (thread-safe, testable)
 - **Transaction Wrapping**: Bulk operations use transactions
 - **Error Propagation**: Explicit error handling throughout
 

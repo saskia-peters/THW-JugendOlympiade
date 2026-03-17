@@ -9,7 +9,7 @@ The participant certificate generator supports custom templates using background
 Create your certificate template using any design tool (Canva, Photoshop, PowerPoint, etc.) with the following specifications:
 
 - **Size**: A4 (210mm x 297mm) or 2480 x 3508 pixels at 300 DPI
-- **Format**: PNG or JPG
+- **Format**: PNG
 - **Orientation**: Portrait
 
 ### 2. Design Guidelines
@@ -25,17 +25,16 @@ Leave space for the dynamic content that will be overlaid:
 
 ### 3. Save the Template
 
-Save your template as one of these files in the application directory:
+Save your template as the following file in the application directory:
 
 ```
-certificate_template.png    (Recommended)
-certificate_template.jpg
+certificate_template.png
 ```
 
-**Note:** If you have a PDF template, you'll need to convert it to PNG or JPG first using:
+**Note:** If you have a PDF or JPG template, convert it to PNG first using:
 - An online converter (e.g., pdf2png.com)
 - Adobe Acrobat (Export as PNG)
-- Any PDF reader's "Save as Image" feature
+- Any PDF reader’s “Save as Image” feature
 
 ### 4. Generate Certificates
 
@@ -48,7 +47,7 @@ certificate_template.jpg
 
 If you need to adjust where the text appears on your template, you can modify the Y-coordinates in the code:
 
-File: `backend/io/output.go`  
+File: `backend/io/pdf_certificates.go`  
 Function: `GenerateParticipantCertificates`
 
 Look for lines like:

@@ -79,22 +79,17 @@ Download the latest release for your platform:
   - Gender (Geschlecht)
 - Maximum 8 participants per group
 
-### 3. Add Stations (Optional)
+### 3. Add Stations
 
-**Prepare Station File:**
-- Create an XLSX file with station information
-- Required columns: Station ID, Station Name
-
-**Import:**
-1. Click "Stationen"
-2. Select your station Excel file
-3. Stations are loaded into the database
+Station names are loaded automatically from the **second sheet** (`Stationen`) of your Excel file during import. If the sheet is present, all station names are stored in the database and will be available for score entry.
 
 ### 4. Enter Scores
 
-1. Click "Stationen" to view all stations
-2. Enter scores for each group at each station
-3. Scores save automatically
+1. Click "Ergebniseingabe" to open the results entry view
+2. Select a group from the dropdown
+3. Enter scores (100–1200) for each station
+4. Click "Speichern" per row or "Alle Ergebnisse speichern" to save all at once
+5. Switch to the next group and repeat
 
 ### 5. View Evaluations
 
@@ -110,11 +105,11 @@ Download the latest release for your platform:
 
 **Group Reports:**
 - Click "Gruppen-PDF erstellen"
-- Generates detailed report in \`pdfdocs/groups_report.pdf\`
+- Generates detailed report in `pdfdocs/Gruppeneinteilung.pdf`
 
 **Certificates:**
 - Click "Teilnehmer-Zertifikate"
-- Generates certificates in \`pdfdocs/participant_certificates.pdf\`
+- Generates certificates in `pdfdocs/Urkunden_Teilnehmende.pdf`
 
 All PDFs are saved to the \`pdfdocs/\` directory.
 
@@ -126,12 +121,12 @@ Create professional-looking certificates with custom designs:
 
 1. **Create Template File:**
    - Design your certificate in A4 size (210mm × 297mm)
-   - Save as \`certificate_template.png\` or \`certificate_template.jpg\`
+   - Save as `certificate_template.png`
    - Place in the same directory as the application
 
 2. **Template Specifications:**
    - **Size**: A4 (210mm × 297mm)
-   - **Format**: PNG (recommended) or JPG
+   - **Format**: PNG
    - **Resolution**: 2480×3508 pixels at 300 DPI
    - **Important**: Leave space for dynamic content between x-coordinates 23px (5mm) and 680px (147.83mm)
 
@@ -157,10 +152,10 @@ After using the application, you'll find:
   - Evaluations
 
 ### PDFs (in pdfdocs/ directory)
-- **groups_report.pdf**: Complete group listings with statistics
-- **group_evaluations.pdf**: Group rankings by total score
-- **ortsverband_evaluations.pdf**: Location rankings by average score
-- **participant_certificates.pdf**: Individual certificates for all participants
+- **Gruppeneinteilung.pdf**: Complete group listings with statistics
+- **Auswertung_nach_Gruppe.pdf**: Group rankings by total score
+- **Auswertung_nach_Ortsverband.pdf**: Location rankings by average score
+- **Urkunden_Teilnehmende.pdf**: Individual certificates for all participants
 
 ## Troubleshooting
 

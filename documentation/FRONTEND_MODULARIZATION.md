@@ -4,16 +4,16 @@ The frontend has been restructured from a monolithic 1000+ line `app.js` into lo
 
 ## Module Structure
 
-### Core Modules
+### Shared Modules (`shared/`)
 
-1. **dom.js** (32 lines)
+1. **shared/dom.js**
    - **Purpose**: DOM element references and basic UI utilities
    - **Exports**: 
      - DOM elements: `status`, `output`, `tabs`, `tabButtons`, `tabContents`, all 5 buttons
      - Functions: `setStatus()`, `clearAllTabs()`
    - **Dependencies**: None
 
-2. **utils.js** (21 lines)
+2. **shared/utils.js**
    - **Purpose**: Shared utility functions
    - **Exports**: 
      - `escapeHtml()` - XSS prevention for user-generated content
@@ -22,51 +22,49 @@ The frontend has been restructured from a monolithic 1000+ line `app.js` into lo
 
 ### Feature Modules
 
-3. **file-handler.js** (42 lines)
-   - **Purpose**: File upload and database loading
-   - **Exports**: `openFileDialog()`
+3. **admin/file-handler.js**
+   - **Purpose**: File loading, database backup and restore
+   - **Exports**: `openFileDialog()`, `handleBackupDatabase()`, `handleRestoreDatabase()`
    - **Functionality**: 
-     - CheckDB confirmation dialog
-     - LoadFile call to backend
-     - Button enablement on success
-   - **Dependencies**: dom.js
+     - CheckDB confirmation dialog before overwriting
+     - LoadFile call to backend with button enablement
+     - Backup creation with status feedback
+     - Restore with backup-selection dialog
+   - **Dependencies**: shared/dom.js
 
-4. **groups.js** (138 lines)
+4. **groups/groups.js**
    - **Purpose**: Group display with tabs and statistics
    - **Exports**: `handleShowGroups()`
    - **Internal**: `renderGroupTabs()`, `formatGroupContent()`
    - **UI Elements**: 
      - Participant table (Name, Ortsverband, Alter, Geschlecht)
      - Statistics panel (total, avg age, ortsverband distribution, gender distribution)
-   - **Dependencies**: dom.js, utils.js
+     - Per-group link to Ergebniseingabe
+   - **Dependencies**: shared/dom.js, shared/utils.js
 
-5. **scores.js** (204 lines)
-   - **Purpose**: Score assignment with validation and warnings
+5. **stations/scores.js**
+   - **Purpose**: Legacy per-station score assignment helpers
    - **Exports**: 
      - `checkForExistingScore()` - Duplicate score detection
      - `handleGlobalAssignScore()` - Global score form handler
      - `handleAssignScore()` - Per-station score handler
-   - **Features**: 
-     - Existing score detection
-     - Overwrite confirmation dialogs
-     - Form clearing and reset
-     - Optimistic UI updates with refresh
-   - **Dependencies**: dom.js, dynamic import of stations.js (to avoid circular dependency)
+   - **Dependencies**: shared/dom.js, dynamic import of stations/stations.js
 
-6. **stations.js** (243 lines)
-   - **Purpose**: Station display and management
+6. **stations/stations.js**
+   - **Purpose**: Group-based results entry with dirty-tracking
    - **Exports**: 
-     - `handleShowStations()` - Load and display all stations
-     - `showStationDetails()` - Show specific station details
-   - **Internal**: `renderStationTabs()`, `formatStationContent()`
+     - `handleShowStations()` - Entry point, loads stations + groups
+     - `handleShowStationsForGroup(groupID)` - Jump to specific group
+   - **Internal**: `renderGroupBasedEntry()`, `renderStationTable()`, `doSaveAll()`, `hasDirtyScores()`, `showUnsavedWarning()`
    - **UI Elements**: 
-     - 4-column grid of station buttons
-     - Global score entry form (above buttons)
-     - Station detail view with scores table
-     - Statistics panel (total groups, avg score, highest/lowest)
-   - **Dependencies**: dom.js, utils.js, scores.js
+     - Group selector dropdown
+     - Station scores table (one row per station, input + save button)
+     - "Alle Ergebnisse speichern" button
+     - Unsaved-changes modal when switching groups
+   - **State**: Module-level `savedScoreMap`, `currentGroupID`, `pendingGroupID`
+   - **Dependencies**: shared/dom.js, shared/utils.js
 
-7. **evaluations.js** (186 lines)
+7. **evaluations/evaluations.js**
    - **Purpose**: Evaluation rendering for groups and ortsverbände
    - **Exports**: 
      - `handleGroupEvaluation()` - Display group rankings
@@ -75,18 +73,19 @@ The frontend has been restructured from a monolithic 1000+ line `app.js` into lo
    - **UI Elements**: 
      - Rankings table with 🥇🥈🥉 medals
      - Statistics panels (total, averages, highest/lowest)
-   - **Dependencies**: dom.js, utils.js
+     - "PDF erstellen" button
+   - **Dependencies**: shared/dom.js, shared/utils.js
 
-8. **pdf-handlers.js** (67 lines)
+8. **reports/pdf-handlers.js**
    - **Purpose**: PDF generation wrappers
    - **Exports**: 
      - `handleGeneratePDF()` - Groups report PDF
      - `handleGenerateGroupEvaluationPDF()` - Group evaluation PDF
      - `handleGenerateOrtsverbandEvaluationPDF()` - Ortsverband evaluation PDF
      - `handleGenerateCertificates()` - Participant certificates
-   - **Dependencies**: dom.js
+   - **Dependencies**: shared/dom.js
 
-9. **app.js** (27 lines)
+9. **app.js**
    - **Purpose**: Main orchestrator - imports all modules and wires up onclick handlers
    - **Functionality**: 
      - Imports all feature modules
@@ -117,23 +116,22 @@ The frontend has been restructured from a monolithic 1000+ line `app.js` into lo
 
 ```
 app.js (orchestrator)
-├── file-handler.js
-│   └── dom.js
-├── groups.js
-│   ├── dom.js
-│   └── utils.js
-├── scores.js
-│   ├── dom.js
-│   └── stations.js (dynamic import)
-├── stations.js
-│   ├── dom.js
-│   ├── utils.js
-│   └── scores.js
-├── evaluations.js
-│   ├── dom.js
-│   └── utils.js
-└── pdf-handlers.js
-    └── dom.js
+├── admin/file-handler.js
+│   └── shared/dom.js
+├── groups/groups.js
+│   ├── shared/dom.js
+│   └── shared/utils.js
+├── stations/scores.js
+│   ├── shared/dom.js
+│   └── stations/stations.js (dynamic import)
+├── stations/stations.js
+│   ├── shared/dom.js
+│   └── shared/utils.js
+├── evaluations/evaluations.js
+│   ├── shared/dom.js
+│   └── shared/utils.js
+└── reports/pdf-handlers.js
+    └── shared/dom.js
 ```
 
 ## Integration with HTML
@@ -155,26 +153,23 @@ window.handleShowGroups = handleShowGroups;
 HTML onclick attributes work as before:
 
 ```html
-<button onclick="openFileDialog()">Load Excel File</button>
+<button onclick="openFileDialog()">Lade Excel Datei</button>
 <button onclick="handleShowGroups()">Gruppen</button>
 ```
 
 ## File Sizes
 
-| Module | Lines | Purpose |
-|--------|-------|---------|
-| dom.js | 32 | DOM references & UI utilities |
-| utils.js | 21 | Helper functions |
-| file-handler.js | 42 | File loading |
-| groups.js | 138 | Group display |
-| scores.js | 204 | Score management |
-| stations.js | 243 | Station display |
-| evaluations.js | 186 | Rankings & evaluations |
-| pdf-handlers.js | 67 | PDF generation |
-| app.js | 27 | Main orchestrator |
-| **Total** | **960** | **9 modules** |
-
-Original monolithic `app.js`: ~1000 lines → Now split into 9 focused modules
+| Module | Purpose |
+|--------|----------|
+| shared/dom.js | DOM references & UI utilities |
+| shared/utils.js | Helper functions |
+| admin/file-handler.js | File loading, backup, restore |
+| groups/groups.js | Group display |
+| stations/scores.js | Legacy per-station score helpers |
+| stations/stations.js | Group-based results entry |
+| evaluations/evaluations.js | Rankings & evaluations |
+| reports/pdf-handlers.js | PDF generation |
+| app.js | Main orchestrator |
 
 ## Testing Strategy
 

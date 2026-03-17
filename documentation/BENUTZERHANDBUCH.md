@@ -88,10 +88,13 @@ Nachdem die Jugendolympiade stattgefunden hat, werden die erzielten Punktzahlen 
 
 1. Abschnitt **📝 Daten** öffnen.
 2. Auf **„Ergebniseingabe"** klicken.
-3. Es wird eine tabellarische Ansicht angezeigt. Die Tabs entsprechen den einzelnen Stationen.
-4. Pro Station: für jede Gruppe den erreichten **Punktestand** eintragen und speichern.
+3. Es wird eine Ansicht mit einem **Gruppen-Dropdown** angezeigt.
+4. Gruppe aus dem Dropdown auswählen.
+5. Für jede Station den erreichten **Punktestand** (100–1200) eingeben.
+6. Einzeln über **„Speichern“** pro Zeile oder gesammelt über **„💾 Alle Ergebnisse speichern“** speichern.
+7. Nächste Gruppe auswählen und wiederholen.
 
-> **Tipp:** Tabs können nacheinander abgearbeitet werden – jede Station wird einzeln gespeichert.
+> **Tipp:** Beim Wechsel zu einer anderen Gruppe mit ungespeicherten Eingaben erscheint eine Warnmeldung, die das Speichern aller Ergebnisse vor dem Wechsel anbietet.
 
 ---
 
@@ -105,14 +108,14 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
 2. Es erscheint eine Rangliste aller Gruppen, sortiert nach Gesamtpunktzahl (absteigend).
 3. Die Podiumsplätze (1.–3.) sind optisch hervorgehoben.
 4. Darunter sind Gesamtstatistiken sichtbar: Durchschnittsergebnis, höchstes und niedrigstes Ergebnis.
-5. Mit **„📄 Generate PDF"** innerhalb der Ansicht wird die Datei **`Auswertung_nach_Gruppe.pdf`** im Ordner `pdfdocs/` erzeugt.
+5. Mit **„📄 PDF erstellen“** innerhalb der Ansicht wird die Datei **`Auswertung_nach_Gruppe.pdf`** im Ordner `pdfdocs/` erzeugt.
 
 ### Auswertung nach Ortsverband
 
-1. Abschnitt **📊 Ausgabe** → **„Auswertung nach Ortsverband"** klicken.
+1. Abschnitt **📊 Ausgabe** → **„Auswertung nach Ortsverband“** klicken.
 2. Es erscheint eine Rangliste aller Ortsverbände, sortiert nach Durchschnittspunktzahl.
 3. Spalten: Platz, Ortsverband, Anzahl Teilnehmende, Gesamtpunkte, Ø Score.
-4. Mit **„📄 Generate PDF"** innerhalb der Ansicht wird die Datei **`Auswertung_nach_Ortsverband.pdf`** im Ordner `pdfdocs/` erzeugt.
+4. Mit **„📄 PDF erstellen“** innerhalb der Ansicht wird die Datei **`Auswertung_nach_Ortsverband.pdf`** im Ordner `pdfdocs/` erzeugt.
 
 ---
 
@@ -146,5 +149,5 @@ Alle erzeugten PDFs werden im Unterordner **`pdfdocs/`** im Programmverzeichnis 
 
 ## Datensicherung
 
-- **Backup erstellen:** ⚙️ Admin → **„Backup Database"** – speichert eine Sicherungskopie der Datenbank.
-- **Backup wiederherstellen:** ⚙️ Admin → **„Restore Database"** – stellt einen früheren Stand wieder her. Achtung: alle aktuellen Daten werden dabei überschrieben.
+- **Backup erstellen:** ⚙️ Admin → **„Datenbank sichern“** – speichert eine Sicherungskopie der Datenbank.
+- **Backup wiederherstellen:** ⚙️ Admin → **„Datenbank wiederherstellen“** – stellt einen früheren Stand wieder her. Achtung: alle aktuellen Daten werden dabei überschrieben.
