@@ -11,6 +11,7 @@ export const btnEvaluation = document.getElementById('btnEvaluation');
 export const btnOrtsverband = document.getElementById('btnOrtsverband');
 export const btnPDF = document.getElementById('btnPDF');
 export const btnCertificates = document.getElementById('btnCertificates');
+export const btnOVCertificates = document.getElementById('btnOVCertificates');
 
 // Status message handler
 export function setStatus(msg, type = 'info') {

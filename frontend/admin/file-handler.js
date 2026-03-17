@@ -1,5 +1,5 @@
 // File loading and management
-import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnEvaluation, btnOrtsverband, btnPDF, btnCertificates } from '../shared/dom.js';
+import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnEvaluation, btnOrtsverband, btnPDF, btnCertificates, btnOVCertificates } from '../shared/dom.js';
 
 export async function openFileDialog() {
     try {
@@ -31,6 +31,7 @@ export async function openFileDialog() {
             btnOrtsverband.disabled = true;
             btnPDF.disabled = true;
             btnCertificates.disabled = true;
+            btnOVCertificates.disabled = true;
             output.style.display = 'block';
             tabs.style.display = 'none';
             output.textContent = `✔ ${uploadResult.count} Teilnehmer geladen.\n\nNächster Schritt:\n• Klicken Sie auf "Teilnehmer zu Gruppen" um ausgewogene Gruppen zu erstellen`;
@@ -171,6 +172,7 @@ window.confirmRestore = async function(backupFilename) {
             btnOrtsverband.disabled = false;
             btnPDF.disabled = false;
             btnCertificates.disabled = false;
+            btnOVCertificates.disabled = false;
             // Only enable redistribution if no scores exist yet
             const hasScores = await window.go.main.App.HasScores();
             btnDistribute.disabled = hasScores;
@@ -201,6 +203,7 @@ export async function handleDistributeGroups() {
         btnOrtsverband.disabled = false;
         btnPDF.disabled = false;
         btnCertificates.disabled = false;
+        btnOVCertificates.disabled = false;
         output.style.display = 'block';
         tabs.style.display = 'none';
         output.textContent = `✔ ${result.message}\n\nNächste Schritte:\n• Klicken Sie auf "Gruppen anzeigen" um die Gruppen anzuzeigen\n• Klicken Sie auf "Auswertung nach Gruppen" für die Gruppenauswertung\n• Klicken Sie auf "Auswertung nach Ortsverband" für die ortsverbandsbasierte Auswertung\n• Klicken Sie auf "Gruppen-PDF erstellen" um die Gruppen als PDF zu exportieren\n• Klicken Sie auf "Teilnehmer-Zertifikate" um Zertifikate zu erstellen`;

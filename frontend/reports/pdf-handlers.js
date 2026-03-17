@@ -50,7 +50,7 @@ export async function handleGenerateOrtsverbandEvaluationPDF() {
 }
 
 export async function handleGenerateCertificates() {
-    setStatus('Zertifikate werden erstellt...', 'info');
+    setStatus('Urkunden Teilnehmende werden erstellt...', 'info');
     
     try {
         const result = await window.go.main.App.GenerateParticipantCertificates();
@@ -58,7 +58,23 @@ export async function handleGenerateCertificates() {
         if (result.status === 'error') {
             setStatus('FEHLER: ' + result.message, 'error');
         } else {
-            setStatus('✅ Zertifikate erfolgreich erstellt!', 'success');
+            setStatus('✅ ' + result.message, 'success');
+        }
+    } catch (err) {
+        setStatus('FEHLER: ' + err, 'error');
+    }
+}
+
+export async function handleGenerateOVCertificates() {
+    setStatus('Urkunden Ortsverbände werden erstellt...', 'info');
+    
+    try {
+        const result = await window.go.main.App.GenerateOrtsverbandCertificates();
+        
+        if (result.status === 'error') {
+            setStatus('FEHLER: ' + result.message, 'error');
+        } else {
+            setStatus('✅ ' + result.message, 'success');
         }
     } catch (err) {
         setStatus('FEHLER: ' + err, 'error');

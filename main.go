@@ -527,9 +527,37 @@ func (a *App) GenerateParticipantCertificates() map[string]interface{} {
 
 	return map[string]interface{}{
 		"status":  "success",
-		"message": "Participant certificates PDF generated successfully",
-		"file":    "participant_certificates.pdf",
-		"path":    absPath + string(os.PathSeparator) + "pdfdocs" + string(os.PathSeparator) + "participant_certificates.pdf",
+		"message": "Urkunden Teilnehmende erfolgreich erstellt",
+		"file":    "Urkunden_Teilnehmende.pdf",
+		"path":    absPath + string(os.PathSeparator) + "pdfdocs" + string(os.PathSeparator) + "Urkunden_Teilnehmende.pdf",
+	}
+}
+
+// GenerateOrtsverbandCertificates generates ortsverband certificates PDF.
+// The best-ranked Ortsverband receives a special Siegerurkunde; all others get
+// an identical participation certificate with no ranking mentioned.
+func (a *App) GenerateOrtsverbandCertificates() map[string]interface{} {
+	if a.db == nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": "Please load an Excel file first",
+		}
+	}
+
+	if err := io.GenerateOrtsverbandCertificates(a.db); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Failed to generate ortsverband certificates: %v", err),
+		}
+	}
+
+	absPath, _ := os.Getwd()
+
+	return map[string]interface{}{
+		"status":  "success",
+		"message": "Urkunden Ortsverbände erfolgreich erstellt",
+		"file":    "Urkunden_Ortsverbaende.pdf",
+		"path":    absPath + string(os.PathSeparator) + "pdfdocs" + string(os.PathSeparator) + "Urkunden_Ortsverbaende.pdf",
 	}
 }
 

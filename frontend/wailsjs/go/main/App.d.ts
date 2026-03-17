@@ -11,6 +11,8 @@ export function DistributeGroups():Promise<Record<string, any>>;
 
 export function GenerateGroupEvaluationPDF():Promise<Record<string, any>>;
 
+export function GenerateOrtsverbandCertificates():Promise<Record<string, any>>;
+
 export function GenerateOrtsverbandEvaluationPDF():Promise<Record<string, any>>;
 
 export function GeneratePDF():Promise<Record<string, any>>;

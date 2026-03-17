@@ -8,7 +8,8 @@ import {
     handleGeneratePDF, 
     handleGenerateGroupEvaluationPDF, 
     handleGenerateOrtsverbandEvaluationPDF, 
-    handleGenerateCertificates 
+    handleGenerateCertificates,
+    handleGenerateOVCertificates
 } from './reports/pdf-handlers.js';
 
 // Load configuration from backend and store globally for use by all modules
@@ -35,3 +36,4 @@ window.handleGeneratePDF = handleGeneratePDF;
 window.handleGenerateGroupEvaluationPDF = handleGenerateGroupEvaluationPDF;
 window.handleGenerateOrtsverbandEvaluationPDF = handleGenerateOrtsverbandEvaluationPDF;
 window.handleGenerateCertificates = handleGenerateCertificates;
+window.handleGenerateOVCertificates = handleGenerateOVCertificates;

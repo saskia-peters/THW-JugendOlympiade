@@ -22,6 +22,10 @@ export function GenerateGroupEvaluationPDF() {
   return window['go']['main']['App']['GenerateGroupEvaluationPDF']();
 }
 
+export function GenerateOrtsverbandCertificates() {
+  return window['go']['main']['App']['GenerateOrtsverbandCertificates']();
+}
+
 export function GenerateOrtsverbandEvaluationPDF() {
   return window['go']['main']['App']['GenerateOrtsverbandEvaluationPDF']();
 }

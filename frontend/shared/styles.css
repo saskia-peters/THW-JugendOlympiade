@@ -154,6 +154,7 @@ button:disabled {
 .btn-ortsverband { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; }
 .btn-pdf { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
 .btn-certificates { background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%); color: white; }
+.btn-ov-certificates { background: linear-gradient(135deg, #c471f5 0%, #fa71cd 100%); color: white; }
 .btn-config { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
 
 .output {

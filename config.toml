@@ -10,7 +10,7 @@ jahr = 2026
 
 [gruppen]
 # Maximale Anzahl Teilnehmer pro Gruppe
-max_groesse = 4
+max_groesse = 8
 
 [ergebnisse]
 # Kleinstes erlaubtes Ergebnis pro Station
