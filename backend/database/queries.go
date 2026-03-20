@@ -91,6 +91,31 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 		return nil, err
 	}
 
+	// Load betreuende for each group
+	bRows, err := db.Query(`
+		SELECT gb.group_id, b.id, b.name, b.ortsverband
+		FROM gruppe_betreuende gb
+		INNER JOIN betreuende b ON b.id = gb.betreuende_id
+		ORDER BY gb.group_id, b.name
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer bRows.Close()
+	for bRows.Next() {
+		var groupID int
+		var b models.Betreuende
+		if err := bRows.Scan(&groupID, &b.ID, &b.Name, &b.Ortsverband); err != nil {
+			return nil, err
+		}
+		if g, ok := groupMap[groupID]; ok {
+			g.Betreuende = append(g.Betreuende, b)
+		}
+	}
+	if err := bRows.Err(); err != nil {
+		return nil, err
+	}
+
 	// Convert map to slice in correct order
 	groups := make([]models.Group, 0, len(groupMap))
 	for _, groupID := range groupOrder {
@@ -98,6 +123,25 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 	}
 
 	return groups, nil
+}
+
+// GetAllBetreuende returns all caretakers from the database
+func GetAllBetreuende(db *sql.DB) ([]models.Betreuende, error) {
+	rows, err := db.Query("SELECT id, name, ortsverband FROM betreuende ORDER BY id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var result []models.Betreuende
+	for rows.Next() {
+		var b models.Betreuende
+		if err := rows.Scan(&b.ID, &b.Name, &b.Ortsverband); err != nil {
+			return nil, err
+		}
+		result = append(result, b)
+	}
+	return result, rows.Err()
 }
 
 // GetStationsForReport retrieves all stations with group scores from the database

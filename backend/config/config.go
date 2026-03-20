@@ -39,7 +39,7 @@ type AusgabeConfig struct {
 func Default() Config {
 	return Config{
 		Veranstaltung: VeranstaltungConfig{
-			Name: "THW-JugendOlympiade 2026",
+			Name: "THW-JugendOlympiade",
 			Jahr: 2026,
 		},
 		Gruppen: GruppenConfig{
@@ -76,7 +76,7 @@ const defaultTOML = `# Jugendolympiade - Konfiguration
 
 [veranstaltung]
 # Name der Veranstaltung (erscheint auf Urkunden und PDFs)
-name = "THW-JugendOlympiade 2026"
+name = "THW-JugendOlympiade"
 # Jahreszahl der Veranstaltung
 jahr = 2026
 

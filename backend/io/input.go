@@ -157,6 +157,37 @@ func ReadXLSXFile(filePath string) ([][]string, error) {
 	return rows, nil
 }
 
+// ReadBetreuendeFromXLSX reads caretakers/drivers from the "Betreuende" sheet.
+// Returns an empty slice (no error) if the sheet does not exist.
+func ReadBetreuendeFromXLSX(filePath string) ([][]string, error) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("XLSX file '%s' not found", filePath)
+	}
+
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open XLSX file: %w", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Printf("Failed to close XLSX file: %v", err)
+		}
+	}()
+
+	rows, err := f.GetRows(models.BetreuendeSheetName)
+	if err != nil {
+		log.Printf("Sheet '%s' not found or error reading: %v - betreuende are optional", models.BetreuendeSheetName, err)
+		return [][]string{}, nil
+	}
+
+	if len(rows) < 2 {
+		log.Printf("Warning: sheet '%s' has no data rows", models.BetreuendeSheetName)
+		return [][]string{}, nil
+	}
+
+	return rows, nil
+}
+
 // ReadStationsFromXLSX reads the stations from the Stationen sheet
 func ReadStationsFromXLSX(filePath string) ([][]string, error) {
 	// Check if XLSX file exists

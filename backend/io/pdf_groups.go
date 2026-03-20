@@ -11,7 +11,7 @@ import (
 )
 
 // GeneratePDFReport creates a PDF report with one group per page.
-func GeneratePDFReport(db *sql.DB) error {
+func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 	if err := ensurePDFDirectory(); err != nil {
 		return err
 	}
@@ -31,6 +31,21 @@ func GeneratePDFReport(db *sql.DB) error {
 
 	for _, group := range groups {
 		pdf.AddPage()
+
+		// Event header
+		if eventName != "" {
+			theme.Font(pdf, "B", theme.SizeTitle+4)
+			theme.TextColor(pdf, theme.ColorText)
+			header := enc(eventName)
+			if eventYear > 0 {
+				header += fmt.Sprintf(" %d", eventYear)
+			}
+			pdf.CellFormat(0, 14, header, "", 1, "C", false, 0, "")
+			theme.Font(pdf, "", theme.SizeSmall)
+			theme.TextColor(pdf, theme.ColorSubtext)
+			pdf.CellFormat(0, 6, "Gruppeneinteilung", "", 1, "C", false, 0, "")
+			pdf.Ln(4)
+		}
 
 		// Title
 		theme.Font(pdf, "B", theme.SizeTitle)
@@ -112,6 +127,26 @@ func GeneratePDFReport(db *sql.DB) error {
 
 		if alterCount > 0 {
 			pdf.CellFormat(0, 5, fmt.Sprintf("Durchschnittsalter: %.1f Jahre", float64(alterSum)/float64(alterCount)), "", 1, "L", false, 0, "")
+		}
+
+		// Betreuende section
+		if len(group.Betreuende) > 0 {
+			pdf.Ln(6)
+			theme.Font(pdf, "B", theme.SizeTableHeader)
+			theme.TextColor(pdf, theme.ColorText)
+			theme.FillColor(pdf, theme.ColorTableHeader)
+			pdf.CellFormat(90, 10, "Betreuende", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(90, 10, "Ortsverband", "1", 0, "C", true, 0, "")
+			pdf.Ln(-1)
+
+			theme.Font(pdf, "", theme.SizeBody)
+			for i, b := range group.Betreuende {
+				fill := i%2 == 0
+				theme.FillColor(pdf, theme.ColorTableRowAlt)
+				pdf.CellFormat(90, 9, enc(b.Name), "1", 0, "L", fill, 0, "")
+				pdf.CellFormat(90, 9, enc(b.Ortsverband), "1", 0, "L", fill, 0, "")
+				pdf.Ln(-1)
+			}
 		}
 	}
 

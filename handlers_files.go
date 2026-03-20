@@ -103,6 +103,21 @@ func (a *App) LoadFile() map[string]interface{} {
 		}
 	}
 
+	betreuendeRows, err := io.ReadBetreuendeFromXLSX(filePath)
+	if err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Betreuende konnten nicht gelesen werden: %v", err),
+		}
+	}
+
+	if err := database.InsertBetreuende(a.db, betreuendeRows); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Betreuende konnten nicht eingefügt werden: %v", err),
+		}
+	}
+
 	participantCount := len(rows) - 1
 	return map[string]interface{}{
 		"status":  "success",

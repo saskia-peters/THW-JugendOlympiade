@@ -88,8 +88,8 @@
 /* Buttons */
 .btn-save-score {
     padding: 8px 16px;
-    background: linear-gradient(135deg, #a8d8f0 0%, #1a5fa8 100%);
-    color: #f7941d;
+    background: #0d2f6e;
+    color: #ffe600;
     border: none;
     border-radius: 4px;
     font-weight: 600;

@@ -87,6 +87,32 @@ func InitDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to create group_station_scores table: %w", err)
 	}
 
+	// Create betreuende table
+	createBetreuerTableSQL := `
+	CREATE TABLE IF NOT EXISTS betreuende (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		ortsverband TEXT
+	);`
+	_, err = db.Exec(createBetreuerTableSQL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create betreuende table: %w", err)
+	}
+
+	// Create gruppe_betreuende relation table
+	createGruppeBetreuendeSQL := `
+	CREATE TABLE IF NOT EXISTS gruppe_betreuende (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		group_id INTEGER NOT NULL,
+		betreuende_id INTEGER NOT NULL,
+		FOREIGN KEY (betreuende_id) REFERENCES betreuende(id),
+		UNIQUE(group_id, betreuende_id)
+	);`
+	_, err = db.Exec(createGruppeBetreuendeSQL)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create gruppe_betreuende table: %w", err)
+	}
+
 	// Clear existing data
 	_, err = db.Exec("DELETE FROM teilnehmer")
 	if err != nil {
@@ -106,6 +132,16 @@ func InitDatabase() (*sql.DB, error) {
 	_, err = db.Exec("DELETE FROM group_station_scores")
 	if err != nil {
 		return nil, fmt.Errorf("failed to clear group_station_scores table: %w", err)
+	}
+
+	_, err = db.Exec("DELETE FROM gruppe_betreuende")
+	if err != nil {
+		return nil, fmt.Errorf("failed to clear gruppe_betreuende table: %w", err)
+	}
+
+	_, err = db.Exec("DELETE FROM betreuende")
+	if err != nil {
+		return nil, fmt.Errorf("failed to clear betreuende table: %w", err)
 	}
 
 	// Create indexes for better query performance

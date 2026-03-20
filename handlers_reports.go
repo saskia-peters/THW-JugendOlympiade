@@ -16,7 +16,7 @@ func (a *App) GeneratePDF() map[string]interface{} {
 		}
 	}
 
-	if err := io.GeneratePDFReport(a.db); err != nil {
+	if err := io.GeneratePDFReport(a.db, a.cfg.Veranstaltung.Name, a.cfg.Veranstaltung.Jahr); err != nil {
 		return map[string]interface{}{
 			"status":  "error",
 			"message": fmt.Sprintf("Gruppen-PDF konnte nicht erstellt werden: %v", err),

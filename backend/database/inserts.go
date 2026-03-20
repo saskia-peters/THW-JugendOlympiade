@@ -128,6 +128,75 @@ func InsertStations(db *sql.DB, rows [][]string) error {
 	return nil
 }
 
+// InsertBetreuende inserts caretaker rows from XLSX into the database
+func InsertBetreuende(db *sql.DB, rows [][]string) error {
+	if len(rows) == 0 {
+		return nil
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("INSERT INTO betreuende (name, ortsverband) VALUES (?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	for i, row := range rows {
+		if i == 0 {
+			continue // skip header
+		}
+		name, ortsverband := "", ""
+		if len(row) > 0 {
+			name = trimSpace(row[0])
+		}
+		if len(row) > 1 {
+			ortsverband = trimSpace(row[1])
+		}
+		if name == "" {
+			continue
+		}
+		if _, err = stmt.Exec(name, ortsverband); err != nil {
+			return fmt.Errorf("failed to insert betreuende row %d: %w", i, err)
+		}
+	}
+
+	return tx.Commit()
+}
+
+// SaveGroupBetreuende saves the betreuende-to-group assignments to the database
+func SaveGroupBetreuende(db *sql.DB, groups []models.Group) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	if _, err = tx.Exec("DELETE FROM gruppe_betreuende"); err != nil {
+		return fmt.Errorf("failed to clear gruppe_betreuende: %w", err)
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO gruppe_betreuende (group_id, betreuende_id) VALUES (?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare gruppe_betreuende statement: %w", err)
+	}
+	defer stmt.Close()
+
+	for _, group := range groups {
+		for _, b := range group.Betreuende {
+			if _, err = stmt.Exec(group.GroupID, b.ID); err != nil {
+				return fmt.Errorf("failed to insert gruppe_betreuende: %w", err)
+			}
+		}
+	}
+
+	return tx.Commit()
+}
+
 // SaveGroups saves groups and relationships to the database
 func SaveGroups(db *sql.DB, groups []models.Group) error {
 	tx, err := db.Begin()

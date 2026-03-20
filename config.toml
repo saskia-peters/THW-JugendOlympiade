@@ -4,7 +4,7 @@
 
 [veranstaltung]
 # Name der Veranstaltung (erscheint auf Urkunden und PDFs)
-name = "THW-JugendOlympiade 2026"
+name = "THW-JugendOlympiade"
 # Jahreszahl der Veranstaltung
 jahr = 2026
 

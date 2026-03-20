@@ -31,6 +31,18 @@ func CreateBalancedGroups(db *sql.DB, maxGroupSize int) error {
 		return fmt.Errorf("failed to save groups: %w", err)
 	}
 
+	// Distribute betreuende across groups (Ortsverband-matched, then round-robin)
+	betreuende, err := database.GetAllBetreuende(db)
+	if err != nil {
+		return fmt.Errorf("failed to read betreuende: %w", err)
+	}
+	if len(betreuende) > 0 {
+		distributeBetreuende(groups, betreuende)
+		if err := database.SaveGroupBetreuende(db, groups); err != nil {
+			return fmt.Errorf("failed to save group betreuende: %w", err)
+		}
+	}
+
 	fmt.Printf("Created %d groups with balanced distribution\n", len(groups))
 	for i, group := range groups {
 		fmt.Printf("  Group %d: %d participants\n", i+1, len(group.Teilnehmers))
@@ -174,4 +186,39 @@ func addTeilnehmerToGroup(g *models.Group, t models.Teilnehmer) {
 	g.Ortsverbands[t.Ortsverband]++
 	g.Geschlechts[t.Geschlecht]++
 	g.AlterSum += t.Alter
+}
+
+// distributeBetreuende assigns caretakers to groups.
+// Each caretaker is first matched to the group that has the most participants from
+// the same Ortsverband. Unmatched caretakers are assigned round-robin.
+func distributeBetreuende(groups []models.Group, betreuende []models.Betreuende) {
+	if len(groups) == 0 {
+		return
+	}
+	// Reset betreuende lists
+	for i := range groups {
+		groups[i].Betreuende = nil
+	}
+	// Track how many betreuende each group already has (for round-robin tiebreak)
+	assigned := make([]int, len(groups))
+
+	for _, b := range betreuende {
+		bestIdx := -1
+		bestOVCount := 0
+		bestAssigned := math.MaxInt64
+
+		for i, g := range groups {
+			ovCount := g.Ortsverbands[b.Ortsverband]
+			if ovCount > bestOVCount || (ovCount == bestOVCount && assigned[i] < bestAssigned) {
+				bestIdx = i
+				bestOVCount = ovCount
+				bestAssigned = assigned[i]
+			}
+		}
+		if bestIdx < 0 {
+			bestIdx = 0
+		}
+		groups[bestIdx].Betreuende = append(groups[bestIdx].Betreuende, b)
+		assigned[bestIdx]++
+	}
 }
