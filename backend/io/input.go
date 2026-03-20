@@ -12,8 +12,8 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-// validateHeaders checks if the header row matches expected columns
-func validateHeaders(headers []string, expected []string) error {
+// ValidateHeaders checks if the header row matches expected columns
+func ValidateHeaders(headers []string, expected []string) error {
 	if len(headers) < len(expected) {
 		return fmt.Errorf("insufficient columns: expected at least %d columns, got %d", len(expected), len(headers))
 	}
@@ -28,8 +28,8 @@ func validateHeaders(headers []string, expected []string) error {
 	return nil
 }
 
-// validateParticipantRow validates a single participant data row
-func validateParticipantRow(row []string, rowNum int) error {
+// ValidateParticipantRow validates a single participant data row
+func ValidateParticipantRow(row []string, rowNum int) error {
 	// Accept rows with at least 4 columns (PreGroup is optional and may be missing)
 	if len(row) < 4 {
 		return fmt.Errorf("row %d: insufficient columns (expected at least 4: Name, Ortsverband, Alter, Geschlecht; PreGroup is optional)", rowNum)
@@ -132,14 +132,14 @@ func ReadXLSXFile(filePath string) ([][]string, error) {
 
 	// Validate header row
 	expectedHeaders := []string{"Name", "Ortsverband", "Alter", "Geschlecht", "PreGroup"}
-	if err := validateHeaders(rows[0], expectedHeaders); err != nil {
+	if err := ValidateHeaders(rows[0], expectedHeaders); err != nil {
 		return nil, fmt.Errorf("invalid sheet structure: %w", err)
 	}
 
 	// Validate each data row (skip header)
 	validRowCount := 0
 	for i := 1; i < len(rows); i++ {
-		if err := validateParticipantRow(rows[i], i+1); err != nil {
+		if err := ValidateParticipantRow(rows[i], i+1); err != nil {
 			return nil, err
 		}
 		// Count non-empty rows

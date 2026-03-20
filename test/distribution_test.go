@@ -284,7 +284,7 @@ func TestDistribution_GroupIDsSequential(t *testing.T) {
 
 // TestDistribution_PreGroupsStayTogether tests that participants with the same PreGroup value are grouped together
 func TestDistribution_PreGroupsStayTogether(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFullTestDB(t)
 	defer teardownTestDB(t, db)
 
 	// Insert participants with PreGroup values

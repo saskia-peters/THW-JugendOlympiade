@@ -63,9 +63,19 @@ func TestValidateHeaders(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Note: validateHeaders is not exported, we'll test it through ReadXLSXFile
-			// For now, skip this or make validateHeaders exported for testing
-			t.Skip("validateHeaders is not exported - testing through integration tests")
+			err := io.ValidateHeaders(tt.headers, tt.expected)
+			if tt.shouldError {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				if !strings.Contains(err.Error(), tt.errorMsg) {
+					t.Errorf("expected error containing %q, got: %v", tt.errorMsg, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
 		})
 	}
 }
@@ -153,8 +163,19 @@ func TestValidateParticipantRow(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Note: validateParticipantRow is not exported
-			t.Skip("validateParticipantRow is not exported - testing through integration tests")
+			err := io.ValidateParticipantRow(tt.row, tt.rowNum)
+			if tt.shouldError {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				if !strings.Contains(err.Error(), tt.errorMsg) {
+					t.Errorf("expected error containing %q, got: %v", tt.errorMsg, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+			}
 		})
 	}
 }

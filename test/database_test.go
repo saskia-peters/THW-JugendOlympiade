@@ -368,7 +368,7 @@ func TestSaveGroups(t *testing.T) {
 
 // TestGetGroupsForReport tests retrieving groups with participants
 func TestGetGroupsForReport(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFullTestDB(t)
 	defer teardownTestDB(t, db)
 
 	// Insert participants

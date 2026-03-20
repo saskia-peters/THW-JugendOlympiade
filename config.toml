@@ -1,0 +1,23 @@
+# Jugendolympiade - Konfiguration
+# Diese Datei kann mit einem einfachen Texteditor (z. B. Notepad) bearbeitet werden.
+# Zeilen, die mit # beginnen, sind Kommentare und werden ignoriert.
+
+[veranstaltung]
+# Name der Veranstaltung (erscheint auf Urkunden und PDFs)
+name = "THW-JugendOlympiade"
+# Jahreszahl der Veranstaltung
+jahr = 2026
+
+[gruppen]
+# Maximale Anzahl Teilnehmer pro Gruppe
+max_groesse = 8
+
+[ergebnisse]
+# Kleinstes erlaubtes Ergebnis pro Station
+min_punkte = 100
+# Groesstes erlaubtes Ergebnis pro Station
+max_punkte = 1200
+
+[ausgabe]
+# Unterordner, in dem erzeugte PDFs gespeichert werden
+pdf_ordner = "pdfdocs"
