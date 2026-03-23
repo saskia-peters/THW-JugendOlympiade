@@ -13,6 +13,29 @@
     margin-bottom: 20px;
 }
 
+.evaluation-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-toggle-scores {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #f5a623 0%, #f0784a 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-toggle-scores:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
 .evaluation-title {
     margin: 0;
     color: #333;
@@ -76,9 +99,22 @@
     font-size: 16px;
 }
 
-/* Top 3 podium highlight */
+/* Winner highlight (Bester Ortsverband) */
 .podium-row {
     background: #fff3cd;
+    font-weight: bold;
+}
+
+.winner-badge {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 2px 8px;
+    background: #f0a500;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.82em;
+    font-weight: 600;
+    vertical-align: middle;
 }
 
 /* Statistics panel - defined in main styles.css, keeping for reference */

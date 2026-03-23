@@ -8,6 +8,7 @@ import (
 
 	"THW-JugendOlympiade/backend/config"
 	"THW-JugendOlympiade/backend/io"
+	"THW-JugendOlympiade/backend/models"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -40,6 +41,11 @@ func (a *App) startup(ctx context.Context) {
 	}
 	a.cfg = cfg
 	io.SetPDFOutputDir(cfg.Ausgabe.PDFOrdner)
+
+	// Apply configured database file name (non-empty; fall back to default)
+	if cfg.Ausgabe.DBName != "" {
+		models.DbFile = cfg.Ausgabe.DBName
+	}
 }
 
 // shutdown is called when the app is closing

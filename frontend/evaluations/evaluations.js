@@ -149,35 +149,39 @@ function renderOrtsverbandEvaluations(evaluations) {
     contentArea.className = 'evaluation-content';
     
     let html = '<div class="evaluation-header">';
-    html += '<h2 class="evaluation-title">🏆 Ortsverband Rangliste - Durchschnittsergebnisse</h2>';
+    html += '<h2 class="evaluation-title">🏆 Ortsverband Rangliste</h2>';
+    html += '<div class="evaluation-header-actions">';
+    html += '<button id="btnToggleScores" onclick="toggleOVScores()" class="btn-toggle-scores">🔒 Ergebnisse einblenden</button>';
     html += '<button onclick="handleGenerateOrtsverbandEvaluationPDF()" class="btn-pdf-generate">📄 PDF erstellen</button>';
+    html += '</div>';
     html += '</div>';
     
     // Evaluation table
-    html += '<table class="group-table evaluation-table">';
+    html += '<table class="group-table evaluation-table" id="ovEvalTable">';
     html += '<thead><tr>';
-    html += '<th class="col-rank">Rang</th>';
     html += '<th>Ortsverband</th>';
     html += '<th>Teilnehmende</th>';
-    html += '<th>Gesamtergebnis</th>';
-    html += '<th>Durchschnitt</th>';
+    html += '<th class="ov-score-col" style="display:none">Gesamtergebnis</th>';
+    html += '<th class="ov-score-col" style="display:none">Durchschnitt</th>';
     html += '</tr></thead><tbody>';
     
     evaluations.forEach((evalItem, index) => {
-        const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1) + '.';
-        const rowClass = index < 3 ? 'podium-row' : '';
+        const isWinner = index === 0;
+        const rowClass = isWinner ? 'podium-row' : '';
+        const nameCell = isWinner
+            ? '🏆 ' + escapeHtml(evalItem.Ortsverband) + ' <span class="winner-badge">Bester Ortsverband</span>'
+            : escapeHtml(evalItem.Ortsverband);
         html += '<tr class="' + rowClass + '">';
-        html += '<td class="rank-cell">' + rankEmoji + '</td>';
-        html += '<td class="ortsverband-cell">' + escapeHtml(evalItem.Ortsverband) + '</td>';
+        html += '<td class="ortsverband-cell">' + nameCell + '</td>';
         html += '<td class="text-center">' + evalItem.ParticipantCount + '</td>';
-        html += '<td class="text-center">' + evalItem.TotalScore + '</td>';
-        html += '<td class="average-score-cell">' + evalItem.AverageScore.toFixed(1) + '</td>';
+        html += '<td class="text-center ov-score-col" style="display:none">' + evalItem.TotalScore + '</td>';
+        html += '<td class="average-score-cell ov-score-col" style="display:none">' + evalItem.AverageScore.toFixed(1) + '</td>';
         html += '</tr>';
     });
     
     html += '</tbody></table>';
     
-    // Statistics panel
+    // Statistics panel — no scores shown here
     html += '<div class="stats-panel">';
     html += '<h3>📊 Gesamtstatistik</h3>';
     html += '<div class="stats-grid">';
@@ -186,31 +190,23 @@ function renderOrtsverbandEvaluations(evaluations) {
     html += '<strong>Ortsverbände gesamt</strong>';
     html += '<span>' + evaluations.length + '</span>';
     html += '</div>';
-    
-    // Highest average score
-    html += '<div class="stat-item">';
-    html += '<strong>Höchstes Durchschnittsergebnis</strong>';
-    html += '<span>' + evaluations[0].AverageScore.toFixed(1) + ' (' + escapeHtml(evaluations[0].Ortsverband) + ')</span>';
-    html += '</div>';
-    
-    // Lowest average score
-    const lastEval = evaluations[evaluations.length - 1];
-    html += '<div class="stat-item">';
-    html += '<strong>Niedrigstes Durchschnittsergebnis</strong>';
-    html += '<span>' + lastEval.AverageScore.toFixed(1) + ' (' + escapeHtml(lastEval.Ortsverband) + ')</span>';
-    html += '</div>';
-    
-    // Overall average score across all ortsverbände
-    const totalScore = evaluations.reduce((sum, e) => sum + e.TotalScore, 0);
+
     const totalParticipants = evaluations.reduce((sum, e) => sum + e.ParticipantCount, 0);
-    const overallAvg = totalParticipants > 0 ? (totalScore / totalParticipants).toFixed(1) : '0.0';
     html += '<div class="stat-item">';
-    html += '<strong>Gesamtdurchschnitt</strong>';
-    html += '<span>' + overallAvg + '</span>';
+    html += '<strong>Teilnehmende gesamt</strong>';
+    html += '<span>' + totalParticipants + '</span>';
     html += '</div>';
     
     html += '</div></div>';
     
     contentArea.innerHTML = html;
     tabContents.appendChild(contentArea);
+}
+
+export function toggleOVScores() {
+    const cols = document.querySelectorAll('.ov-score-col');
+    const btn = document.getElementById('btnToggleScores');
+    const hidden = cols.length > 0 && cols[0].style.display === 'none';
+    cols.forEach(el => { el.style.display = hidden ? '' : 'none'; });
+    btn.textContent = hidden ? '🔓 Ergebnisse ausblenden' : '🔒 Ergebnisse einblenden';
 }

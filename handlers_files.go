@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	iolib "io"
 	"os"
+	"path/filepath"
+	"time"
 
 	"THW-JugendOlympiade/backend/database"
 	"THW-JugendOlympiade/backend/io"
@@ -11,6 +14,116 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+// CheckStartup reports whether the configured database file already exists.
+// The frontend calls this on app-ready to decide whether to prompt the user.
+func (a *App) CheckStartup() map[string]interface{} {
+	_, err := os.Stat(models.DbFile)
+	exists := err == nil
+	return map[string]interface{}{
+		"exists": exists,
+		"dbName": models.DbFile,
+	}
+}
+
+// UseExistingDB opens the already-existing database without wiping it.
+// Call this when the user chooses to keep the existing data.
+func (a *App) UseExistingDB() map[string]interface{} {
+	if a.db != nil {
+		a.db.Close()
+		a.db = nil
+	}
+	db, err := database.OpenExistingDB()
+	if err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Datenbank konnte nicht geöffnet werden: %v", err),
+		}
+	}
+	a.db = db
+	// Count participants so the frontend can show the number
+	var count int
+	_ = a.db.QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&count)
+	return map[string]interface{}{
+		"status": "ok",
+		"count":  count,
+	}
+}
+
+// ResetToFreshDB backs up the existing database file, then initialises a
+// brand-new empty database.  Call this when the user chooses a clean start.
+func (a *App) ResetToFreshDB() map[string]interface{} {
+	if a.db != nil {
+		a.db.Close()
+		a.db = nil
+	}
+
+	// Backup existing file before wiping
+	backupPath := ""
+	if _, statErr := os.Stat(models.DbFile); statErr == nil {
+		backupDir := "dbbackups"
+		if err := os.MkdirAll(backupDir, 0755); err != nil {
+			return map[string]interface{}{
+				"status":  "error",
+				"message": fmt.Sprintf("Backup-Verzeichnis konnte nicht erstellt werden: %v", err),
+			}
+		}
+		timestamp := time.Now().Format("2006-01-02_15-04-05")
+		backupFilename := fmt.Sprintf("startup_backup_%s.db", timestamp)
+		backupPath = filepath.Join(backupDir, backupFilename)
+
+		src, err := os.Open(models.DbFile)
+		if err != nil {
+			return map[string]interface{}{
+				"status":  "error",
+				"message": fmt.Sprintf("Bestehende Datenbank konnte nicht geöffnet werden: %v", err),
+			}
+		}
+		dst, err := os.Create(backupPath)
+		if err != nil {
+			src.Close()
+			return map[string]interface{}{
+				"status":  "error",
+				"message": fmt.Sprintf("Backup-Datei konnte nicht erstellt werden: %v", err),
+			}
+		}
+		_, copyErr := iolib.Copy(dst, src)
+		dst.Sync()
+		dst.Close()
+		src.Close()
+		if copyErr != nil {
+			return map[string]interface{}{
+				"status":  "error",
+				"message": fmt.Sprintf("Backup konnte nicht geschrieben werden: %v", copyErr),
+			}
+		}
+
+		// Remove the original so InitDatabase creates a fresh one
+		if err := os.Remove(models.DbFile); err != nil {
+			return map[string]interface{}{
+				"status":  "error",
+				"message": fmt.Sprintf("Alte Datenbank konnte nicht entfernt werden: %v", err),
+			}
+		}
+	}
+
+	db, err := database.InitDatabase()
+	if err != nil {
+		// InitDatabase failed — restore file from backup if we made one
+		if backupPath != "" {
+			_ = os.Rename(backupPath, models.DbFile)
+		}
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Neue Datenbank konnte nicht erstellt werden: %v", err),
+		}
+	}
+	a.db = db
+	return map[string]interface{}{
+		"status":     "ok",
+		"backupPath": backupPath,
+	}
+}
 
 // CheckDB checks if the database has any data.
 func (a *App) CheckDB() map[string]interface{} {

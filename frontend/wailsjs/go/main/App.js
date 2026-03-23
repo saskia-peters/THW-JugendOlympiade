@@ -14,6 +14,10 @@ export function CheckDB() {
   return window['go']['main']['App']['CheckDB']();
 }
 
+export function CheckStartup() {
+  return window['go']['main']['App']['CheckStartup']();
+}
+
 export function DistributeGroups() {
   return window['go']['main']['App']['DistributeGroups']();
 }
@@ -70,6 +74,10 @@ export function LoadFile() {
   return window['go']['main']['App']['LoadFile']();
 }
 
+export function ResetToFreshDB() {
+  return window['go']['main']['App']['ResetToFreshDB']();
+}
+
 export function RestoreDatabase(arg1) {
   return window['go']['main']['App']['RestoreDatabase'](arg1);
 }
@@ -84,4 +92,8 @@ export function ShowGroups() {
 
 export function ShowStations() {
   return window['go']['main']['App']['ShowStations']();
+}
+
+export function UseExistingDB() {
+  return window['go']['main']['App']['UseExistingDB']();
 }

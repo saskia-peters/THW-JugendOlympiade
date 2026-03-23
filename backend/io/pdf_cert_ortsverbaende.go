@@ -77,7 +77,7 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int) error {
 }
 
 // ovRenderWinner renders the Siegerurkunde for the best Ortsverband.
-// ov_winner_image.png (60 mm wide, centred; height auto from aspect ratio)
+// ov_winner_image.png (90 mm wide, centred; height auto from aspect ratio)
 // is placed above the "Bester Ortsverband" text.
 //
 // Vertical layout (y in mm):
@@ -86,10 +86,10 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int) error {
 //	 44  year
 //	 62  "Siegerurkunde"
 //	 78  ortsverband name
-//	108  ov_winner_image.png  (60 mm wide, centred)
-//	173  "Bester Ortsverband" (gold)
-//	192  "Teilnehmende" section label
-//	202  participant list
+//	105  ov_winner_image.png  (90 mm wide, centred)
+//	185  "Bester Ortsverband" (gold)
+//	200  "Teilnehmende" section label
+//	210  participant list
 func ovRenderWinner(pdf *gofpdf.Fpdf, theme PDFTheme, ortsverband string, participants []string, year int) {
 	const left = ovMarginLR
 	const w = ovContentW
@@ -114,21 +114,21 @@ func ovRenderWinner(pdf *gofpdf.Fpdf, theme PDFTheme, ortsverband string, partic
 	theme.TextColor(pdf, theme.ColorText)
 	pdf.CellFormat(w, 14, enc(ortsverband), "", 0, "C", false, 0, "")
 
-	// Winner image: centred horizontally, 60 mm wide, height from aspect ratio.
-	const imgW = 60.0
-	pdf.Image("ov_winner_image.png", (ovPageW-imgW)/2, 108, imgW, 0, false, "", 0, "")
+	// Winner image: centred horizontally, 90 mm wide, height from aspect ratio.
+	const imgW = 90.0
+	pdf.Image("ov_winner_image.png", (ovPageW-imgW)/2, 105, imgW, 0, false, "", 0, "")
 
-	pdf.SetXY(left, 173)
+	pdf.SetXY(left, 185)
 	theme.Font(pdf, "B", theme.SizeCertRank)
 	theme.TextColor(pdf, theme.ColorAccent)
 	pdf.CellFormat(w, 14, "Bester Ortsverband", "", 0, "C", false, 0, "")
 
-	pdf.SetXY(left, 192)
+	pdf.SetXY(left, 200)
 	theme.Font(pdf, "B", theme.SizeCertLabel)
 	theme.TextColor(pdf, theme.ColorText)
 	pdf.CellFormat(w, 8, "Teilnehmende", "", 0, "C", false, 0, "")
 
-	ovParticipantsList(pdf, theme, participants, left, w, 202)
+	ovParticipantsList(pdf, theme, participants, left, w, 210)
 }
 
 // ovRenderParticipant renders the standard participation Urkunde.

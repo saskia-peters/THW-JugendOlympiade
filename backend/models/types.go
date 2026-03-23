@@ -1,13 +1,16 @@
 package models
 
 const (
-	DbFile              = "data.db"
 	SheetName           = "Teilnehmende"
 	BetreuendeSheetName = "Betreuende"
 	StationsSheetName   = "Stationen"
 	TableName           = "teilnehmende"
 	MaxGroupSize        = 8
 )
+
+// DbFile is the path to the SQLite database file.
+// It is set at startup from config and defaults to "data.db".
+var DbFile = "data.db"
 
 // Teilnehmende represents a participant
 type Teilnehmende struct {

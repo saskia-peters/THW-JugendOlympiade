@@ -21,3 +21,6 @@ max_punkte = 1200
 [ausgabe]
 # Unterordner, in dem erzeugte PDFs gespeichert werden
 pdf_ordner = "pdfdocs"
+# Dateiname der SQLite-Datenbank (Standard: data.db)
+# Nützlich, um verschiedene Veranstaltungen getrennt zu halten.
+db_name = "data.db"

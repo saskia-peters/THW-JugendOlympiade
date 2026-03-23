@@ -33,6 +33,7 @@ type ErgebnisseConfig struct {
 
 type AusgabeConfig struct {
 	PDFOrdner string `toml:"pdf_ordner"`
+	DBName    string `toml:"db_name"`
 }
 
 // Default returns the factory default configuration.
@@ -51,6 +52,7 @@ func Default() Config {
 		},
 		Ausgabe: AusgabeConfig{
 			PDFOrdner: "pdfdocs",
+			DBName:    "data.db",
 		},
 	}
 }
@@ -93,6 +95,9 @@ max_punkte = 1200
 [ausgabe]
 # Unterordner, in dem erzeugte PDFs gespeichert werden
 pdf_ordner = "pdfdocs"
+# Dateiname der SQLite-Datenbank (Standard: data.db)
+# Nützlich, um verschiedene Veranstaltungen getrennt zu halten.
+db_name = "data.db"
 `
 
 func writeDefault() error {

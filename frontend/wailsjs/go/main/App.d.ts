@@ -7,6 +7,8 @@ export function BackupDatabase():Promise<Record<string, any>>;
 
 export function CheckDB():Promise<Record<string, any>>;
 
+export function CheckStartup():Promise<Record<string, any>>;
+
 export function DistributeGroups():Promise<Record<string, any>>;
 
 export function GenerateGroupEvaluationPDF():Promise<Record<string, any>>;
@@ -35,6 +37,8 @@ export function ListBackups():Promise<Record<string, any>>;
 
 export function LoadFile():Promise<Record<string, any>>;
 
+export function ResetToFreshDB():Promise<Record<string, any>>;
+
 export function RestoreDatabase(arg1:string):Promise<Record<string, any>>;
 
 export function SaveConfigRaw(arg1:string):Promise<Record<string, any>>;
@@ -42,3 +46,5 @@ export function SaveConfigRaw(arg1:string):Promise<Record<string, any>>;
 export function ShowGroups():Promise<Record<string, any>>;
 
 export function ShowStations():Promise<Record<string, any>>;
+
+export function UseExistingDB():Promise<Record<string, any>>;

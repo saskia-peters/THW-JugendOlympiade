@@ -201,8 +201,8 @@ func certMembersTable(pdf *gofpdf.Fpdf, theme PDFTheme, members []models.Teilneh
 
 	// Header row
 	theme.Font(pdf, "B", theme.SizeCertTableHeader)
-	theme.FillColor(pdf, theme.ColorTableHeader)
-	theme.TextColor(pdf, theme.ColorText)
+	theme.FillColor(pdf, theme.ColorCertTableHeader)
+	theme.TextColor(pdf, theme.ColorOnHeader)
 	for i, header := range []string{"Name", "Ortsverband"} {
 		pdf.CellFormat(colWidths[i], 8, header, "1", 0, "C", true, 0, "")
 	}
@@ -210,12 +210,17 @@ func certMembersTable(pdf *gofpdf.Fpdf, theme PDFTheme, members []models.Teilneh
 
 	// Data rows
 	theme.Font(pdf, "", theme.SizeCertTableBody)
-	theme.FillColor(pdf, theme.ColorTableRowAlt)
+	theme.TextColor(pdf, theme.ColorText)
 	for i, m := range members {
 		fill := i%2 == 0
+		if fill {
+			theme.FillColor(pdf, theme.ColorCertTableRowAlt)
+		} else {
+			theme.FillColor(pdf, [3]int{255, 255, 255})
+		}
 		pdf.SetX(left)
-		pdf.CellFormat(colWidths[0], 7, enc(m.Name), "1", 0, "L", fill, 0, "")
-		pdf.CellFormat(colWidths[1], 7, enc(m.Ortsverband), "1", 0, "L", fill, 0, "")
+		pdf.CellFormat(colWidths[0], 7, enc(m.Name), "1", 0, "C", fill, 0, "")
+		pdf.CellFormat(colWidths[1], 7, enc(m.Ortsverband), "1", 0, "C", fill, 0, "")
 		pdf.Ln(-1)
 	}
 }

@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 
 	"THW-JugendOlympiade/backend/models"
@@ -13,6 +14,23 @@ import (
 // TrimSpace removes leading and trailing whitespace
 func TrimSpace(s string) string {
 	return strings.TrimSpace(s)
+}
+
+// OpenExistingDB opens an already-initialised database file (read/write, no DDL,
+// no data wipe). Returns an error if the file does not exist or cannot be opened.
+func OpenExistingDB() (*sql.DB, error) {
+	if _, err := os.Stat(models.DbFile); os.IsNotExist(err) {
+		return nil, fmt.Errorf("database file not found: %s", models.DbFile)
+	}
+	db, err := sql.Open("sqlite", models.DbFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open existing database: %w", err)
+	}
+	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
+	}
+	return db, nil
 }
 
 // InitDatabase creates the SQLite database and tables

@@ -40,6 +40,10 @@ type PDFTheme struct {
 	ColorTableHeader    [3]int // Plain grey header background
 	ColorTableRowAlt    [3]int // Alternating row background
 	ColorTableHighlight [3]int // Top-3 row highlight
+
+	// Certificate members table colors (blue-tinted to match background)
+	ColorCertTableHeader [3]int // Header row fill for the cert members table
+	ColorCertTableRowAlt [3]int // Alternating row fill for the cert members table
 }
 
 // DefaultTheme is the active theme used by all PDF generators.
@@ -77,6 +81,10 @@ var DefaultTheme = PDFTheme{
 	ColorTableHeader:    [3]int{200, 200, 200},
 	ColorTableRowAlt:    [3]int{240, 240, 240},
 	ColorTableHighlight: [3]int{255, 243, 205},
+
+	// Certificate members table — blue tones matching the certificate background
+	ColorCertTableHeader: [3]int{102, 126, 234}, // same as ColorPrimary
+	ColorCertTableRowAlt: [3]int{220, 226, 249}, // light tint of the same blue
 }
 
 // Font sets the font on pdf using this theme's font family.
