@@ -33,7 +33,7 @@ export async function openFileDialog() {
             tabs.style.display = 'none';
             btnBackup.disabled = false;
             ausgabeDropdown.removeAttribute('open');
-            output.textContent = `✔ ${uploadResult.count} Teilnehmende geladen.\n\nNächster Schritt:\n• Klicken Sie auf "Teilnehmende zu Gruppen" um ausgewogene Gruppen zu erstellen`;
+            output.textContent = `✔ ${uploadResult.count} Teilnehmende geladen.\n\nNächster Schritt:\n• Klicken Sie auf "Gruppen zusammenstellen" um ausgewogene Gruppen zu erstellen`;
             
             // Collapse Admin and expand Daten
             const adminDropdown = document.querySelector('.button-section:nth-child(1) .category-dropdown');
