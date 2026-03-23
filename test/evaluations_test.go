@@ -43,7 +43,7 @@ func TestGetGroupEvaluations_StationCount(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -88,8 +88,8 @@ func TestGetGroupEvaluations_TieBrokenByGroupID(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestGetOrtsverbandEvaluations_NoScoresAssigned(t *testing.T) {
 		t.Fatalf("InsertData failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -179,7 +179,7 @@ func TestGetOrtsverbandEvaluations_AverageCalculation(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -229,8 +229,8 @@ func TestGetOrtsverbandEvaluations_RankedByAverageDescending(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}, {TeilnehmerID: 3}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}, {TeilnehmendeID: 3}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}

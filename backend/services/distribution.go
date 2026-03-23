@@ -14,17 +14,17 @@ import (
 // maxGroupSize controls the maximum number of participants per group.
 func CreateBalancedGroups(db *sql.DB, maxGroupSize int) error {
 	// Read all participants from database
-	teilnehmers, err := database.GetAllTeilnehmers(db)
+	teilnehmende, err := database.GetAllTeilnehmende(db)
 	if err != nil {
-		return fmt.Errorf("failed to read teilnehmers: %w", err)
+		return fmt.Errorf("failed to read teilnehmende: %w", err)
 	}
 
-	if len(teilnehmers) == 0 {
+	if len(teilnehmende) == 0 {
 		return nil // No participants to group
 	}
 
 	// Create balanced groups using the distribution algorithm
-	groups := distributeIntoGroups(teilnehmers, maxGroupSize)
+	groups := distributeIntoGroups(teilnehmende, maxGroupSize)
 
 	// Save groups to database
 	if err := database.SaveGroups(db, groups); err != nil {
@@ -45,23 +45,23 @@ func CreateBalancedGroups(db *sql.DB, maxGroupSize int) error {
 
 	fmt.Printf("Created %d groups with balanced distribution\n", len(groups))
 	for i, group := range groups {
-		fmt.Printf("  Group %d: %d participants\n", i+1, len(group.Teilnehmers))
+		fmt.Printf("  Group %d: %d participants\n", i+1, len(group.Teilnehmende))
 	}
 
 	return nil
 }
 
 // distributeIntoGroups distributes participants into balanced groups
-func distributeIntoGroups(teilnehmers []models.Teilnehmer, maxGroupSize int) []models.Group {
-	if len(teilnehmers) == 0 {
+func distributeIntoGroups(teilnehmende []models.Teilnehmende, maxGroupSize int) []models.Group {
+	if len(teilnehmende) == 0 {
 		return nil
 	}
 
 	// Step 1: Separate participants with and without PreGroup
-	preGroupMap := make(map[string][]models.Teilnehmer)
-	var unassignedParticipants []models.Teilnehmer
+	preGroupMap := make(map[string][]models.Teilnehmende)
+	var unassignedParticipants []models.Teilnehmende
 
-	for _, t := range teilnehmers {
+	for _, t := range teilnehmende {
 		if t.PreGroup != "" {
 			preGroupMap[t.PreGroup] = append(preGroupMap[t.PreGroup], t)
 		} else {
@@ -86,7 +86,7 @@ func distributeIntoGroups(teilnehmers []models.Teilnehmer, maxGroupSize int) []m
 	for i := range groups {
 		groups[i] = models.Group{
 			GroupID:      i + 1,
-			Teilnehmers:  make([]models.Teilnehmer, 0, maxGroupSize),
+			Teilnehmende:  make([]models.Teilnehmende, 0, maxGroupSize),
 			Ortsverbands: make(map[string]int),
 			Geschlechts:  make(map[string]int),
 		}
@@ -97,7 +97,7 @@ func distributeIntoGroups(teilnehmers []models.Teilnehmer, maxGroupSize int) []m
 	for _, preGroupMembers := range preGroupMap {
 		// Add all members of this pre-group to the current group
 		for _, t := range preGroupMembers {
-			addTeilnehmerToGroup(&groups[groupIdx], t)
+			addTeilnehmendeToGroup(&groups[groupIdx], t)
 		}
 		groupIdx++
 	}
@@ -115,30 +115,30 @@ func distributeIntoGroups(teilnehmers []models.Teilnehmer, maxGroupSize int) []m
 	})
 
 	// Step 6: Distribute unassigned participants using round-robin with diversity scoring
-	for _, teilnehmer := range unassignedParticipants {
-		bestGroupIdx := findBestGroup(groups, teilnehmer, maxGroupSize)
-		addTeilnehmerToGroup(&groups[bestGroupIdx], teilnehmer)
+	for _, tn := range unassignedParticipants {
+		bestGroupIdx := findBestGroup(groups, tn, maxGroupSize)
+		addTeilnehmendeToGroup(&groups[bestGroupIdx], tn)
 	}
 
 	return groups
 }
 
 // findBestGroup finds the best group for a participant based on diversity
-func findBestGroup(groups []models.Group, teilnehmer models.Teilnehmer, maxGroupSize int) int {
+func findBestGroup(groups []models.Group, tn models.Teilnehmende, maxGroupSize int) int {
 	bestIdx := 0
 	bestScore := math.MaxFloat64
 
 	for i, group := range groups {
 		// Skip if group is full
-		if len(group.Teilnehmers) >= maxGroupSize {
+		if len(group.Teilnehmende) >= maxGroupSize {
 			continue
 		}
 
 		// Calculate diversity score (lower is better)
-		score := calculateDiversityScore(group, teilnehmer)
+		score := calculateDiversityScore(group, tn)
 
 		// Prefer groups with fewer members
-		sizeBonus := float64(len(group.Teilnehmers)) * 0.5
+		sizeBonus := float64(len(group.Teilnehmende)) * 0.5
 
 		totalScore := score + sizeBonus
 
@@ -153,25 +153,25 @@ func findBestGroup(groups []models.Group, teilnehmer models.Teilnehmer, maxGroup
 
 // calculateDiversityScore calculates how well a participant fits in a group
 // Lower score means better diversity
-func calculateDiversityScore(group models.Group, teilnehmer models.Teilnehmer) float64 {
-	if len(group.Teilnehmers) == 0 {
+func calculateDiversityScore(group models.Group, tn models.Teilnehmende) float64 {
+	if len(group.Teilnehmende) == 0 {
 		return 0
 	}
 
 	score := 0.0
 
 	// Penalize if Ortsverband is already common in the group
-	ortsverbandCount := group.Ortsverbands[teilnehmer.Ortsverband]
+	ortsverbandCount := group.Ortsverbands[tn.Ortsverband]
 	score += float64(ortsverbandCount) * 2.0
 
 	// Penalize if Geschlecht is already common in the group
-	geschlechtCount := group.Geschlechts[teilnehmer.Geschlecht]
+	geschlechtCount := group.Geschlechts[tn.Geschlecht]
 	score += float64(geschlechtCount) * 1.5
 
 	// Penalize if Alter is too similar to group average
-	if len(group.Teilnehmers) > 0 && teilnehmer.Alter > 0 {
-		avgAlter := float64(group.AlterSum) / float64(len(group.Teilnehmers))
-		alterDiff := math.Abs(float64(teilnehmer.Alter) - avgAlter)
+	if len(group.Teilnehmende) > 0 && tn.Alter > 0 {
+		avgAlter := float64(group.AlterSum) / float64(len(group.Teilnehmende))
+		alterDiff := math.Abs(float64(tn.Alter) - avgAlter)
 		if alterDiff < 2 {
 			score += 1.0
 		}
@@ -180,9 +180,9 @@ func calculateDiversityScore(group models.Group, teilnehmer models.Teilnehmer) f
 	return score
 }
 
-// addTeilnehmerToGroup adds a participant to the group and updates statistics
-func addTeilnehmerToGroup(g *models.Group, t models.Teilnehmer) {
-	g.Teilnehmers = append(g.Teilnehmers, t)
+// addTeilnehmendeToGroup adds a participant to the group and updates statistics
+func addTeilnehmendeToGroup(g *models.Group, t models.Teilnehmende) {
+	g.Teilnehmende = append(g.Teilnehmende, t)
 	g.Ortsverbands[t.Ortsverband]++
 	g.Geschlechts[t.Geschlecht]++
 	g.AlterSum += t.Alter

@@ -34,7 +34,7 @@ func TestAssignGroupStationScore_NewScore(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -87,7 +87,7 @@ func TestAssignGroupStationScore_UpdateScore(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -159,7 +159,7 @@ func TestAssignGroupStationScore_MultipleStations(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -224,9 +224,9 @@ func TestAssignGroupStationScore_MultipleGroups(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
-		{GroupID: 3, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 3}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
+		{GroupID: 3, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 3}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -289,7 +289,7 @@ func TestAssignGroupStationScore_ZeroScore(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -344,9 +344,9 @@ func TestGetGroupEvaluations(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
-		{GroupID: 3, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 3}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
+		{GroupID: 3, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 3}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -432,9 +432,9 @@ func TestGetOrtsverbandEvaluations(t *testing.T) {
 
 	// Create groups with mixed ortsverbands
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}, {TeilnehmerID: 3}}}, // Berlin + Hamburg
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}, {TeilnehmerID: 4}}}, // Berlin + Hamburg
-		{GroupID: 3, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 5}}},                    // München
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}, {TeilnehmendeID: 3}}}, // Berlin + Hamburg
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}, {TeilnehmendeID: 4}}}, // Berlin + Hamburg
+		{GroupID: 3, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 5}}},                    // München
 	}
 
 	err = database.SaveGroups(db, groups)

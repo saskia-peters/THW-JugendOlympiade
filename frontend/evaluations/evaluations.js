@@ -158,7 +158,7 @@ function renderOrtsverbandEvaluations(evaluations) {
     html += '<thead><tr>';
     html += '<th class="col-rank">Rang</th>';
     html += '<th>Ortsverband</th>';
-    html += '<th>Teilnehmer</th>';
+    html += '<th>Teilnehmende</th>';
     html += '<th>Gesamtergebnis</th>';
     html += '<th>Durchschnitt</th>';
     html += '</tr></thead><tbody>';

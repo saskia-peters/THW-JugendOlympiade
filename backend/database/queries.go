@@ -6,29 +6,29 @@ import (
 	"THW-JugendOlympiade/backend/models"
 )
 
-// GetAllTeilnehmers reads all participants from the database
-func GetAllTeilnehmers(db *sql.DB) ([]models.Teilnehmer, error) {
-	rows, err := db.Query("SELECT id, teilnehmer_id, name, ortsverband, age, geschlecht, pregroup FROM teilnehmer ORDER BY id")
+// GetAllTeilnehmende reads all participants from the database
+func GetAllTeilnehmende(db *sql.DB) ([]models.Teilnehmende, error) {
+	rows, err := db.Query("SELECT id, teilnehmer_id, name, ortsverband, age, geschlecht, pregroup FROM teilnehmende ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var teilnehmers []models.Teilnehmer
+	var teilnehmende []models.Teilnehmende
 	for rows.Next() {
-		var t models.Teilnehmer
+		var t models.Teilnehmende
 		var alter sql.NullInt64
-		err := rows.Scan(&t.ID, &t.TeilnehmerID, &t.Name, &t.Ortsverband, &alter, &t.Geschlecht, &t.PreGroup)
+		err := rows.Scan(&t.ID, &t.TeilnehmendeID, &t.Name, &t.Ortsverband, &alter, &t.Geschlecht, &t.PreGroup)
 		if err != nil {
 			return nil, err
 		}
 		if alter.Valid {
 			t.Alter = int(alter.Int64)
 		}
-		teilnehmers = append(teilnehmers, t)
+		teilnehmende = append(teilnehmende, t)
 	}
 
-	return teilnehmers, rows.Err()
+	return teilnehmende, rows.Err()
 }
 
 // GetGroupsForReport retrieves all groups with their participants from the database
@@ -37,7 +37,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 	query := `
 		SELECT r.group_id, t.id, t.teilnehmer_id, t.name, t.ortsverband, t.age, t.geschlecht, t.pregroup
 		FROM gruppe r
-		INNER JOIN teilnehmer t ON t.teilnehmer_id = r.teilnehmer_id
+		INNER JOIN teilnehmende t ON t.teilnehmer_id = r.teilnehmer_id
 		ORDER BY r.group_id, t.name
 	`
 
@@ -53,10 +53,10 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 
 	for rows.Next() {
 		var groupID int
-		var t models.Teilnehmer
+		var t models.Teilnehmende
 		var alter sql.NullInt64
 
-		err := rows.Scan(&groupID, &t.ID, &t.TeilnehmerID, &t.Name, &t.Ortsverband, &alter, &t.Geschlecht, &t.PreGroup)
+		err := rows.Scan(&groupID, &t.ID, &t.TeilnehmendeID, &t.Name, &t.Ortsverband, &alter, &t.Geschlecht, &t.PreGroup)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 		if !exists {
 			group = &models.Group{
 				GroupID:      groupID,
-				Teilnehmers:  make([]models.Teilnehmer, 0),
+				Teilnehmende: make([]models.Teilnehmende, 0),
 				Ortsverbands: make(map[string]int),
 				Geschlechts:  make(map[string]int),
 			}
@@ -79,7 +79,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 		}
 
 		// Add participant to group
-		group.Teilnehmers = append(group.Teilnehmers, t)
+		group.Teilnehmende = append(group.Teilnehmende, t)
 
 		// Update group statistics
 		group.Ortsverbands[t.Ortsverband]++

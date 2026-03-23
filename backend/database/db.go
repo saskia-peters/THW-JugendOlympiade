@@ -26,9 +26,9 @@ func InitDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
 
-	// Create teilnehmer table
+	// Create teilnehmende table
 	createTableSQL := `
-	CREATE TABLE IF NOT EXISTS teilnehmer (
+	CREATE TABLE IF NOT EXISTS teilnehmende (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		teilnehmer_id INTEGER UNIQUE,
 		name TEXT,
@@ -49,7 +49,7 @@ func InitDatabase() (*sql.DB, error) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		group_id INTEGER NOT NULL,
 		teilnehmer_id INTEGER UNIQUE NOT NULL,
-		FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id)
+		FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmende(teilnehmer_id)
 	);`
 
 	_, err = db.Exec(createGruppeTableSQL)
@@ -114,7 +114,7 @@ func InitDatabase() (*sql.DB, error) {
 	}
 
 	// Clear existing data
-	_, err = db.Exec("DELETE FROM teilnehmer")
+	_, err = db.Exec("DELETE FROM teilnehmende")
 	if err != nil {
 		return nil, fmt.Errorf("failed to clear table: %w", err)
 	}

@@ -20,7 +20,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 
 	// Create all tables using the same schema as InitDatabase but without calling it
 	tables := []string{
-		`CREATE TABLE IF NOT EXISTS teilnehmer (
+		`CREATE TABLE IF NOT EXISTS teilnehmende (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			teilnehmer_id INTEGER UNIQUE,
 			name TEXT,
@@ -33,7 +33,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			group_id INTEGER NOT NULL,
 			teilnehmer_id INTEGER UNIQUE NOT NULL,
-			FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmer(teilnehmer_id)
+			FOREIGN KEY (teilnehmer_id) REFERENCES teilnehmende(teilnehmer_id)
 		)`,
 
 		`CREATE TABLE IF NOT EXISTS stations (
@@ -86,7 +86,7 @@ func TestInitDatabase(t *testing.T) {
 	defer teardownTestDB(t, db)
 
 	// Verify tables exist by querying sqlite_master
-	tables := []string{"teilnehmer", "gruppe", "stations", "group_station_scores"}
+	tables := []string{"teilnehmende", "gruppe", "stations", "group_station_scores"}
 
 	for _, tableName := range tables {
 		var count int
@@ -166,7 +166,7 @@ func TestInsertData(t *testing.T) {
 
 	// Verify data was inserted
 	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM teilnehmer").Scan(&count)
+	err = db.QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&count)
 	if err != nil {
 		t.Fatalf("Failed to count participants: %v", err)
 	}
@@ -178,7 +178,7 @@ func TestInsertData(t *testing.T) {
 	// Verify specific participant
 	var name, ortsverband, geschlecht string
 	var age int
-	err = db.QueryRow("SELECT name, ortsverband, age, geschlecht FROM teilnehmer WHERE teilnehmer_id = 1").Scan(&name, &ortsverband, &age, &geschlecht)
+	err = db.QueryRow("SELECT name, ortsverband, age, geschlecht FROM teilnehmende WHERE teilnehmer_id = 1").Scan(&name, &ortsverband, &age, &geschlecht)
 	if err != nil {
 		t.Fatalf("Failed to query participant: %v", err)
 	}
@@ -208,7 +208,7 @@ func TestInsertData_EmptyRows(t *testing.T) {
 
 	// Verify no data was inserted
 	var count int
-	err = db.QueryRow("SELECT COUNT(*) FROM teilnehmer").Scan(&count)
+	err = db.QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&count)
 	if err != nil {
 		t.Fatalf("Failed to count participants: %v", err)
 	}
@@ -259,8 +259,8 @@ func TestInsertStations(t *testing.T) {
 	}
 }
 
-// TestGetAllTeilnehmers tests retrieving all participants
-func TestGetAllTeilnehmers(t *testing.T) {
+// TestGetAllTeilnehmende tests retrieving all participants
+func TestGetAllTeilnehmende(t *testing.T) {
 	db := setupTestDB(t)
 	defer teardownTestDB(t, db)
 
@@ -277,36 +277,36 @@ func TestGetAllTeilnehmers(t *testing.T) {
 	}
 
 	// Get all participants
-	teilnehmers, err := database.GetAllTeilnehmers(db)
+	teilnehmende, err := database.GetAllTeilnehmende(db)
 	if err != nil {
-		t.Fatalf("GetAllTeilnehmers failed: %v", err)
+		t.Fatalf("GetAllTeilnehmende failed: %v", err)
 	}
 
-	if len(teilnehmers) != 2 {
-		t.Errorf("Expected 2 participants, got %d", len(teilnehmers))
+	if len(teilnehmende) != 2 {
+		t.Errorf("Expected 2 participants, got %d", len(teilnehmende))
 	}
 
 	// Verify first participant
-	if teilnehmers[0].Name != "Max Mustermann" {
-		t.Errorf("Expected first participant 'Max Mustermann', got %s", teilnehmers[0].Name)
+	if teilnehmende[0].Name != "Max Mustermann" {
+		t.Errorf("Expected first participant 'Max Mustermann', got %s", teilnehmende[0].Name)
 	}
-	if teilnehmers[0].Alter != 25 {
-		t.Errorf("Expected age 25, got %d", teilnehmers[0].Alter)
+	if teilnehmende[0].Alter != 25 {
+		t.Errorf("Expected age 25, got %d", teilnehmende[0].Alter)
 	}
 }
 
-// TestGetAllTeilnehmers_EmptyDatabase tests retrieving from empty database
-func TestGetAllTeilnehmers_EmptyDatabase(t *testing.T) {
+// TestGetAllTeilnehmende_EmptyDatabase tests retrieving from empty database
+func TestGetAllTeilnehmende_EmptyDatabase(t *testing.T) {
 	db := setupTestDB(t)
 	defer teardownTestDB(t, db)
 
-	teilnehmers, err := database.GetAllTeilnehmers(db)
+	teilnehmende, err := database.GetAllTeilnehmende(db)
 	if err != nil {
-		t.Fatalf("GetAllTeilnehmers failed: %v", err)
+		t.Fatalf("GetAllTeilnehmende failed: %v", err)
 	}
 
-	if len(teilnehmers) != 0 {
-		t.Errorf("Expected 0 participants, got %d", len(teilnehmers))
+	if len(teilnehmende) != 0 {
+		t.Errorf("Expected 0 participants, got %d", len(teilnehmende))
 	}
 }
 
@@ -333,16 +333,16 @@ func TestSaveGroups(t *testing.T) {
 	groups := []models.Group{
 		{
 			GroupID: 1,
-			Teilnehmers: []models.Teilnehmer{
-				{TeilnehmerID: 1, Name: "Max Mustermann"},
-				{TeilnehmerID: 2, Name: "Anna Schmidt"},
+			Teilnehmende: []models.Teilnehmende{
+				{TeilnehmendeID: 1, Name: "Max Mustermann"},
+				{TeilnehmendeID: 2, Name: "Anna Schmidt"},
 			},
 		},
 		{
 			GroupID: 2,
-			Teilnehmers: []models.Teilnehmer{
-				{TeilnehmerID: 3, Name: "Tom Meyer"},
-				{TeilnehmerID: 4, Name: "Lisa Weber"},
+			Teilnehmende: []models.Teilnehmende{
+				{TeilnehmendeID: 3, Name: "Tom Meyer"},
+				{TeilnehmendeID: 4, Name: "Lisa Weber"},
 			},
 		},
 	}
@@ -388,15 +388,15 @@ func TestGetGroupsForReport(t *testing.T) {
 	groups := []models.Group{
 		{
 			GroupID: 1,
-			Teilnehmers: []models.Teilnehmer{
-				{TeilnehmerID: 1},
-				{TeilnehmerID: 2},
+			Teilnehmende: []models.Teilnehmende{
+				{TeilnehmendeID: 1},
+				{TeilnehmendeID: 2},
 			},
 		},
 		{
 			GroupID: 2,
-			Teilnehmers: []models.Teilnehmer{
-				{TeilnehmerID: 3},
+			Teilnehmende: []models.Teilnehmende{
+				{TeilnehmendeID: 3},
 			},
 		},
 	}
@@ -417,13 +417,13 @@ func TestGetGroupsForReport(t *testing.T) {
 	}
 
 	// Verify first group
-	if len(retrievedGroups[0].Teilnehmers) != 2 {
-		t.Errorf("Expected 2 participants in group 1, got %d", len(retrievedGroups[0].Teilnehmers))
+	if len(retrievedGroups[0].Teilnehmende) != 2 {
+		t.Errorf("Expected 2 participants in group 1, got %d", len(retrievedGroups[0].Teilnehmende))
 	}
 
 	// Verify second group
-	if len(retrievedGroups[1].Teilnehmers) != 1 {
-		t.Errorf("Expected 1 participant in group 2, got %d", len(retrievedGroups[1].Teilnehmers))
+	if len(retrievedGroups[1].Teilnehmende) != 1 {
+		t.Errorf("Expected 1 participant in group 2, got %d", len(retrievedGroups[1].Teilnehmende))
 	}
 }
 
@@ -445,8 +445,8 @@ func TestGetAllGroupIDs(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
 	}
 
 	err = database.SaveGroups(db, groups)
@@ -498,7 +498,7 @@ func TestGetStationsForReport(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}
 
 	err = database.SaveGroups(db, groups)

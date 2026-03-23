@@ -56,7 +56,7 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		// Participant count
 		theme.Font(pdf, "", theme.SizeBody)
 		theme.TextColor(pdf, theme.ColorSubtext)
-		pdf.CellFormat(0, 8, fmt.Sprintf("Anzahl Teilnehmer: %d", len(group.Teilnehmers)), "", 1, "L", false, 0, "")
+		pdf.CellFormat(0, 8, fmt.Sprintf("Anzahl Teilnehmende: %d", len(group.Teilnehmende)), "", 1, "L", false, 0, "")
 		pdf.Ln(3)
 
 		// Table header
@@ -74,7 +74,7 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		theme.Font(pdf, "", theme.SizeBody)
 		theme.FillColor(pdf, theme.ColorTableRowAlt)
 
-		for i, t := range group.Teilnehmers {
+		for i, t := range group.Teilnehmende {
 			fill := i%2 == 0
 			pdf.CellFormat(colWidths[0], 9, enc(t.Name), "1", 0, "L", fill, 0, "")
 			pdf.CellFormat(colWidths[1], 9, enc(t.Ortsverband), "1", 0, "L", fill, 0, "")
@@ -91,7 +91,7 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		ortsverbandStats := make(map[string]int)
 		geschlechtStats := make(map[string]int)
 		alterSum, alterCount := 0, 0
-		for _, t := range group.Teilnehmers {
+		for _, t := range group.Teilnehmende {
 			ortsverbandStats[t.Ortsverband]++
 			geschlechtStats[t.Geschlecht]++
 			if t.Alter > 0 {

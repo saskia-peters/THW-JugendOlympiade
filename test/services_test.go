@@ -57,7 +57,7 @@ func TestCreateBalancedGroups_AllParticipantsAssigned(t *testing.T) {
 
 	total := 0
 	for _, g := range groups {
-		total += len(g.Teilnehmers)
+		total += len(g.Teilnehmende)
 	}
 	if total != 10 {
 		t.Errorf("expected all 10 participants assigned to groups, got %d", total)
@@ -135,9 +135,9 @@ func TestCreateBalancedGroups_NoGroupExceedsMaxSize(t *testing.T) {
 	}
 
 	for _, g := range groups {
-		if len(g.Teilnehmers) > models.MaxGroupSize {
+		if len(g.Teilnehmende) > models.MaxGroupSize {
 			t.Errorf("group %d has %d participants, exceeds max %d",
-				g.GroupID, len(g.Teilnehmers), models.MaxGroupSize)
+				g.GroupID, len(g.Teilnehmende), models.MaxGroupSize)
 		}
 	}
 }
@@ -172,7 +172,7 @@ func TestCreateBalancedGroups_PreGroupMembersStayTogether(t *testing.T) {
 	// All 5 participants must be grouped
 	total := 0
 	for _, g := range groups {
-		total += len(g.Teilnehmers)
+		total += len(g.Teilnehmende)
 	}
 	if total != 5 {
 		t.Errorf("expected 5 participants in groups, got %d", total)
@@ -182,7 +182,7 @@ func TestCreateBalancedGroups_PreGroupMembersStayTogether(t *testing.T) {
 	// and verify Bob and Carol are in the same group.
 	groupOfAlice := -1
 	for _, g := range groups {
-		for _, p := range g.Teilnehmers {
+		for _, p := range g.Teilnehmende {
 			if p.Name == "Alice" {
 				groupOfAlice = g.GroupID
 				break
@@ -202,7 +202,7 @@ func TestCreateBalancedGroups_PreGroupMembersStayTogether(t *testing.T) {
 			if g.GroupID != groupOfAlice {
 				continue
 			}
-			for _, p := range g.Teilnehmers {
+			for _, p := range g.Teilnehmende {
 				if p.Name == name {
 					found = true
 					break

@@ -23,7 +23,7 @@ func InsertData(db *sql.DB, rows [][]string) error {
 	defer tx.Rollback()
 
 	// Prepare insert statement
-	stmt, err := tx.Prepare("INSERT INTO teilnehmer (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO teilnehmende (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
@@ -219,8 +219,8 @@ func SaveGroups(db *sql.DB, groups []models.Group) error {
 	defer gruppeStmt.Close()
 
 	for _, group := range groups {
-		for _, teilnehmer := range group.Teilnehmers {
-			_, err = gruppeStmt.Exec(group.GroupID, teilnehmer.TeilnehmerID)
+		for _, tn := range group.Teilnehmende {
+			_, err = gruppeStmt.Exec(group.GroupID, tn.TeilnehmendeID)
 			if err != nil {
 				return fmt.Errorf("failed to insert into gruppe: %w", err)
 			}

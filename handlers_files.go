@@ -19,7 +19,7 @@ func (a *App) CheckDB() map[string]interface{} {
 
 	if a.db != nil {
 		var rowCount int
-		err := a.db.QueryRow("SELECT COUNT(*) FROM teilnehmer").Scan(&rowCount)
+		err := a.db.QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&rowCount)
 		if err == nil && rowCount > 0 {
 			hasData = true
 			count = rowCount
@@ -143,7 +143,7 @@ func (a *App) LoadFile() map[string]interface{} {
 	participantCount := len(rows) - 1
 	return map[string]interface{}{
 		"status":  "success",
-		"message": fmt.Sprintf("Erfolgreich %d Teilnehmer geladen", participantCount),
+		"message": fmt.Sprintf("Erfolgreich %d Teilnehmende geladen", participantCount),
 		"count":   participantCount,
 	}
 }

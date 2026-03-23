@@ -34,13 +34,13 @@ func setupFullTestDB(t *testing.T) *sql.DB {
 	return db
 }
 
-// ---- GetAllTeilnehmers ----
+// ---- GetAllTeilnehmende ----
 
-func TestGetAllTeilnehmers_EmptyDB(t *testing.T) {
+func TestGetAllTeilnehmende_EmptyDB(t *testing.T) {
 	db := setupTestDB(t)
 	defer teardownTestDB(t, db)
 
-	result, err := database.GetAllTeilnehmers(db)
+	result, err := database.GetAllTeilnehmende(db)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestGetAllTeilnehmers_EmptyDB(t *testing.T) {
 	}
 }
 
-func TestGetAllTeilnehmers_WithParticipants(t *testing.T) {
+func TestGetAllTeilnehmende_WithParticipants(t *testing.T) {
 	db := setupTestDB(t)
 	defer teardownTestDB(t, db)
 
@@ -62,7 +62,7 @@ func TestGetAllTeilnehmers_WithParticipants(t *testing.T) {
 		t.Fatalf("InsertData failed: %v", err)
 	}
 
-	result, err := database.GetAllTeilnehmers(db)
+	result, err := database.GetAllTeilnehmende(db)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -96,14 +96,14 @@ func TestGetAllTeilnehmers_OrderedByAutoIncrementID(t *testing.T) {
 		name string
 	}{{10, "Charlie"}, {20, "Alice"}, {30, "Bob"}} {
 		if _, err := db.Exec(
-			"INSERT INTO teilnehmer (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (?, ?, '', NULL, '', '')",
+			"INSERT INTO teilnehmende (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (?, ?, '', NULL, '', '')",
 			ins.tid, ins.name,
 		); err != nil {
 			t.Fatalf("insert failed: %v", err)
 		}
 	}
 
-	result, err := database.GetAllTeilnehmers(db)
+	result, err := database.GetAllTeilnehmende(db)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -124,12 +124,12 @@ func TestGetAllTeilnehmers_NullAge(t *testing.T) {
 	defer teardownTestDB(t, db)
 
 	if _, err := db.Exec(
-		"INSERT INTO teilnehmer (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (1, 'NoAge', 'Berlin', NULL, 'M', '')",
+		"INSERT INTO teilnehmende (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (1, 'NoAge', 'Berlin', NULL, 'M', '')",
 	); err != nil {
 		t.Fatalf("insert failed: %v", err)
 	}
 
-	result, err := database.GetAllTeilnehmers(db)
+	result, err := database.GetAllTeilnehmende(db)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -171,8 +171,8 @@ func TestGetGroupsForReport_GroupsWithParticipants(t *testing.T) {
 
 	// teilnehmer_id: Alice=1, Bob=2, Carol=3
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}, {TeilnehmerID: 2}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 3}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}, {TeilnehmendeID: 2}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 3}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -189,8 +189,8 @@ func TestGetGroupsForReport_GroupsWithParticipants(t *testing.T) {
 	if g1.GroupID != 1 {
 		t.Errorf("expected GroupID 1, got %d", g1.GroupID)
 	}
-	if len(g1.Teilnehmers) != 2 {
-		t.Errorf("expected 2 participants in group 1, got %d", len(g1.Teilnehmers))
+	if len(g1.Teilnehmende) != 2 {
+		t.Errorf("expected 2 participants in group 1, got %d", len(g1.Teilnehmende))
 	}
 	if g1.Ortsverbands["Berlin"] != 2 {
 		t.Errorf("expected 2 from Berlin in group 1, got %d", g1.Ortsverbands["Berlin"])
@@ -203,8 +203,8 @@ func TestGetGroupsForReport_GroupsWithParticipants(t *testing.T) {
 	if g2.GroupID != 2 {
 		t.Errorf("expected GroupID 2, got %d", g2.GroupID)
 	}
-	if len(g2.Teilnehmers) != 1 {
-		t.Errorf("expected 1 participant in group 2, got %d", len(g2.Teilnehmers))
+	if len(g2.Teilnehmende) != 1 {
+		t.Errorf("expected 1 participant in group 2, got %d", len(g2.Teilnehmende))
 	}
 }
 
@@ -222,7 +222,7 @@ func TestGetGroupsForReport_GeschlechtStatistics(t *testing.T) {
 	}
 
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}, {TeilnehmerID: 2}, {TeilnehmerID: 3}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}, {TeilnehmendeID: 2}, {TeilnehmendeID: 3}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -357,8 +357,8 @@ func TestGetStationsForReport_WithScores(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -410,7 +410,7 @@ func TestGetStationsForReport_MultipleStations(t *testing.T) {
 		t.Fatalf("InsertStations failed: %v", err)
 	}
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}
@@ -469,9 +469,9 @@ func TestGetAllGroupIDs_DistinctAndSorted(t *testing.T) {
 
 	// Save groups in non-sequential order to verify sorting
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 3, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 3}}},
+		{GroupID: 3, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 3}}},
 	}); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
 	}

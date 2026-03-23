@@ -40,12 +40,12 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int) error {
 	}
 
 	// Build ortsverband → participant names map
-	teilnehmers, err := database.GetAllTeilnehmers(db)
+	teilnehmende, err := database.GetAllTeilnehmende(db)
 	if err != nil {
 		return fmt.Errorf("failed to get participants: %w", err)
 	}
 	ovParticipants := make(map[string][]string)
-	for _, t := range teilnehmers {
+	for _, t := range teilnehmende {
 		if t.Ortsverband != "" {
 			ovParticipants[t.Ortsverband] = append(ovParticipants[t.Ortsverband], t.Name)
 		}

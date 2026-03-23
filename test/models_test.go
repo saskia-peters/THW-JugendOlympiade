@@ -23,17 +23,17 @@ func TestDbFileConstant(t *testing.T) {
 
 // TestSheetNameConstant tests the SheetName constant
 func TestSheetNameConstant(t *testing.T) {
-	expected := "Teilnehmer"
+	expected := "Teilnehmende"
 	if models.SheetName != expected {
 		t.Errorf("Expected SheetName to be %q, got %q", expected, models.SheetName)
 	}
 }
 
-// TestTeilnehmerStructure tests the Teilnehmer struct fields
+// TestTeilnehmerStructure tests the Teilnehmende struct fields
 func TestTeilnehmerStructure(t *testing.T) {
-	teilnehmer := models.Teilnehmer{
+	teilnehmer := models.Teilnehmende{
 		ID:           1,
-		TeilnehmerID: 100,
+		TeilnehmendeID: 100,
 		Name:         "Max Mustermann",
 		Ortsverband:  "Berlin",
 		Alter:        25,
@@ -43,8 +43,8 @@ func TestTeilnehmerStructure(t *testing.T) {
 	if teilnehmer.ID != 1 {
 		t.Errorf("Expected ID 1, got %d", teilnehmer.ID)
 	}
-	if teilnehmer.TeilnehmerID != 100 {
-		t.Errorf("Expected TeilnehmerID 100, got %d", teilnehmer.TeilnehmerID)
+	if teilnehmer.TeilnehmendeID != 100 {
+		t.Errorf("Expected TeilnehmendeID 100, got %d", teilnehmer.TeilnehmendeID)
 	}
 	if teilnehmer.Name != "Max Mustermann" {
 		t.Errorf("Expected Name 'Max Mustermann', got %s", teilnehmer.Name)
@@ -64,7 +64,7 @@ func TestTeilnehmerStructure(t *testing.T) {
 func TestGroupStructure(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmers:  make([]models.Teilnehmer, 0),
+		Teilnehmende:  make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 		AlterSum:     0,
@@ -74,8 +74,8 @@ func TestGroupStructure(t *testing.T) {
 		t.Errorf("Expected GroupID 1, got %d", group.GroupID)
 	}
 
-	if len(group.Teilnehmers) != 0 {
-		t.Errorf("Expected empty Teilnehmers slice, got length %d", len(group.Teilnehmers))
+	if len(group.Teilnehmende) != 0 {
+		t.Errorf("Expected empty Teilnehmende slice, got length %d", len(group.Teilnehmende))
 	}
 
 	if len(group.Ortsverbands) != 0 {
@@ -95,29 +95,29 @@ func TestGroupStructure(t *testing.T) {
 func TestGroupWithParticipants(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmers:  make([]models.Teilnehmer, 0),
+		Teilnehmende:  make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 		AlterSum:     0,
 	}
 
 	// Add participants
-	participants := []models.Teilnehmer{
+	participants := []models.Teilnehmende{
 		{ID: 1, Name: "Max", Ortsverband: "Berlin", Alter: 25, Geschlecht: "M"},
 		{ID: 2, Name: "Anna", Ortsverband: "Berlin", Alter: 30, Geschlecht: "W"},
 		{ID: 3, Name: "Tom", Ortsverband: "Hamburg", Alter: 22, Geschlecht: "M"},
 	}
 
 	for _, p := range participants {
-		group.Teilnehmers = append(group.Teilnehmers, p)
+		group.Teilnehmende = append(group.Teilnehmende, p)
 		group.Ortsverbands[p.Ortsverband]++
 		group.Geschlechts[p.Geschlecht]++
 		group.AlterSum += p.Alter
 	}
 
 	// Verify counts
-	if len(group.Teilnehmers) != 3 {
-		t.Errorf("Expected 3 participants, got %d", len(group.Teilnehmers))
+	if len(group.Teilnehmende) != 3 {
+		t.Errorf("Expected 3 participants, got %d", len(group.Teilnehmende))
 	}
 
 	if group.Ortsverbands["Berlin"] != 2 {
@@ -215,34 +215,34 @@ func TestOrtsverbandEvaluationStructure(t *testing.T) {
 func TestGroupCapacity(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmers:  make([]models.Teilnehmer, 0, models.MaxGroupSize),
+		Teilnehmende:  make([]models.Teilnehmende, 0, models.MaxGroupSize),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}
 
 	// Add exactly MaxGroupSize participants
 	for i := 0; i < models.MaxGroupSize; i++ {
-		participant := models.Teilnehmer{
+		participant := models.Teilnehmende{
 			ID:    i + 1,
 			Name:  "Participant",
 			Alter: 20,
 		}
-		group.Teilnehmers = append(group.Teilnehmers, participant)
+		group.Teilnehmende = append(group.Teilnehmende, participant)
 	}
 
-	if len(group.Teilnehmers) != models.MaxGroupSize {
-		t.Errorf("Expected %d participants, got %d", models.MaxGroupSize, len(group.Teilnehmers))
+	if len(group.Teilnehmende) != models.MaxGroupSize {
+		t.Errorf("Expected %d participants, got %d", models.MaxGroupSize, len(group.Teilnehmende))
 	}
 
 	// Verify capacity was pre-allocated correctly
-	if cap(group.Teilnehmers) < models.MaxGroupSize {
-		t.Errorf("Expected capacity >= %d, got %d", models.MaxGroupSize, cap(group.Teilnehmers))
+	if cap(group.Teilnehmende) < models.MaxGroupSize {
+		t.Errorf("Expected capacity >= %d, got %d", models.MaxGroupSize, cap(group.Teilnehmende))
 	}
 }
 
-// TestEmptyTeilnehmer tests creating an empty Teilnehmer
+// TestEmptyTeilnehmer tests creating an empty Teilnehmende
 func TestEmptyTeilnehmer(t *testing.T) {
-	var teilnehmer models.Teilnehmer
+	var teilnehmer models.Teilnehmende
 
 	// Verify zero values
 	if teilnehmer.ID != 0 {
@@ -264,8 +264,8 @@ func TestEmptyGroup(t *testing.T) {
 	if group.GroupID != 0 {
 		t.Errorf("Expected zero GroupID, got %d", group.GroupID)
 	}
-	if group.Teilnehmers != nil {
-		t.Error("Expected nil Teilnehmers slice")
+	if group.Teilnehmende != nil {
+		t.Error("Expected nil Teilnehmende slice")
 	}
 	if group.Ortsverbands != nil {
 		t.Error("Expected nil Ortsverbands map")
@@ -275,11 +275,11 @@ func TestEmptyGroup(t *testing.T) {
 	}
 }
 
-// TestTeilnehmerWithMissingFields tests Teilnehmer with optional empty fields
+// TestTeilnehmerWithMissingFields tests Teilnehmende with optional empty fields
 func TestTeilnehmerWithMissingFields(t *testing.T) {
-	teilnehmer := models.Teilnehmer{
+	teilnehmer := models.Teilnehmende{
 		ID:           1,
-		TeilnehmerID: 100,
+		TeilnehmendeID: 100,
 		Name:         "Max Mustermann",
 		Ortsverband:  "", // Empty ortsverband
 		Alter:        0,  // Zero age
@@ -301,33 +301,33 @@ func TestTeilnehmerWithMissingFields(t *testing.T) {
 func TestMultipleGroupsWithSameStructure(t *testing.T) {
 	group1 := models.Group{
 		GroupID:      1,
-		Teilnehmers:  make([]models.Teilnehmer, 0),
+		Teilnehmende:  make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}
 
 	group2 := models.Group{
 		GroupID:      2,
-		Teilnehmers:  make([]models.Teilnehmer, 0),
+		Teilnehmende:  make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}
 
 	// Add same participant structure to both groups
-	participant := models.Teilnehmer{
+	participant := models.Teilnehmende{
 		ID:   1,
 		Name: "Test",
 	}
 
-	group1.Teilnehmers = append(group1.Teilnehmers, participant)
-	group2.Teilnehmers = append(group2.Teilnehmers, participant)
+	group1.Teilnehmende = append(group1.Teilnehmende, participant)
+	group2.Teilnehmende = append(group2.Teilnehmende, participant)
 
 	// Verify groups are independent
 	if group1.GroupID == group2.GroupID {
 		t.Error("Expected different GroupIDs")
 	}
 
-	if len(group1.Teilnehmers) != 1 || len(group2.Teilnehmers) != 1 {
+	if len(group1.Teilnehmende) != 1 || len(group2.Teilnehmende) != 1 {
 		t.Error("Both groups should have 1 participant each")
 	}
 }

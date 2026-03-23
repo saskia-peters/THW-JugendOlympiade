@@ -61,13 +61,13 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int) error {
 		rank := groupRanks[group.GroupID]
 		rankText := certRankLabel(rank)
 
-		for _, participant := range group.Teilnehmers {
+		for _, participant := range group.Teilnehmende {
 			pdf.AddPage()
 			if useTemplate {
 				pdf.Image(templateFile, 0, 0, 210, 297, false, "", 0, "")
-				certRenderTemplate(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmers, contentLeft, contentWidth, currentYear)
+				certRenderTemplate(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
 			} else {
-				certRenderProgrammatic(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmers, contentLeft, contentWidth, currentYear)
+				certRenderProgrammatic(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
 			}
 		}
 	}
@@ -87,7 +87,7 @@ func certRankLabel(rank int) string {
 }
 
 // certRenderTemplate overlays all certificate content on top of a background image.
-func certRenderTemplate(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmer, groupID int, rankText string, members []models.Teilnehmer, left, width float64, year int) {
+func certRenderTemplate(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmende, groupID int, rankText string, members []models.Teilnehmende, left, width float64, year int) {
 	// Heading
 	pdf.SetXY(left, 60)
 	theme.Font(pdf, "B", theme.SizeCertTitle)
@@ -135,7 +135,7 @@ func certRenderTemplate(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmer, g
 }
 
 // certRenderProgrammatic renders a certificate without a background image.
-func certRenderProgrammatic(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmer, groupID int, rankText string, members []models.Teilnehmer, left, width float64, year int) {
+func certRenderProgrammatic(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmende, groupID int, rankText string, members []models.Teilnehmende, left, width float64, year int) {
 	// Heading — 1.5cm top margin
 	pdf.Ln(15)
 	pdf.SetX(left)
@@ -190,7 +190,7 @@ func certRenderProgrammatic(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehme
 
 // certMembersTable renders the group members table.
 // Pass startY >= 0 to position absolutely; pass -1 to use the current cursor.
-func certMembersTable(pdf *gofpdf.Fpdf, theme PDFTheme, members []models.Teilnehmer, left, width, startY float64) {
+func certMembersTable(pdf *gofpdf.Fpdf, theme PDFTheme, members []models.Teilnehmende, left, width, startY float64) {
 	colWidths := []float64{width / 2, width / 2}
 
 	if startY >= 0 {

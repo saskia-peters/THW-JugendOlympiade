@@ -11,33 +11,33 @@ import (
 
 // mockDistributeIntoGroups mimics the distribution logic for testing without DB
 // This is a test helper that tests the algorithm logic independently
-func mockDistributeIntoGroups(teilnehmers []models.Teilnehmer) []models.Group {
-	if len(teilnehmers) == 0 {
+func mockDistributeIntoGroups(teilnehmende []models.Teilnehmende) []models.Group {
+	if len(teilnehmende) == 0 {
 		return nil
 	}
 
 	// Calculate number of groups needed
-	numGroups := int(math.Ceil(float64(len(teilnehmers)) / float64(models.MaxGroupSize)))
+	numGroups := int(math.Ceil(float64(len(teilnehmende)) / float64(models.MaxGroupSize)))
 
 	// Initialize groups
 	groups := make([]models.Group, numGroups)
 	for i := range groups {
 		groups[i] = models.Group{
 			GroupID:      i + 1,
-			Teilnehmers:  make([]models.Teilnehmer, 0, models.MaxGroupSize),
+			Teilnehmende:  make([]models.Teilnehmende, 0, models.MaxGroupSize),
 			Ortsverbands: make(map[string]int),
 			Geschlechts:  make(map[string]int),
 		}
 	}
 
 	// Simple round-robin distribution for testing
-	for i, teilnehmer := range teilnehmers {
+	for i, tn := range teilnehmende {
 		groupIdx := i % numGroups
 		group := &groups[groupIdx]
-		group.Teilnehmers = append(group.Teilnehmers, teilnehmer)
-		group.Ortsverbands[teilnehmer.Ortsverband]++
-		group.Geschlechts[teilnehmer.Geschlecht]++
-		group.AlterSum += teilnehmer.Alter
+		group.Teilnehmende = append(group.Teilnehmende, tn)
+		group.Ortsverbands[tn.Ortsverband]++
+		group.Geschlechts[tn.Geschlecht]++
+		group.AlterSum += tn.Alter
 	}
 
 	return groups
@@ -45,8 +45,8 @@ func mockDistributeIntoGroups(teilnehmers []models.Teilnehmer) []models.Group {
 
 // TestDistribution_EmptyInput tests distribution with no participants
 func TestDistribution_EmptyInput(t *testing.T) {
-	teilnehmers := []models.Teilnehmer{}
-	groups := mockDistributeIntoGroups(teilnehmers)
+	teilnehmende := []models.Teilnehmende{}
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if groups != nil {
 		t.Errorf("Expected nil for empty input, got %d groups", len(groups))
@@ -55,18 +55,18 @@ func TestDistribution_EmptyInput(t *testing.T) {
 
 // TestDistribution_SingleParticipant tests distribution with one participant
 func TestDistribution_SingleParticipant(t *testing.T) {
-	teilnehmers := []models.Teilnehmer{
-		{ID: 1, TeilnehmerID: 1, Name: "Max Mustermann", Ortsverband: "Berlin", Alter: 25, Geschlecht: "M"},
+	teilnehmende := []models.Teilnehmende{
+		{ID: 1, TeilnehmendeID: 1, Name: "Max Mustermann", Ortsverband: "Berlin", Alter: 25, Geschlecht: "M"},
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 1 {
 		t.Errorf("Expected 1 group, got %d", len(groups))
 	}
 
-	if len(groups[0].Teilnehmers) != 1 {
-		t.Errorf("Expected 1 participant in group, got %d", len(groups[0].Teilnehmers))
+	if len(groups[0].Teilnehmende) != 1 {
+		t.Errorf("Expected 1 participant in group, got %d", len(groups[0].Teilnehmende))
 	}
 
 	if groups[0].GroupID != 1 {
@@ -76,11 +76,11 @@ func TestDistribution_SingleParticipant(t *testing.T) {
 
 // TestDistribution_ExactlyMaxGroupSize tests distribution with exactly MaxGroupSize participants
 func TestDistribution_ExactlyMaxGroupSize(t *testing.T) {
-	teilnehmers := make([]models.Teilnehmer, models.MaxGroupSize)
+	teilnehmende := make([]models.Teilnehmende, models.MaxGroupSize)
 	for i := 0; i < models.MaxGroupSize; i++ {
-		teilnehmers[i] = models.Teilnehmer{
+		teilnehmende[i] = models.Teilnehmende{
 			ID:           i + 1,
-			TeilnehmerID: i + 1,
+			TeilnehmendeID: i + 1,
 			Name:         "Participant " + string(rune(i)),
 			Ortsverband:  "Berlin",
 			Alter:        20 + i,
@@ -88,25 +88,25 @@ func TestDistribution_ExactlyMaxGroupSize(t *testing.T) {
 		}
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 1 {
 		t.Errorf("Expected 1 group for %d participants, got %d", models.MaxGroupSize, len(groups))
 	}
 
-	if len(groups[0].Teilnehmers) != models.MaxGroupSize {
-		t.Errorf("Expected %d participants in group, got %d", models.MaxGroupSize, len(groups[0].Teilnehmers))
+	if len(groups[0].Teilnehmende) != models.MaxGroupSize {
+		t.Errorf("Expected %d participants in group, got %d", models.MaxGroupSize, len(groups[0].Teilnehmende))
 	}
 }
 
 // TestDistribution_MoreThanMaxGroupSize tests distribution requiring multiple groups
 func TestDistribution_MoreThanMaxGroupSize(t *testing.T) {
 	numParticipants := models.MaxGroupSize + 1
-	teilnehmers := make([]models.Teilnehmer, numParticipants)
+	teilnehmende := make([]models.Teilnehmende, numParticipants)
 	for i := 0; i < numParticipants; i++ {
-		teilnehmers[i] = models.Teilnehmer{
+		teilnehmende[i] = models.Teilnehmende{
 			ID:           i + 1,
-			TeilnehmerID: i + 1,
+			TeilnehmendeID: i + 1,
 			Name:         "Participant " + string(rune(i)),
 			Ortsverband:  "Berlin",
 			Alter:        20 + i,
@@ -114,7 +114,7 @@ func TestDistribution_MoreThanMaxGroupSize(t *testing.T) {
 		}
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 2 {
 		t.Errorf("Expected 2 groups for %d participants, got %d", numParticipants, len(groups))
@@ -123,7 +123,7 @@ func TestDistribution_MoreThanMaxGroupSize(t *testing.T) {
 	// Check that all participants are distributed
 	totalParticipants := 0
 	for _, group := range groups {
-		totalParticipants += len(group.Teilnehmers)
+		totalParticipants += len(group.Teilnehmende)
 	}
 
 	if totalParticipants != numParticipants {
@@ -134,14 +134,14 @@ func TestDistribution_MoreThanMaxGroupSize(t *testing.T) {
 // TestDistribution_TwentyFourParticipants tests a realistic scenario
 func TestDistribution_TwentyFourParticipants(t *testing.T) {
 	// 24 participants should create 3 groups of 8
-	teilnehmers := make([]models.Teilnehmer, 24)
+	teilnehmende := make([]models.Teilnehmende, 24)
 	ortsverbands := []string{"Berlin", "Hamburg", "München", "Köln"}
 	geschlechts := []string{"M", "W"}
 
 	for i := 0; i < 24; i++ {
-		teilnehmers[i] = models.Teilnehmer{
+		teilnehmende[i] = models.Teilnehmende{
 			ID:           i + 1,
-			TeilnehmerID: i + 1,
+			TeilnehmendeID: i + 1,
 			Name:         "Participant " + string(rune(i)),
 			Ortsverband:  ortsverbands[i%len(ortsverbands)],
 			Alter:        18 + (i % 10),
@@ -149,7 +149,7 @@ func TestDistribution_TwentyFourParticipants(t *testing.T) {
 		}
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 3 {
 		t.Errorf("Expected 3 groups for 24 participants, got %d", len(groups))
@@ -157,8 +157,8 @@ func TestDistribution_TwentyFourParticipants(t *testing.T) {
 
 	// Check that each group has exactly 8 participants
 	for i, group := range groups {
-		if len(group.Teilnehmers) != 8 {
-			t.Errorf("Group %d: Expected 8 participants, got %d", i+1, len(group.Teilnehmers))
+		if len(group.Teilnehmende) != 8 {
+			t.Errorf("Group %d: Expected 8 participants, got %d", i+1, len(group.Teilnehmende))
 		}
 	}
 
@@ -179,11 +179,11 @@ func TestDistribution_TwentyFourParticipants(t *testing.T) {
 // TestDistribution_GroupSizeLimit tests that no group exceeds MaxGroupSize
 func TestDistribution_GroupSizeLimit(t *testing.T) {
 	// Test with 50 participants
-	teilnehmers := make([]models.Teilnehmer, 50)
+	teilnehmende := make([]models.Teilnehmende, 50)
 	for i := 0; i < 50; i++ {
-		teilnehmers[i] = models.Teilnehmer{
+		teilnehmende[i] = models.Teilnehmende{
 			ID:           i + 1,
-			TeilnehmerID: i + 1,
+			TeilnehmendeID: i + 1,
 			Name:         "Participant " + string(rune(i)),
 			Ortsverband:  "Berlin",
 			Alter:        20 + (i % 20),
@@ -191,7 +191,7 @@ func TestDistribution_GroupSizeLimit(t *testing.T) {
 		}
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	// 50 participants / 8 max = 7 groups (with last group having 2)
 	expectedGroups := int(math.Ceil(50.0 / float64(models.MaxGroupSize)))
@@ -201,16 +201,16 @@ func TestDistribution_GroupSizeLimit(t *testing.T) {
 
 	// Verify no group exceeds max size
 	for i, group := range groups {
-		if len(group.Teilnehmers) > models.MaxGroupSize {
+		if len(group.Teilnehmende) > models.MaxGroupSize {
 			t.Errorf("Group %d exceeds max size: has %d participants (max %d)",
-				i+1, len(group.Teilnehmers), models.MaxGroupSize)
+				i+1, len(group.Teilnehmende), models.MaxGroupSize)
 		}
 	}
 
 	// Verify all participants are assigned
 	totalAssigned := 0
 	for _, group := range groups {
-		totalAssigned += len(group.Teilnehmers)
+		totalAssigned += len(group.Teilnehmende)
 	}
 	if totalAssigned != 50 {
 		t.Errorf("Expected 50 participants assigned, got %d", totalAssigned)
@@ -219,14 +219,14 @@ func TestDistribution_GroupSizeLimit(t *testing.T) {
 
 // TestDistribution_StatisticsTracking tests that group statistics are correctly maintained
 func TestDistribution_StatisticsTracking(t *testing.T) {
-	teilnehmers := []models.Teilnehmer{
-		{ID: 1, TeilnehmerID: 1, Name: "Anna", Ortsverband: "Berlin", Alter: 20, Geschlecht: "W"},
-		{ID: 2, TeilnehmerID: 2, Name: "Max", Ortsverband: "Berlin", Alter: 25, Geschlecht: "M"},
-		{ID: 3, TeilnehmerID: 3, Name: "Lisa", Ortsverband: "Hamburg", Alter: 22, Geschlecht: "W"},
-		{ID: 4, TeilnehmerID: 4, Name: "Tom", Ortsverband: "Hamburg", Alter: 24, Geschlecht: "M"},
+	teilnehmende := []models.Teilnehmende{
+		{ID: 1, TeilnehmendeID: 1, Name: "Anna", Ortsverband: "Berlin", Alter: 20, Geschlecht: "W"},
+		{ID: 2, TeilnehmendeID: 2, Name: "Max", Ortsverband: "Berlin", Alter: 25, Geschlecht: "M"},
+		{ID: 3, TeilnehmendeID: 3, Name: "Lisa", Ortsverband: "Hamburg", Alter: 22, Geschlecht: "W"},
+		{ID: 4, TeilnehmendeID: 4, Name: "Tom", Ortsverband: "Hamburg", Alter: 24, Geschlecht: "M"},
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 1 {
 		t.Errorf("Expected 1 group, got %d", len(groups))
@@ -259,11 +259,11 @@ func TestDistribution_StatisticsTracking(t *testing.T) {
 
 // TestDistribution_GroupIDsSequential tests that GroupIDs are sequential starting from 1
 func TestDistribution_GroupIDsSequential(t *testing.T) {
-	teilnehmers := make([]models.Teilnehmer, 20)
+	teilnehmende := make([]models.Teilnehmende, 20)
 	for i := 0; i < 20; i++ {
-		teilnehmers[i] = models.Teilnehmer{
+		teilnehmende[i] = models.Teilnehmende{
 			ID:           i + 1,
-			TeilnehmerID: i + 1,
+			TeilnehmendeID: i + 1,
 			Name:         "Participant " + string(rune(i)),
 			Ortsverband:  "Berlin",
 			Alter:        20,
@@ -271,7 +271,7 @@ func TestDistribution_GroupIDsSequential(t *testing.T) {
 		}
 	}
 
-	groups := mockDistributeIntoGroups(teilnehmers)
+	groups := mockDistributeIntoGroups(teilnehmende)
 
 	// Verify GroupIDs are sequential starting from 1
 	for i, group := range groups {
@@ -323,13 +323,13 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	teamAGroupID := -1
 	teamAMembers := []string{"Alice", "Bob", "Carol"}
 	for _, group := range groups {
-		for _, teilnehmer := range group.Teilnehmers {
-			if teilnehmer.Name == "Alice" || teilnehmer.Name == "Bob" || teilnehmer.Name == "Carol" {
+		for _, tn := range group.Teilnehmende {
+			if tn.Name == "Alice" || tn.Name == "Bob" || tn.Name == "Carol" {
 				if teamAGroupID == -1 {
 					teamAGroupID = group.GroupID
 				} else if teamAGroupID != group.GroupID {
 					t.Fatalf("TeamA members are in different groups: expected all in group %d, but found %s in group %d",
-						teamAGroupID, teilnehmer.Name, group.GroupID)
+						teamAGroupID, tn.Name, group.GroupID)
 				}
 			}
 		}
@@ -344,9 +344,9 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	teamACount := 0
 	for _, group := range groups {
 		if group.GroupID == teamAGroupID {
-			for _, teilnehmer := range group.Teilnehmers {
+			for _, tn := range group.Teilnehmende {
 				for _, name := range teamAMembers {
-					if teilnehmer.Name == name {
+					if tn.Name == name {
 						teamACount++
 					}
 				}
@@ -362,13 +362,13 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	teamBGroupID := -1
 	teamBMembers := []string{"Dave", "Eve"}
 	for _, group := range groups {
-		for _, teilnehmer := range group.Teilnehmers {
-			if teilnehmer.Name == "Dave" || teilnehmer.Name == "Eve" {
+		for _, tn := range group.Teilnehmende {
+			if tn.Name == "Dave" || tn.Name == "Eve" {
 				if teamBGroupID == -1 {
 					teamBGroupID = group.GroupID
 				} else if teamBGroupID != group.GroupID {
 					t.Fatalf("TeamB members are in different groups: expected all in group %d, but found %s in group %d",
-						teamBGroupID, teilnehmer.Name, group.GroupID)
+						teamBGroupID, tn.Name, group.GroupID)
 				}
 			}
 		}
@@ -383,9 +383,9 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	teamBCount := 0
 	for _, group := range groups {
 		if group.GroupID == teamBGroupID {
-			for _, teilnehmer := range group.Teilnehmers {
+			for _, tn := range group.Teilnehmende {
 				for _, name := range teamBMembers {
-					if teilnehmer.Name == name {
+					if tn.Name == name {
 						teamBCount++
 					}
 				}
@@ -405,8 +405,8 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	// Verify participants without PreGroup are distributed
 	unassignedCount := 0
 	for _, group := range groups {
-		for _, teilnehmer := range group.Teilnehmers {
-			if teilnehmer.Name == "Frank" || teilnehmer.Name == "Grace" || teilnehmer.Name == "Henry" || teilnehmer.Name == "Ivy" || teilnehmer.Name == "Jack" {
+		for _, tn := range group.Teilnehmende {
+			if tn.Name == "Frank" || tn.Name == "Grace" || tn.Name == "Henry" || tn.Name == "Ivy" || tn.Name == "Jack" {
 				unassignedCount++
 			}
 		}

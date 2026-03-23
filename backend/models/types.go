@@ -2,22 +2,22 @@ package models
 
 const (
 	DbFile              = "data.db"
-	SheetName           = "Teilnehmer"
+	SheetName           = "Teilnehmende"
 	BetreuendeSheetName = "Betreuende"
 	StationsSheetName   = "Stationen"
-	TableName           = "teilnehmer"
+	TableName           = "teilnehmende"
 	MaxGroupSize        = 8
 )
 
-// Teilnehmer represents a participant
-type Teilnehmer struct {
-	ID           int
-	TeilnehmerID int
-	Name         string
-	Ortsverband  string
-	Alter        int
-	Geschlecht   string
-	PreGroup     string
+// Teilnehmende represents a participant
+type Teilnehmende struct {
+	ID             int
+	TeilnehmendeID int
+	Name           string
+	Ortsverband    string
+	Alter          int
+	Geschlecht     string
+	PreGroup       string
 }
 
 // Betreuende represents a caretaker/driver for a group
@@ -30,7 +30,7 @@ type Betreuende struct {
 // Group represents a group of participants
 type Group struct {
 	GroupID      int
-	Teilnehmers  []Teilnehmer
+	Teilnehmende []Teilnehmende
 	Betreuende   []Betreuende
 	Ortsverbands map[string]int
 	Geschlechts  map[string]int

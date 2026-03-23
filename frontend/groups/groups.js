@@ -71,8 +71,8 @@ function formatGroupContent(group) {
     html += '<th>Geschlecht</th>';
     html += '</tr></thead><tbody>';
     
-    if (group.Teilnehmers && group.Teilnehmers.length > 0) {
-        group.Teilnehmers.forEach(t => {
+    if (group.Teilnehmende && group.Teilnehmende.length > 0) {
+        group.Teilnehmende.forEach(t => {
             html += '<tr>';
             html += '<td>' + escapeHtml(t.Name) + '</td>';
             html += '<td>' + escapeHtml(t.Ortsverband) + '</td>';
@@ -81,7 +81,7 @@ function formatGroupContent(group) {
             html += '</tr>';
         });
     } else {
-        html += '<tr><td colspan="4">Keine Teilnehmer</td></tr>';
+        html += '<tr><td colspan="4">Keine Teilnehmenden</td></tr>';
     }
     
     html += '</tbody></table>';
@@ -107,13 +107,13 @@ function formatGroupContent(group) {
     
     // Total participants
     html += '<div class="stat-item">';
-    html += '<strong>Teilnehmer gesamt</strong>';
-    html += '<span>' + (group.Teilnehmers ? group.Teilnehmers.length : 0) + '</span>';
+    html += '<strong>Teilnehmende gesamt</strong>';
+    html += '<span>' + (group.Teilnehmende ? group.Teilnehmende.length : 0) + '</span>';
     html += '</div>';
     
     // Average age
-    if (group.Teilnehmers && group.Teilnehmers.length > 0) {
-        const avgAge = (group.AlterSum / group.Teilnehmers.length).toFixed(1);
+    if (group.Teilnehmende && group.Teilnehmende.length > 0) {
+        const avgAge = (group.AlterSum / group.Teilnehmende.length).toFixed(1);
         html += '<div class="stat-item">';
         html += '<strong>Durchschnittsalter</strong>';
         html += '<span>' + avgAge + ' Jahre</span>';

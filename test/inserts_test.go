@@ -190,8 +190,8 @@ func TestSaveGroups_Basic(t *testing.T) {
 	}
 
 	groups := []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
 	}
 	if err := database.SaveGroups(db, groups); err != nil {
 		t.Fatalf("SaveGroups failed: %v", err)
@@ -228,15 +228,15 @@ func TestSaveGroups_ReplacesExistingAssignments(t *testing.T) {
 
 	// First assignment: Alice → group 1
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("first SaveGroups failed: %v", err)
 	}
 
 	// Regroup: Alice → group 2, Bob → group 1
 	if err := database.SaveGroups(db, []models.Group{
-		{GroupID: 1, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 2}}},
-		{GroupID: 2, Teilnehmers: []models.Teilnehmer{{TeilnehmerID: 1}}},
+		{GroupID: 1, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 2}}},
+		{GroupID: 2, Teilnehmende: []models.Teilnehmende{{TeilnehmendeID: 1}}},
 	}); err != nil {
 		t.Fatalf("second SaveGroups failed: %v", err)
 	}

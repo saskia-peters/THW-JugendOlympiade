@@ -381,11 +381,11 @@ func TestReadXLSXFile_FileNotFound(t *testing.T) {
 
 // TestReadStationsFromXLSX_ValidFile tests reading valid stations
 func TestReadStationsFromXLSX_ValidFile(t *testing.T) {
-	// Create a file with both Teilnehmer and Stationen sheets
+	// Create a file with both Teilnehmende and Stationen sheets
 	f := excelize.NewFile()
 	defer f.Close()
 
-	// Create Teilnehmer sheet (required)
+	// Create Teilnehmende sheet (required)
 	teilnehmerData := [][]string{
 		{"Name", "Ortsverband", "Alter", "Geschlecht", "PreGroup"},
 		{"Max Mustermann", "Berlin", "25", "M", ""},

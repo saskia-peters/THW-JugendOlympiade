@@ -7,7 +7,7 @@
 				THEN COALESCE(SUM(gss.total_group_score), 0) * 1.0 / COUNT(DISTINCT t.teilnehmer_id)
 				ELSE 0 
 			END as average_score
-		FROM teilnehmer t
+		FROM teilnehmende t
 		LEFT JOIN gruppe r ON t.teilnehmer_id = r.teilnehmer_id
 		LEFT JOIN (
 			SELECT group_id, SUM(score) as total_group_score
@@ -21,7 +21,7 @@ with base as (
 	select t.ortsverband
 	, sum(gss.score) as total_score
 	, count(t.teilnehmer_id) as participant_count
-	from teilnehmer t
+	from teilnehmende t
 	join gruppe r on t.teilnehmer_id = r.teilnehmer_id
 	join group_station_scores gss on r.group_id = gss.group_id        
 	group by t.ortsverband

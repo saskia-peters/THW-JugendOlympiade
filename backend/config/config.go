@@ -81,7 +81,7 @@ name = "THW-JugendOlympiade"
 jahr = 2026
 
 [gruppen]
-# Maximale Anzahl Teilnehmer pro Gruppe
+# Maximale Anzahl Teilnehmende pro Gruppe
 max_groesse = 8
 
 [ergebnisse]

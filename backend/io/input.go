@@ -116,7 +116,7 @@ func ReadXLSXFile(filePath string) ([][]string, error) {
 		}
 	}()
 
-	// Read all rows from the "Teilnehmer" sheet
+	// Read all rows from the "Teilnehmende" sheet
 	rows, err := f.GetRows(models.SheetName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read sheet '%s': %w", models.SheetName, err)

@@ -7,7 +7,7 @@ export async function openFileDialog() {
         const result = await window.go.main.App.CheckDB();
         
         if (result.hasData) {
-            const confirmed = confirm(`Die Datenbank enthält ${result.count} Teilnehmer. Möchten Sie diese Daten verwerfen und eine neue Datei laden?`);
+            const confirmed = confirm(`Die Datenbank enthält ${result.count} Teilnehmende. Möchten Sie diese Daten verwerfen und eine neue Datei laden?`);
             if (!confirmed) {
                 return;
             }
@@ -33,7 +33,7 @@ export async function openFileDialog() {
             tabs.style.display = 'none';
             btnBackup.disabled = false;
             ausgabeDropdown.removeAttribute('open');
-            output.textContent = `✔ ${uploadResult.count} Teilnehmer geladen.\n\nNächster Schritt:\n• Klicken Sie auf "Teilnehmer zu Gruppen" um ausgewogene Gruppen zu erstellen`;
+            output.textContent = `✔ ${uploadResult.count} Teilnehmende geladen.\n\nNächster Schritt:\n• Klicken Sie auf "Teilnehmende zu Gruppen" um ausgewogene Gruppen zu erstellen`;
             
             // Collapse Admin and expand Daten
             const adminDropdown = document.querySelector('.button-section:nth-child(1) .category-dropdown');
