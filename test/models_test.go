@@ -6,14 +6,7 @@ import (
 	"THW-JugendOlympiade/backend/models"
 )
 
-// TestMaxGroupSizeConstant tests the MaxGroupSize constant
-func TestMaxGroupSizeConstant(t *testing.T) {
-	if models.MaxGroupSize != 8 {
-		t.Errorf("Expected MaxGroupSize to be 8, got %d", models.MaxGroupSize)
-	}
-}
-
-// TestDbFileConstant tests the DbFile constant
+// TestDbFileConstant tests the DbFile variable default
 func TestDbFileConstant(t *testing.T) {
 	expected := "data.db"
 	if models.DbFile != expected {
@@ -32,12 +25,12 @@ func TestSheetNameConstant(t *testing.T) {
 // TestTeilnehmerStructure tests the Teilnehmende struct fields
 func TestTeilnehmerStructure(t *testing.T) {
 	teilnehmer := models.Teilnehmende{
-		ID:           1,
+		ID:             1,
 		TeilnehmendeID: 100,
-		Name:         "Max Mustermann",
-		Ortsverband:  "Berlin",
-		Alter:        25,
-		Geschlecht:   "M",
+		Name:           "Max Mustermann",
+		Ortsverband:    "Berlin",
+		Alter:          25,
+		Geschlecht:     "M",
 	}
 
 	if teilnehmer.ID != 1 {
@@ -64,7 +57,7 @@ func TestTeilnehmerStructure(t *testing.T) {
 func TestGroupStructure(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmende:  make([]models.Teilnehmende, 0),
+		Teilnehmende: make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 		AlterSum:     0,
@@ -95,7 +88,7 @@ func TestGroupStructure(t *testing.T) {
 func TestGroupWithParticipants(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmende:  make([]models.Teilnehmende, 0),
+		Teilnehmende: make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 		AlterSum:     0,
@@ -211,17 +204,20 @@ func TestOrtsverbandEvaluationStructure(t *testing.T) {
 	}
 }
 
-// TestGroupCapacity tests that groups can hold up to MaxGroupSize
+// testGroupCapacity is a fixed group size used as a test scenario in TestGroupCapacity.
+const testGroupCapacity = 8
+
+// TestGroupCapacity tests that groups can hold up to a given capacity
 func TestGroupCapacity(t *testing.T) {
 	group := models.Group{
 		GroupID:      1,
-		Teilnehmende:  make([]models.Teilnehmende, 0, models.MaxGroupSize),
+		Teilnehmende: make([]models.Teilnehmende, 0, testGroupCapacity),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}
 
-	// Add exactly MaxGroupSize participants
-	for i := 0; i < models.MaxGroupSize; i++ {
+	// Add exactly testGroupCapacity participants
+	for i := 0; i < testGroupCapacity; i++ {
 		participant := models.Teilnehmende{
 			ID:    i + 1,
 			Name:  "Participant",
@@ -230,13 +226,13 @@ func TestGroupCapacity(t *testing.T) {
 		group.Teilnehmende = append(group.Teilnehmende, participant)
 	}
 
-	if len(group.Teilnehmende) != models.MaxGroupSize {
-		t.Errorf("Expected %d participants, got %d", models.MaxGroupSize, len(group.Teilnehmende))
+	if len(group.Teilnehmende) != testGroupCapacity {
+		t.Errorf("Expected %d participants, got %d", testGroupCapacity, len(group.Teilnehmende))
 	}
 
 	// Verify capacity was pre-allocated correctly
-	if cap(group.Teilnehmende) < models.MaxGroupSize {
-		t.Errorf("Expected capacity >= %d, got %d", models.MaxGroupSize, cap(group.Teilnehmende))
+	if cap(group.Teilnehmende) < testGroupCapacity {
+		t.Errorf("Expected capacity >= %d, got %d", testGroupCapacity, cap(group.Teilnehmende))
 	}
 }
 
@@ -278,12 +274,12 @@ func TestEmptyGroup(t *testing.T) {
 // TestTeilnehmerWithMissingFields tests Teilnehmende with optional empty fields
 func TestTeilnehmerWithMissingFields(t *testing.T) {
 	teilnehmer := models.Teilnehmende{
-		ID:           1,
+		ID:             1,
 		TeilnehmendeID: 100,
-		Name:         "Max Mustermann",
-		Ortsverband:  "", // Empty ortsverband
-		Alter:        0,  // Zero age
-		Geschlecht:   "", // Empty geschlecht
+		Name:           "Max Mustermann",
+		Ortsverband:    "", // Empty ortsverband
+		Alter:          0,  // Zero age
+		Geschlecht:     "", // Empty geschlecht
 	}
 
 	if teilnehmer.Ortsverband != "" {
@@ -301,14 +297,14 @@ func TestTeilnehmerWithMissingFields(t *testing.T) {
 func TestMultipleGroupsWithSameStructure(t *testing.T) {
 	group1 := models.Group{
 		GroupID:      1,
-		Teilnehmende:  make([]models.Teilnehmende, 0),
+		Teilnehmende: make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}
 
 	group2 := models.Group{
 		GroupID:      2,
-		Teilnehmende:  make([]models.Teilnehmende, 0),
+		Teilnehmende: make([]models.Teilnehmende, 0),
 		Ortsverbands: make(map[string]int),
 		Geschlechts:  make(map[string]int),
 	}

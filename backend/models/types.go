@@ -5,7 +5,6 @@ const (
 	BetreuendeSheetName = "Betreuende"
 	StationsSheetName   = "Stationen"
 	TableName           = "teilnehmende"
-	MaxGroupSize        = 8
 )
 
 // DbFile is the path to the SQLite database file.

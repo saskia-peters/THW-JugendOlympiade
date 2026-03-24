@@ -9,6 +9,11 @@ import (
 	"THW-JugendOlympiade/backend/services"
 )
 
+// testMaxGroupSize is the fixed group size used by the distribution tests.
+// It is intentionally independent of the config default so that test behaviour
+// does not change when the operator adjusts their configuration.
+const testMaxGroupSize = 8
+
 // mockDistributeIntoGroups mimics the distribution logic for testing without DB
 // This is a test helper that tests the algorithm logic independently
 func mockDistributeIntoGroups(teilnehmende []models.Teilnehmende) []models.Group {
@@ -17,14 +22,14 @@ func mockDistributeIntoGroups(teilnehmende []models.Teilnehmende) []models.Group
 	}
 
 	// Calculate number of groups needed
-	numGroups := int(math.Ceil(float64(len(teilnehmende)) / float64(models.MaxGroupSize)))
+	numGroups := int(math.Ceil(float64(len(teilnehmende)) / float64(testMaxGroupSize)))
 
 	// Initialize groups
 	groups := make([]models.Group, numGroups)
 	for i := range groups {
 		groups[i] = models.Group{
 			GroupID:      i + 1,
-			Teilnehmende:  make([]models.Teilnehmende, 0, models.MaxGroupSize),
+			Teilnehmende: make([]models.Teilnehmende, 0, testMaxGroupSize),
 			Ortsverbands: make(map[string]int),
 			Geschlechts:  make(map[string]int),
 		}
@@ -74,43 +79,43 @@ func TestDistribution_SingleParticipant(t *testing.T) {
 	}
 }
 
-// TestDistribution_ExactlyMaxGroupSize tests distribution with exactly MaxGroupSize participants
+// TestDistribution_ExactlyMaxGroupSize tests distribution with exactly testMaxGroupSize participants
 func TestDistribution_ExactlyMaxGroupSize(t *testing.T) {
-	teilnehmende := make([]models.Teilnehmende, models.MaxGroupSize)
-	for i := 0; i < models.MaxGroupSize; i++ {
+	teilnehmende := make([]models.Teilnehmende, testMaxGroupSize)
+	for i := 0; i < testMaxGroupSize; i++ {
 		teilnehmende[i] = models.Teilnehmende{
-			ID:           i + 1,
+			ID:             i + 1,
 			TeilnehmendeID: i + 1,
-			Name:         "Participant " + string(rune(i)),
-			Ortsverband:  "Berlin",
-			Alter:        20 + i,
-			Geschlecht:   "M",
+			Name:           "Participant " + string(rune(i)),
+			Ortsverband:    "Berlin",
+			Alter:          20 + i,
+			Geschlecht:     "M",
 		}
 	}
 
 	groups := mockDistributeIntoGroups(teilnehmende)
 
 	if len(groups) != 1 {
-		t.Errorf("Expected 1 group for %d participants, got %d", models.MaxGroupSize, len(groups))
+		t.Errorf("Expected 1 group for %d participants, got %d", testMaxGroupSize, len(groups))
 	}
 
-	if len(groups[0].Teilnehmende) != models.MaxGroupSize {
-		t.Errorf("Expected %d participants in group, got %d", models.MaxGroupSize, len(groups[0].Teilnehmende))
+	if len(groups[0].Teilnehmende) != testMaxGroupSize {
+		t.Errorf("Expected %d participants in group, got %d", testMaxGroupSize, len(groups[0].Teilnehmende))
 	}
 }
 
 // TestDistribution_MoreThanMaxGroupSize tests distribution requiring multiple groups
 func TestDistribution_MoreThanMaxGroupSize(t *testing.T) {
-	numParticipants := models.MaxGroupSize + 1
+	numParticipants := testMaxGroupSize + 1
 	teilnehmende := make([]models.Teilnehmende, numParticipants)
 	for i := 0; i < numParticipants; i++ {
 		teilnehmende[i] = models.Teilnehmende{
-			ID:           i + 1,
+			ID:             i + 1,
 			TeilnehmendeID: i + 1,
-			Name:         "Participant " + string(rune(i)),
-			Ortsverband:  "Berlin",
-			Alter:        20 + i,
-			Geschlecht:   "M",
+			Name:           "Participant " + string(rune(i)),
+			Ortsverband:    "Berlin",
+			Alter:          20 + i,
+			Geschlecht:     "M",
 		}
 	}
 
@@ -140,12 +145,12 @@ func TestDistribution_TwentyFourParticipants(t *testing.T) {
 
 	for i := 0; i < 24; i++ {
 		teilnehmende[i] = models.Teilnehmende{
-			ID:           i + 1,
+			ID:             i + 1,
 			TeilnehmendeID: i + 1,
-			Name:         "Participant " + string(rune(i)),
-			Ortsverband:  ortsverbands[i%len(ortsverbands)],
-			Alter:        18 + (i % 10),
-			Geschlecht:   geschlechts[i%len(geschlechts)],
+			Name:           "Participant " + string(rune(i)),
+			Ortsverband:    ortsverbands[i%len(ortsverbands)],
+			Alter:          18 + (i % 10),
+			Geschlecht:     geschlechts[i%len(geschlechts)],
 		}
 	}
 
@@ -182,28 +187,28 @@ func TestDistribution_GroupSizeLimit(t *testing.T) {
 	teilnehmende := make([]models.Teilnehmende, 50)
 	for i := 0; i < 50; i++ {
 		teilnehmende[i] = models.Teilnehmende{
-			ID:           i + 1,
+			ID:             i + 1,
 			TeilnehmendeID: i + 1,
-			Name:         "Participant " + string(rune(i)),
-			Ortsverband:  "Berlin",
-			Alter:        20 + (i % 20),
-			Geschlecht:   "M",
+			Name:           "Participant " + string(rune(i)),
+			Ortsverband:    "Berlin",
+			Alter:          20 + (i % 20),
+			Geschlecht:     "M",
 		}
 	}
 
 	groups := mockDistributeIntoGroups(teilnehmende)
 
 	// 50 participants / 8 max = 7 groups (with last group having 2)
-	expectedGroups := int(math.Ceil(50.0 / float64(models.MaxGroupSize)))
+	expectedGroups := int(math.Ceil(50.0 / float64(testMaxGroupSize)))
 	if len(groups) != expectedGroups {
 		t.Errorf("Expected %d groups, got %d", expectedGroups, len(groups))
 	}
 
 	// Verify no group exceeds max size
 	for i, group := range groups {
-		if len(group.Teilnehmende) > models.MaxGroupSize {
+		if len(group.Teilnehmende) > testMaxGroupSize {
 			t.Errorf("Group %d exceeds max size: has %d participants (max %d)",
-				i+1, len(group.Teilnehmende), models.MaxGroupSize)
+				i+1, len(group.Teilnehmende), testMaxGroupSize)
 		}
 	}
 
@@ -262,12 +267,12 @@ func TestDistribution_GroupIDsSequential(t *testing.T) {
 	teilnehmende := make([]models.Teilnehmende, 20)
 	for i := 0; i < 20; i++ {
 		teilnehmende[i] = models.Teilnehmende{
-			ID:           i + 1,
+			ID:             i + 1,
 			TeilnehmendeID: i + 1,
-			Name:         "Participant " + string(rune(i)),
-			Ortsverband:  "Berlin",
-			Alter:        20,
-			Geschlecht:   "M",
+			Name:           "Participant " + string(rune(i)),
+			Ortsverband:    "Berlin",
+			Alter:          20,
+			Geschlecht:     "M",
 		}
 	}
 

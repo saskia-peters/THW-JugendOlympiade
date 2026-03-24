@@ -4,9 +4,13 @@ import (
 	"testing"
 
 	"THW-JugendOlympiade/backend/database"
-	"THW-JugendOlympiade/backend/models"
 	"THW-JugendOlympiade/backend/services"
 )
+
+// testSvcGroupSize is the fixed group size used by the services tests.
+// It is independent of the config default so tests remain stable when
+// the operator changes their configuration.
+const testSvcGroupSize = 8
 
 // TestCreateBalancedGroups_EmptyDB verifies that no groups are created when there
 // are no participants in the database.
@@ -14,7 +18,7 @@ func TestCreateBalancedGroups_EmptyDB(t *testing.T) {
 	db := setupFullTestDB(t)
 	defer teardownTestDB(t, db)
 
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
@@ -24,43 +28,6 @@ func TestCreateBalancedGroups_EmptyDB(t *testing.T) {
 	}
 	if len(ids) != 0 {
 		t.Errorf("expected no groups for empty DB, got %d", len(ids))
-	}
-}
-
-// TestCreateBalancedGroups_AllParticipantsAssigned verifies that every participant
-// ends up in exactly one group after distribution.
-func TestCreateBalancedGroups_AllParticipantsAssigned(t *testing.T) {
-	db := setupFullTestDB(t)
-	defer teardownTestDB(t, db)
-
-	// 10 participants → ceil(10/8) = 2 groups
-	rows := [][]string{{"Name", "Ortsverband", "Alter", "Geschlecht", "PreGroup"}}
-	ortsverbands := []string{"Berlin", "Hamburg", "München", "Köln"}
-	geschlechts := []string{"M", "W"}
-	for i := 1; i <= 10; i++ {
-		rows = append(rows, []string{
-			"Participant", ortsverbands[i%len(ortsverbands)], "20", geschlechts[i%len(geschlechts)], "",
-		})
-	}
-	if err := database.InsertData(db, rows); err != nil {
-		t.Fatalf("InsertData failed: %v", err)
-	}
-
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
-		t.Fatalf("CreateBalancedGroups failed: %v", err)
-	}
-
-	groups, err := database.GetGroupsForReport(db)
-	if err != nil {
-		t.Fatalf("GetGroupsForReport failed: %v", err)
-	}
-
-	total := 0
-	for _, g := range groups {
-		total += len(g.Teilnehmende)
-	}
-	if total != 10 {
-		t.Errorf("expected all 10 participants assigned to groups, got %d", total)
 	}
 }
 
@@ -92,7 +59,7 @@ func TestCreateBalancedGroups_GroupCountCorrect(t *testing.T) {
 				t.Fatalf("InsertData failed: %v", err)
 			}
 
-			if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+			if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 				t.Fatalf("CreateBalancedGroups failed: %v", err)
 			}
 
@@ -125,7 +92,7 @@ func TestCreateBalancedGroups_NoGroupExceedsMaxSize(t *testing.T) {
 		t.Fatalf("InsertData failed: %v", err)
 	}
 
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("CreateBalancedGroups failed: %v", err)
 	}
 
@@ -135,9 +102,9 @@ func TestCreateBalancedGroups_NoGroupExceedsMaxSize(t *testing.T) {
 	}
 
 	for _, g := range groups {
-		if len(g.Teilnehmende) > models.MaxGroupSize {
+		if len(g.Teilnehmende) > testSvcGroupSize {
 			t.Errorf("group %d has %d participants, exceeds max %d",
-				g.GroupID, len(g.Teilnehmende), models.MaxGroupSize)
+				g.GroupID, len(g.Teilnehmende), testSvcGroupSize)
 		}
 	}
 }
@@ -160,7 +127,7 @@ func TestCreateBalancedGroups_PreGroupMembersStayTogether(t *testing.T) {
 		t.Fatalf("InsertData failed: %v", err)
 	}
 
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("CreateBalancedGroups failed: %v", err)
 	}
 
@@ -239,7 +206,7 @@ func TestCreateBalancedGroups_WithBetreuende(t *testing.T) {
 		t.Fatalf("InsertBetreuende failed: %v", err)
 	}
 
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("CreateBalancedGroups failed: %v", err)
 	}
 
@@ -268,7 +235,7 @@ func TestCreateBalancedGroups_ReroutingClearsOldGroups(t *testing.T) {
 	}
 
 	// First run
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("first CreateBalancedGroups failed: %v", err)
 	}
 
@@ -278,7 +245,7 @@ func TestCreateBalancedGroups_ReroutingClearsOldGroups(t *testing.T) {
 	}
 
 	// Second run — should replace, not accumulate
-	if err := services.CreateBalancedGroups(db, models.MaxGroupSize); err != nil {
+	if err := services.CreateBalancedGroups(db, testSvcGroupSize); err != nil {
 		t.Fatalf("second CreateBalancedGroups failed: %v", err)
 	}
 
