@@ -69,7 +69,7 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int) error {
 	for i, eval := range evaluations {
 		pdf.AddPage()
 		if useBg {
-			pdf.Image(bgFile, 0, 0, 210, 297, false, "", 0, "")
+			pdf.Image(bgFile, 0, 0, 210, 297, false, imageTypeFromFile(bgFile), 0, "")
 		}
 		if i == 0 {
 			ovRenderWinner(pdf, theme, eval.Ortsverband, ovParticipants[eval.Ortsverband], currentYear)

@@ -64,7 +64,7 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int) error {
 		for _, participant := range group.Teilnehmende {
 			pdf.AddPage()
 			if useTemplate {
-				pdf.Image(templateFile, 0, 0, 210, 297, false, "", 0, "")
+				pdf.Image(templateFile, 0, 0, 210, 297, false, imageTypeFromFile(templateFile), 0, "")
 				certRenderTemplate(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
 			} else {
 				certRenderProgrammatic(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)

@@ -1,6 +1,37 @@
 package io
 
-import "github.com/jung-kurt/gofpdf"
+import (
+	"io"
+	"os"
+
+	"github.com/jung-kurt/gofpdf"
+)
+
+// imageTypeFromFile returns the gofpdf image-type string ("PNG" or "JPEG") by
+// reading the file's magic bytes. This avoids failures when an image is stored
+// with a misleading extension (e.g., a JPEG named .png).
+// Returns "" when the file cannot be read or the format is unrecognised — in
+// that case gofpdf will fall back to using the file extension.
+func imageTypeFromFile(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	buf := make([]byte, 8)
+	if _, err := io.ReadFull(f, buf); err != nil {
+		return ""
+	}
+	// PNG magic: \x89 P N G \r \n \x1a \n
+	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
+		return "PNG"
+	}
+	// JPEG magic: \xff \xd8 \xff
+	if buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
+		return "JPEG"
+	}
+	return ""
+}
 
 // PDFTheme defines all visual properties for PDF generation.
 // It is the single place to change fonts, sizes, and colors across all
