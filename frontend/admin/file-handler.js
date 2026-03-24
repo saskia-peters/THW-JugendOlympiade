@@ -215,6 +215,9 @@ export async function handleDistributeGroups() {
             return;
         }
         setStatus('✅ ' + result.message, 'success');
+        if (result.warning) {
+            alert('⚠️ Warnung Betreuende:\n\n' + result.warning);
+        }
         btnShow.disabled = false;
         btnStations.disabled = false;
         btnPDF.disabled = false;

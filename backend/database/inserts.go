@@ -140,7 +140,7 @@ func InsertBetreuende(db *sql.DB, rows [][]string) error {
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.Prepare("INSERT INTO betreuende (name, ortsverband) VALUES (?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO betreuende (name, ortsverband, fahrerlaubnis) VALUES (?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
@@ -151,16 +151,20 @@ func InsertBetreuende(db *sql.DB, rows [][]string) error {
 			continue // skip header
 		}
 		name, ortsverband := "", ""
+		fahrerlaubnis := 0
 		if len(row) > 0 {
 			name = trimSpace(row[0])
 		}
 		if len(row) > 1 {
 			ortsverband = trimSpace(row[1])
 		}
+		if len(row) > 2 && strings.EqualFold(trimSpace(row[2]), "ja") {
+			fahrerlaubnis = 1
+		}
 		if name == "" {
 			continue
 		}
-		if _, err = stmt.Exec(name, ortsverband); err != nil {
+		if _, err = stmt.Exec(name, ortsverband, fahrerlaubnis); err != nil {
 			return fmt.Errorf("failed to insert betreuende row %d: %w", i, err)
 		}
 	}

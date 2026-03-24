@@ -64,8 +64,8 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		theme.FillColor(pdf, theme.ColorTableHeader)
 		theme.TextColor(pdf, theme.ColorText)
 
-		colWidths := []float64{50, 50, 30, 40}
-		for i, header := range []string{"Name", "Ortsverband", "Alter", "Geschlecht"} {
+		colWidths := []float64{60, 60, 50}
+		for i, header := range []string{"Name", "Ortsverband", "Alter"} {
 			pdf.CellFormat(colWidths[i], 10, header, "1", 0, "C", true, 0, "")
 		}
 		pdf.Ln(-1)
@@ -79,7 +79,6 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 			pdf.CellFormat(colWidths[0], 9, enc(t.Name), "1", 0, "L", fill, 0, "")
 			pdf.CellFormat(colWidths[1], 9, enc(t.Ortsverband), "1", 0, "L", fill, 0, "")
 			pdf.CellFormat(colWidths[2], 9, fmt.Sprintf("%d", t.Alter), "1", 0, "C", fill, 0, "")
-			pdf.CellFormat(colWidths[3], 9, enc(t.Geschlecht), "1", 0, "C", fill, 0, "")
 			pdf.Ln(-1)
 		}
 
@@ -89,11 +88,9 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		theme.TextColor(pdf, theme.ColorSubtext)
 
 		ortsverbandStats := make(map[string]int)
-		geschlechtStats := make(map[string]int)
 		alterSum, alterCount := 0, 0
 		for _, t := range group.Teilnehmende {
 			ortsverbandStats[t.Ortsverband]++
-			geschlechtStats[t.Geschlecht]++
 			if t.Alter > 0 {
 				alterSum += t.Alter
 				alterCount++
@@ -114,17 +111,6 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 		}
 		pdf.CellFormat(0, 5, enc(ovStr), "", 1, "L", false, 0, "")
 
-		gStr := "Geschlecht: "
-		first = true
-		for g, count := range geschlechtStats {
-			if !first {
-				gStr += ", "
-			}
-			gStr += fmt.Sprintf("%s (%d)", g, count)
-			first = false
-		}
-		pdf.CellFormat(0, 5, enc(gStr), "", 1, "L", false, 0, "")
-
 		if alterCount > 0 {
 			pdf.CellFormat(0, 5, fmt.Sprintf("Durchschnittsalter: %.1f Jahre", float64(alterSum)/float64(alterCount)), "", 1, "L", false, 0, "")
 		}
@@ -135,16 +121,22 @@ func GeneratePDFReport(db *sql.DB, eventName string, eventYear int) error {
 			theme.Font(pdf, "B", theme.SizeTableHeader)
 			theme.TextColor(pdf, theme.ColorText)
 			theme.FillColor(pdf, theme.ColorTableHeader)
-			pdf.CellFormat(90, 10, "Betreuende", "1", 0, "C", true, 0, "")
-			pdf.CellFormat(90, 10, "Ortsverband", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(80, 10, "Betreuende", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(70, 10, "Ortsverband", "1", 0, "C", true, 0, "")
+			pdf.CellFormat(30, 10, "Fahrerlaubnis", "1", 0, "C", true, 0, "")
 			pdf.Ln(-1)
 
 			theme.Font(pdf, "", theme.SizeBody)
 			for i, b := range group.Betreuende {
 				fill := i%2 == 0
 				theme.FillColor(pdf, theme.ColorTableRowAlt)
-				pdf.CellFormat(90, 9, enc(b.Name), "1", 0, "L", fill, 0, "")
-				pdf.CellFormat(90, 9, enc(b.Ortsverband), "1", 0, "L", fill, 0, "")
+				fahrerlaubnisStr := "nein"
+				if b.Fahrerlaubnis {
+					fahrerlaubnisStr = "ja"
+				}
+				pdf.CellFormat(80, 9, enc(b.Name), "1", 0, "L", fill, 0, "")
+				pdf.CellFormat(70, 9, enc(b.Ortsverband), "1", 0, "L", fill, 0, "")
+				pdf.CellFormat(30, 9, fahrerlaubnisStr, "1", 0, "C", fill, 0, "")
 				pdf.Ln(-1)
 			}
 		}

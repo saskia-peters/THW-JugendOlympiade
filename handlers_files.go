@@ -279,14 +279,19 @@ func (a *App) DistributeGroups() map[string]interface{} {
 			"message": "Bitte zuerst eine Excel-Datei laden.",
 		}
 	}
-	if err := services.CreateBalancedGroups(a.db, a.cfg.Gruppen.MaxGroesse); err != nil {
+	warning, err := services.CreateBalancedGroups(a.db, a.cfg.Gruppen.MaxGroesse)
+	if err != nil {
 		return map[string]interface{}{
 			"status":  "error",
 			"message": fmt.Sprintf("Gruppen konnten nicht erstellt werden: %v", err),
 		}
 	}
-	return map[string]interface{}{
+	result := map[string]interface{}{
 		"status":  "success",
 		"message": "Ausgewogene Gruppen wurden erstellt.",
 	}
+	if warning != "" {
+		result["warning"] = warning
+	}
+	return result
 }

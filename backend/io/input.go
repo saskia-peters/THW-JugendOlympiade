@@ -159,6 +159,7 @@ func ReadXLSXFile(filePath string) ([][]string, error) {
 
 // ReadBetreuendeFromXLSX reads caretakers/drivers from the "Betreuende" sheet.
 // Returns an empty slice (no error) if the sheet does not exist.
+// Expected columns: Name, Ortsverband, Fahrerlaubnis (ja/nein).
 func ReadBetreuendeFromXLSX(filePath string) ([][]string, error) {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("XLSX file '%s' not found", filePath)
@@ -183,6 +184,32 @@ func ReadBetreuendeFromXLSX(filePath string) ([][]string, error) {
 	if len(rows) < 2 {
 		log.Printf("Warning: sheet '%s' has no data rows", models.BetreuendeSheetName)
 		return [][]string{}, nil
+	}
+
+	// Validate header
+	expectedHeaders := []string{"Name", "Ortsverband", "Fahrerlaubnis"}
+	if err := ValidateHeaders(rows[0], expectedHeaders); err != nil {
+		return nil, fmt.Errorf("ungültige Spaltenstruktur in '%s': %w", models.BetreuendeSheetName, err)
+	}
+
+	// Validate each data row
+	for i := 1; i < len(rows); i++ {
+		row := rows[i]
+		name := ""
+		if len(row) > 0 {
+			name = strings.TrimSpace(row[0])
+		}
+		if name == "" {
+			continue // empty rows are skipped on insert
+		}
+		if len(row) > 2 {
+			val := strings.TrimSpace(row[2])
+			if val != "" && !strings.EqualFold(val, "ja") && !strings.EqualFold(val, "nein") {
+				return nil, fmt.Errorf(
+					"Zeile %d (%s): ungültiger Wert für Fahrerlaubnis %q – erlaubt sind nur \"ja\" oder \"nein\"",
+					i+1, name, val)
+			}
+		}
 	}
 
 	return rows, nil

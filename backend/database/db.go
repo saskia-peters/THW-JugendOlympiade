@@ -110,7 +110,8 @@ func InitDatabase() (*sql.DB, error) {
 	CREATE TABLE IF NOT EXISTS betreuende (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
-		ortsverband TEXT
+		ortsverband TEXT,
+		fahrerlaubnis INTEGER NOT NULL DEFAULT 0
 	);`
 	_, err = db.Exec(createBetreuerTableSQL)
 	if err != nil {

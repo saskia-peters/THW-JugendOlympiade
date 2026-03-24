@@ -93,7 +93,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 
 	// Load betreuende for each group
 	bRows, err := db.Query(`
-		SELECT gb.group_id, b.id, b.name, b.ortsverband
+		SELECT gb.group_id, b.id, b.name, b.ortsverband, b.fahrerlaubnis
 		FROM gruppe_betreuende gb
 		INNER JOIN betreuende b ON b.id = gb.betreuende_id
 		ORDER BY gb.group_id, b.name
@@ -105,9 +105,11 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 	for bRows.Next() {
 		var groupID int
 		var b models.Betreuende
-		if err := bRows.Scan(&groupID, &b.ID, &b.Name, &b.Ortsverband); err != nil {
+		var fahrerlaubnis int
+		if err := bRows.Scan(&groupID, &b.ID, &b.Name, &b.Ortsverband, &fahrerlaubnis); err != nil {
 			return nil, err
 		}
+		b.Fahrerlaubnis = fahrerlaubnis != 0
 		if g, ok := groupMap[groupID]; ok {
 			g.Betreuende = append(g.Betreuende, b)
 		}
@@ -127,7 +129,7 @@ func GetGroupsForReport(db *sql.DB) ([]models.Group, error) {
 
 // GetAllBetreuende returns all caretakers from the database
 func GetAllBetreuende(db *sql.DB) ([]models.Betreuende, error) {
-	rows, err := db.Query("SELECT id, name, ortsverband FROM betreuende ORDER BY id")
+	rows, err := db.Query("SELECT id, name, ortsverband, fahrerlaubnis FROM betreuende ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -136,9 +138,11 @@ func GetAllBetreuende(db *sql.DB) ([]models.Betreuende, error) {
 	var result []models.Betreuende
 	for rows.Next() {
 		var b models.Betreuende
-		if err := rows.Scan(&b.ID, &b.Name, &b.Ortsverband); err != nil {
+		var fahrerlaubnis int
+		if err := rows.Scan(&b.ID, &b.Name, &b.Ortsverband, &fahrerlaubnis); err != nil {
 			return nil, err
 		}
+		b.Fahrerlaubnis = fahrerlaubnis != 0
 		result = append(result, b)
 	}
 	return result, rows.Err()

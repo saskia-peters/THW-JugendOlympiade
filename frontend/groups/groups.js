@@ -90,11 +90,12 @@ function formatGroupContent(group) {
     if (group.Betreuende && group.Betreuende.length > 0) {
         html += '<h3 style="margin: 20px 0 10px 0; color: #555;">👥 Betreuende</h3>';
         html += '<table class="group-table betreuende-table">';
-        html += '<thead><tr><th>Name</th><th>Ortsverband</th></tr></thead><tbody>';
+        html += '<thead><tr><th>Name</th><th>Ortsverband</th><th>Fahrerlaubnis</th></tr></thead><tbody>';
         group.Betreuende.forEach(b => {
             html += '<tr class="betreuende-row">';
             html += '<td>' + escapeHtml(b.Name) + '</td>';
             html += '<td>' + escapeHtml(b.Ortsverband) + '</td>';
+            html += '<td>' + (b.Fahrerlaubnis ? '✓' : '–') + '</td>';
             html += '</tr>';
         });
         html += '</tbody></table>';

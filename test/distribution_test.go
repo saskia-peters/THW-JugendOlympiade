@@ -313,7 +313,7 @@ func TestDistribution_PreGroupsStayTogether(t *testing.T) {
 	}
 
 	// Run the distribution algorithm
-	err = services.CreateBalancedGroups(db, 8)
+	_, err = services.CreateBalancedGroups(db, 8)
 	if err != nil {
 		t.Fatalf("Failed to create balanced groups: %v", err)
 	}

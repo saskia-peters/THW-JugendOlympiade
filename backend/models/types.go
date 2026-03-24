@@ -24,9 +24,10 @@ type Teilnehmende struct {
 
 // Betreuende represents a caretaker/driver for a group
 type Betreuende struct {
-	ID          int
-	Name        string
-	Ortsverband string
+	ID            int
+	Name          string
+	Ortsverband   string
+	Fahrerlaubnis bool // true = "ja" in the Excel sheet
 }
 
 // Group represents a group of participants

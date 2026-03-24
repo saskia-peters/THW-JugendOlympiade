@@ -17,7 +17,8 @@ func setupFullTestDB(t *testing.T) *sql.DB {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS betreuende (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
-		ortsverband TEXT
+		ortsverband TEXT,
+		fahrerlaubnis INTEGER NOT NULL DEFAULT 0
 	)`); err != nil {
 		t.Fatalf("Failed to create betreuende table: %v", err)
 	}
