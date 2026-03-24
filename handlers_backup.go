@@ -136,6 +136,31 @@ func (a *App) RestoreDatabase(backupFilename string) map[string]interface{} {
 		}
 	}
 
+	// Integrity-check the backup BEFORE touching the live database.
+	// Opening it directly with SQLite avoids any file copy at this stage.
+	checkDB, err := sql.Open("sqlite", backupPath)
+	if err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Backup-Datei konnte nicht geprüft werden: %v", err),
+		}
+	}
+	var quickCheckResult string
+	if err := checkDB.QueryRow("PRAGMA quick_check").Scan(&quickCheckResult); err != nil {
+		checkDB.Close()
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Integritätsprüfung fehlgeschlagen: %v", err),
+		}
+	}
+	checkDB.Close()
+	if quickCheckResult != "ok" {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Backup ist beschädigt (PRAGMA quick_check: %s). Wiederherstellung abgebrochen.", quickCheckResult),
+		}
+	}
+
 	if a.db != nil {
 		a.db.Close()
 		a.db = nil
