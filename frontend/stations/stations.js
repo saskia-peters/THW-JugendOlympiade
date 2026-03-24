@@ -39,7 +39,7 @@ export async function handleShowStations() {
     await handleShowStationsForGroup(null);
 }
 
-export async function handleShowStationsForGroup(preselectedGroupID) {
+export async function handleShowStationsForGroup(preselectedGroupID, focusStationID = null) {
     setStatus('Daten für Ergebniseingabe werden geladen...', 'info');
     
     try {
@@ -66,7 +66,7 @@ export async function handleShowStationsForGroup(preselectedGroupID) {
             tabs.style.display = 'block';
             // Ensure complete cleanup before rendering
             clearAllTabs();
-            renderGroupBasedEntry(stationsResult.stations, groupsResult.groups, preselectedGroupID);
+            renderGroupBasedEntry(stationsResult.stations, groupsResult.groups, preselectedGroupID, focusStationID);
         }
     } catch (err) {
         setStatus('FEHLER: ' + err, 'error');
@@ -76,7 +76,7 @@ export async function handleShowStationsForGroup(preselectedGroupID) {
     }
 }
 
-function renderGroupBasedEntry(stations, groups, preselectedGroupID = null) {
+function renderGroupBasedEntry(stations, groups, preselectedGroupID = null, focusStationID = null) {
     // Clear existing content
     tabButtons.innerHTML = '';
     tabContents.innerHTML = '';
@@ -140,6 +140,7 @@ function renderGroupBasedEntry(stations, groups, preselectedGroupID = null) {
         // If a group was preselected, show its table immediately
         if (preselectedGroupID) {
             renderStationTable(preselectedGroupID, stations);
+            if (focusStationID) scrollToStation(focusStationID);
         }
     }
 }
@@ -406,4 +407,99 @@ function showUnsavedWarning(groupSelector, stations) {
         groupSelector.value = target;
         renderStationTable(target, stations);
     });
+}
+
+// Scrolls to, and focuses the score input for, the given station row.
+function scrollToStation(stationID) {
+    const row = document.getElementById('row-' + stationID);
+    if (row) {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const input = document.getElementById('score-' + stationID);
+        if (input) input.focus();
+    }
+}
+
+// ──────────────────────────────────────────────────────────────
+// Eingabeübersicht – matrix of stations × groups
+// ──────────────────────────────────────────────────────────────
+
+export async function handleShowInputOverview() {
+    setStatus('Eingabeübersicht wird geladen...', 'info');
+    try {
+        const [stationsResult, groupsResult] = await Promise.all([
+            window.go.main.App.ShowStations(),
+            window.go.main.App.GetAllGroups()
+        ]);
+
+        if (stationsResult.status === 'error') {
+            setStatus('FEHLER: ' + stationsResult.message, 'error');
+            output.style.display = 'block';
+            tabs.style.display = 'none';
+            output.textContent = 'Fehler: ' + stationsResult.message;
+            return;
+        }
+        if (groupsResult.status === 'error') {
+            setStatus('FEHLER: ' + groupsResult.message, 'error');
+            output.style.display = 'block';
+            tabs.style.display = 'none';
+            output.textContent = 'Fehler: ' + groupsResult.message;
+            return;
+        }
+
+        setStatus('Eingabeübersicht', 'success');
+        document.querySelectorAll('.category-dropdown').forEach(d => d.removeAttribute('open'));
+        output.style.display = 'none';
+        tabs.style.display = 'block';
+        clearAllTabs();
+        renderInputOverview(stationsResult.stations, groupsResult.groups);
+    } catch (err) {
+        setStatus('FEHLER: ' + err, 'error');
+        output.style.display = 'block';
+        tabs.style.display = 'none';
+        output.textContent = 'Fehler: ' + err;
+    }
+}
+
+function renderInputOverview(stations, groups) {
+    tabButtons.innerHTML = '';
+    tabContents.innerHTML = '';
+
+    if (!stations || stations.length === 0 || !groups || groups.length === 0) {
+        tabContents.innerHTML = '<div class="empty-message">Keine Daten vorhanden.</div>';
+        return;
+    }
+
+    let html = '<div class="overview-container">';
+    html += '<h2 class="overview-title">&#128203; Eingabe&#252;bersicht</h2>';
+    html += '<table class="overview-table">';
+
+    // Header row
+    html += '<thead>';
+    html += '<tr><th class="overview-th-station"></th>';
+    html += '<th class="overview-th-gruppe-label" colspan="' + groups.length + '">Gruppe</th>';
+    html += '</tr>';
+    html += '<tr><th class="overview-th-station">Station</th>';
+    groups.forEach(groupID => {
+        html += '<th class="overview-th-group">' + groupID + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    // One row per station
+    stations.forEach(station => {
+        html += '<tr>';
+        html += '<td class="overview-station-name">' + escapeHtml(station.StationName) + '</td>';
+        groups.forEach(groupID => {
+            const hasScore = station.GroupScores && station.GroupScores.some(gs => gs.GroupID === groupID);
+            const cls = hasScore ? 'overview-cell overview-cell--ok' : 'overview-cell overview-cell--missing';
+            const icon = hasScore ? '&#10003;' : '&#10007;';
+            const title = 'Gruppe ' + groupID + ' \u2013 ' + station.StationName;
+            html += '<td class="' + cls + '" title="' + escapeHtml(title) + '" ';
+            html += 'onclick="window.handleShowStationsForGroup(' + groupID + ', ' + station.StationID + ')">';
+            html += icon + '</td>';
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    tabContents.innerHTML = html;
 }

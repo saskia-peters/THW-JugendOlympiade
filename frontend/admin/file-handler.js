@@ -1,5 +1,5 @@
 // File loading and management
-import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnPDF, sectionAusgabe, ausgabeDropdown, btnBackup, setEvalButtonsEnabled } from '../shared/dom.js';
+import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnOverview, btnPDF, sectionAusgabe, ausgabeDropdown, btnBackup, setEvalButtonsEnabled } from '../shared/dom.js';
 
 export async function openFileDialog() {
     try {
@@ -27,6 +27,7 @@ export async function openFileDialog() {
             btnDistribute.disabled = false;
             btnShow.disabled = true;
             btnStations.disabled = true;
+            if (btnOverview) btnOverview.disabled = true;
             setEvalButtonsEnabled(false);
             btnPDF.disabled = true;
             output.style.display = 'block';
@@ -186,6 +187,7 @@ window.confirmRestore = async function(backupFilename) {
             // Enable core buttons
             btnShow.disabled = false;
             btnStations.disabled = false;
+            if (btnOverview) btnOverview.disabled = false;
             btnPDF.disabled = false;
             // Only enable redistribution if no scores exist yet
             const hasScores = await window.go.main.App.HasScores();
@@ -220,6 +222,7 @@ export async function handleDistributeGroups() {
         }
         btnShow.disabled = false;
         btnStations.disabled = false;
+        if (btnOverview) btnOverview.disabled = false;
         btnPDF.disabled = false;
         // Evaluation and certificates stay disabled until the first score is entered
         setEvalButtonsEnabled(false);

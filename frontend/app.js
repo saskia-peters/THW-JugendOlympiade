@@ -2,7 +2,7 @@
 import { openFileDialog, handleBackupDatabase, handleRestoreDatabase, handleDistributeGroups } from './admin/file-handler.js';
 import { handleEditConfig } from './admin/config-editor.js';
 import { handleShowGroups } from './groups/groups.js';
-import { handleShowStations, handleShowStationsForGroup } from './stations/stations.js';
+import { handleShowStations, handleShowStationsForGroup, handleShowInputOverview } from './stations/stations.js';
 import { handleGroupEvaluation, handleOrtsverbandEvaluation, toggleOVScores } from './evaluations/evaluations.js';
 import { 
     handleGeneratePDF, 
@@ -11,7 +11,7 @@ import {
     handleGenerateCertificates,
     handleGenerateOVCertificates
 } from './reports/pdf-handlers.js';
-import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnPDF, btnBackup, sectionAusgabe, ausgabeDropdown, setEvalButtonsEnabled } from './shared/dom.js';
+import { setStatus, output, tabs, btnShow, btnDistribute, btnStations, btnOverview, btnPDF, btnBackup, sectionAusgabe, ausgabeDropdown, setEvalButtonsEnabled } from './shared/dom.js';
 
 // Load configuration and run startup DB check
 (async () => {
@@ -69,6 +69,7 @@ async function _handleStartupDBChoice(dbName) {
             if (btnDistribute) btnDistribute.disabled = false;
             if (btnShow) btnShow.disabled = false;
             if (btnStations) btnStations.disabled = false;
+            if (btnOverview) btnOverview.disabled = false;
             if (btnPDF) btnPDF.disabled = false;
             setEvalButtonsEnabled(true);
             output.style.display = 'block';
@@ -98,6 +99,7 @@ window.handleEditConfig = handleEditConfig;
 window.handleShowGroups = handleShowGroups;
 window.handleShowStations = handleShowStations;
 window.handleShowStationsForGroup = handleShowStationsForGroup;
+window.handleShowInputOverview = handleShowInputOverview;
 window.handleEvaluation = handleGroupEvaluation;
 window.handleOrtsverbandEvaluation = handleOrtsverbandEvaluation;
 window.toggleOVScores = toggleOVScores;

@@ -230,3 +230,107 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
+
+/* ── Eingabeübersicht matrix ─────────────────────────────────── */
+
+.overview-container {
+    padding: 20px;
+}
+
+.overview-title {
+    margin: 0 0 16px 0;
+    color: #333;
+}
+
+.overview-table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.overview-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f5f5f5;
+}
+
+.overview-th-gruppe-label {
+    text-align: center;
+    padding: 6px 10px 2px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #555;
+    border-bottom: 1px solid #ddd;
+}
+
+.overview-th-station {
+    text-align: left;
+    padding: 8px 12px;
+    font-weight: 600;
+    border-bottom: 2px solid #ccc;
+    min-width: 180px;
+}
+
+.overview-th-group {
+    text-align: center;
+    padding: 8px 10px;
+    font-weight: 600;
+    border-bottom: 2px solid #ccc;
+    min-width: 42px;
+}
+
+.overview-station-name {
+    padding: 7px 12px;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.overview-cell {
+    text-align: center;
+    padding: 6px 4px;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.overview-cell:hover {
+    filter: brightness(0.9);
+}
+
+.overview-cell--ok {
+    color: #2e7d32;
+    background: #e8f5e9;
+}
+
+.overview-cell--missing {
+    color: #c62828;
+    background: #fce4ec;
+}
+
+/* button in Daten section */
+.btn-overview {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.btn-overview:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-overview:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
