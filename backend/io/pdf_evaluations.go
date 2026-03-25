@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"THW-JugendOlympiade/backend/database"
 
@@ -137,8 +138,9 @@ func GenerateOrtsverbandEvaluationPDF(db *sql.DB) error {
 	// Table rows — winner row highlighted, rest uniform (no rank numbers)
 	theme.TextColor(pdf, theme.ColorText)
 
-	for i, eval := range evaluations {
-		isWinner := i == 0
+	topScore := evaluations[0].AverageScore
+	for _, eval := range evaluations {
+		isWinner := eval.AverageScore == topScore
 		if isWinner {
 			theme.Font(pdf, "B", theme.SizeBody)
 			theme.FillColor(pdf, theme.ColorTableHighlight)
@@ -150,6 +152,7 @@ func GenerateOrtsverbandEvaluationPDF(db *sql.DB) error {
 		if isWinner {
 			name = enc("★ " + eval.Ortsverband + " – Bester Ortsverband")
 		}
+
 		pdf.CellFormat(colWidths[0], 9, name, "1", 0, "L", isWinner, 0, "")
 		pdf.CellFormat(colWidths[1], 9, fmt.Sprintf("%d", eval.ParticipantCount), "1", 0, "C", isWinner, 0, "")
 		pdf.Ln(-1)
@@ -164,7 +167,13 @@ func GenerateOrtsverbandEvaluationPDF(db *sql.DB) error {
 	theme.Font(pdf, "", theme.SizeBody)
 	pdf.CellFormat(0, 6, enc(fmt.Sprintf("Ortsverbände gesamt: %d", len(evaluations))), "", 1, "L", false, 0, "")
 	if len(evaluations) > 0 {
-		pdf.CellFormat(0, 6, enc(fmt.Sprintf("Bester Ortsverband: %s", evaluations[0].Ortsverband)), "", 1, "L", false, 0, "")
+		var winners []string
+		for _, e := range evaluations {
+			if e.AverageScore == topScore {
+				winners = append(winners, e.Ortsverband)
+			}
+		}
+		pdf.CellFormat(0, 6, enc(fmt.Sprintf("Bester Ortsverband: %s", strings.Join(winners, ", "))), "", 1, "L", false, 0, "")
 	}
 
 	if err = pdf.OutputFileAndClose(filepath.Join(pdfOutputDir, "Auswertung_nach_Ortsverband.pdf")); err != nil {

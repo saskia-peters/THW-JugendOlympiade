@@ -165,8 +165,9 @@ function renderOrtsverbandEvaluations(evaluations) {
     html += '<th class="ov-score-col" style="display:none">Durchschnitt</th>';
     html += '</tr></thead><tbody>';
     
-    evaluations.forEach((evalItem, index) => {
-        const isWinner = index === 0;
+    const topScore = evaluations[0].AverageScore;
+    evaluations.forEach((evalItem) => {
+        const isWinner = evalItem.AverageScore === topScore;
         const rowClass = isWinner ? 'podium-row' : '';
         const nameCell = isWinner
             ? '🏆 ' + escapeHtml(evalItem.Ortsverband) + ' <span class="winner-badge">Bester Ortsverband</span>'
