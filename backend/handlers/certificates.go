@@ -9,14 +9,14 @@ import (
 )
 
 // GenerateParticipantCertificates generates the participant certificates PDF.
-func GenerateParticipantCertificates(db *sql.DB, eventYear int) map[string]interface{} {
+func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string, pictureDir string) map[string]interface{} {
 	if db == nil {
 		return map[string]interface{}{
 			"status":  "error",
 			"message": "Bitte zuerst eine Excel-Datei laden.",
 		}
 	}
-	if err := io.GenerateParticipantCertificates(db, eventYear); err != nil {
+	if err := io.GenerateParticipantCertificates(db, eventYear, certStyle, pictureDir); err != nil {
 		return map[string]interface{}{
 			"status":  "error",
 			"message": fmt.Sprintf("Urkunden konnten nicht erstellt werden: %v", err),

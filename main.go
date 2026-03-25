@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"os"
 
 	"THW-JugendOlympiade/backend/config"
 	"THW-JugendOlympiade/backend/io"
@@ -41,6 +42,12 @@ func (a *App) startup(ctx context.Context) {
 	}
 	a.cfg = cfg
 	io.SetPDFOutputDir(cfg.Ausgabe.PDFOrdner)
+
+	if cfg.Ausgabe.BilderOrdner != "" {
+		if err := os.MkdirAll(cfg.Ausgabe.BilderOrdner, 0755); err != nil {
+			fmt.Printf("Bilderordner konnte nicht erstellt werden: %v\n", err)
+		}
+	}
 
 	// Apply configured database file name (non-empty; fall back to default)
 	if cfg.Ausgabe.DBName != "" {

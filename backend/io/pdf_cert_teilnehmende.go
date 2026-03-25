@@ -14,8 +14,10 @@ import (
 )
 
 // GenerateParticipantCertificates creates a PDF with one certificate per participant.
+// certStyle: "text" (default) shows a group members table; "picture" embeds a group photo.
+// pictureDir: directory containing group photos named group_picture_XXX.jpg.
 // If certificate_template.png exists in the working directory it is used as background.
-func GenerateParticipantCertificates(db *sql.DB, eventYear int) error {
+func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string, pictureDir string) error {
 	if err := ensurePDFDirectory(); err != nil {
 		return err
 	}
@@ -61,13 +63,24 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int) error {
 		rank := groupRanks[group.GroupID]
 		rankText := certRankLabel(rank)
 
+		picturePath := groupPicturePath(pictureDir, group.GroupID)
+
 		for _, participant := range group.Teilnehmende {
 			pdf.AddPage()
-			if useTemplate {
-				pdf.Image(templateFile, 0, 0, 210, 297, false, imageTypeFromFile(templateFile), 0, "")
-				certRenderTemplate(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
+			if certStyle == "picture" {
+				if useTemplate {
+					pdf.Image(templateFile, 0, 0, 210, 297, false, imageTypeFromFile(templateFile), 0, "")
+					certRenderTemplatePicture(pdf, theme, participant, group.GroupID, rankText, picturePath, contentLeft, contentWidth, currentYear)
+				} else {
+					certRenderProgrammaticPicture(pdf, theme, participant, group.GroupID, rankText, picturePath, contentLeft, contentWidth, currentYear)
+				}
 			} else {
-				certRenderProgrammatic(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
+				if useTemplate {
+					pdf.Image(templateFile, 0, 0, 210, 297, false, imageTypeFromFile(templateFile), 0, "")
+					certRenderTemplate(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
+				} else {
+					certRenderProgrammatic(pdf, theme, participant, group.GroupID, rankText, group.Teilnehmende, contentLeft, contentWidth, currentYear)
+				}
 			}
 		}
 	}
@@ -222,5 +235,122 @@ func certMembersTable(pdf *gofpdf.Fpdf, theme PDFTheme, members []models.Teilneh
 		pdf.CellFormat(colWidths[0], 7, enc(m.Name), "1", 0, "C", fill, 0, "")
 		pdf.CellFormat(colWidths[1], 7, enc(m.Ortsverband), "1", 0, "C", fill, 0, "")
 		pdf.Ln(-1)
+	}
+}
+
+// groupPicturePath returns the expected path for a group's photo.
+// Format: <pictureDir>/group_picture_XXX.jpg (zero-padded to 3 digits).
+func groupPicturePath(pictureDir string, groupID int) string {
+	return filepath.Join(pictureDir, fmt.Sprintf("group_picture_%03d.jpg", groupID))
+}
+
+// certRenderTemplatePicture renders the picture-style certificate over a background template.
+//
+// Vertical layout (y in mm):
+//
+//	 60  event title
+//	 74  year
+//	 95  participant name
+//	105  ortsverband
+//	125  group + rank
+//	145  group photo (120 mm wide, centred; placeholder rectangle if missing)
+func certRenderTemplatePicture(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmende, groupID int, rankText string, picturePath string, left, width float64, year int) {
+	pdf.SetXY(left, 60)
+	theme.Font(pdf, "B", theme.SizeCertTitle)
+	theme.TextColor(pdf, theme.ColorPrimary)
+	pdf.CellFormat(width, 12, "Jugendolympiade", "", 0, "C", false, 0, "")
+
+	pdf.SetXY(left, 74)
+	theme.Font(pdf, "B", theme.SizeCertYear)
+	theme.TextColor(pdf, theme.ColorPrimary)
+	pdf.CellFormat(width, 10, fmt.Sprintf("%d", year), "", 0, "C", false, 0, "")
+
+	pdf.SetXY(left, 95)
+	theme.Font(pdf, "B", theme.SizeCertName)
+	theme.TextColor(pdf, theme.ColorText)
+	pdf.CellFormat(width, 10, enc(p.Name), "", 0, "C", false, 0, "")
+
+	pdf.SetXY(left, 105)
+	theme.Font(pdf, "", theme.SizeCertOrtsverband)
+	theme.TextColor(pdf, theme.ColorSubtext)
+	pdf.CellFormat(width, 8, enc(fmt.Sprintf("Ortsverband %s", p.Ortsverband)), "", 0, "C", false, 0, "")
+
+	pdf.SetXY(left, 120)
+	theme.Font(pdf, "B", theme.SizeCertGroup)
+	theme.TextColor(pdf, theme.ColorText)
+	pdf.CellFormat(width, 10, fmt.Sprintf("Gruppe %d", groupID), "", 0, "C", false, 0, "")
+
+	pdf.SetXY(left, 132)
+	theme.Font(pdf, "B", theme.SizeCertRank)
+	theme.TextColor(pdf, theme.ColorAccent)
+	pdf.CellFormat(width, 12, rankText, "", 0, "C", false, 0, "")
+
+	certDrawGroupPicture(pdf, theme, picturePath, left, width, 148)
+}
+
+// certRenderProgrammaticPicture renders the picture-style certificate without a background template.
+func certRenderProgrammaticPicture(pdf *gofpdf.Fpdf, theme PDFTheme, p models.Teilnehmende, groupID int, rankText string, picturePath string, left, width float64, year int) {
+	pdf.Ln(15)
+	pdf.SetX(left)
+	theme.Font(pdf, "B", theme.SizeCertTitle)
+	theme.TextColor(pdf, theme.ColorPrimary)
+	pdf.CellFormat(width, 20, "Jugendolympiade", "", 1, "C", false, 0, "")
+
+	pdf.Ln(3)
+	pdf.SetX(left)
+	theme.Font(pdf, "B", theme.SizeCertYear)
+	pdf.CellFormat(width, 12, fmt.Sprintf("%d", year), "", 1, "C", false, 0, "")
+	pdf.Ln(10)
+
+	pdf.SetX(left)
+	theme.Font(pdf, "B", theme.SizeCertName)
+	theme.TextColor(pdf, theme.ColorText)
+	pdf.CellFormat(width, 15, enc(p.Name), "", 1, "C", false, 0, "")
+	pdf.Ln(3)
+
+	pdf.SetX(left)
+	theme.Font(pdf, "", theme.SizeCertOrtsverband)
+	theme.TextColor(pdf, theme.ColorSubtext)
+	pdf.CellFormat(width, 8, enc(fmt.Sprintf("Ortsverband: %s", p.Ortsverband)), "", 1, "C", false, 0, "")
+	pdf.Ln(5)
+
+	pdf.SetX(left)
+	theme.Font(pdf, "B", theme.SizeCertGroup)
+	theme.TextColor(pdf, theme.ColorText)
+	pdf.CellFormat(width, 10, fmt.Sprintf("Gruppe %d", groupID), "", 1, "C", false, 0, "")
+
+	pdf.SetX(left)
+	theme.Font(pdf, "B", theme.SizeCertRank)
+	theme.TextColor(pdf, theme.ColorAccent)
+	pdf.CellFormat(width, 12, rankText, "", 1, "C", false, 0, "")
+	pdf.Ln(6)
+
+	certDrawGroupPicture(pdf, theme, picturePath, left, width, -1)
+}
+
+// certDrawGroupPicture embeds the group photo centred on the page.
+// If the photo file does not exist a placeholder rectangle with a label is drawn instead.
+// Pass startY >= 0 for absolute positioning; -1 uses the current cursor Y.
+func certDrawGroupPicture(pdf *gofpdf.Fpdf, theme PDFTheme, picturePath string, left, width, startY float64) {
+	const imgW = 120.0
+	const imgH = 80.0 // placeholder height; actual image scales by aspect ratio
+	imgX := left + (width-imgW)/2
+
+	if startY < 0 {
+		startY = pdf.GetY()
+	}
+
+	if _, err := os.Stat(picturePath); err == nil {
+		pdf.Image(picturePath, imgX, startY, imgW, 0, false, "", 0, "")
+	} else {
+		// Placeholder: grey rectangle with centred label
+		pdf.SetFillColor(220, 220, 220)
+		pdf.SetDrawColor(150, 150, 150)
+		pdf.Rect(imgX, startY, imgW, imgH, "FD")
+		theme.Font(pdf, "", theme.SizeSmall)
+		theme.TextColor(pdf, theme.ColorSubtext)
+		pdf.SetXY(imgX, startY+imgH/2-3)
+		pdf.CellFormat(imgW, 6, enc(fmt.Sprintf("[Gruppenfoto %s]", filepath.Base(picturePath))), "", 0, "C", false, 0, "")
+		theme.TextColor(pdf, theme.ColorText)
 	}
 }
