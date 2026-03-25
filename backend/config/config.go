@@ -32,8 +32,8 @@ type ErgebnisseConfig struct {
 }
 
 type AusgabeConfig struct {
-	PDFOrdner    string `toml:"pdf_ordner"`
-	DBName       string `toml:"db_name"`
+	PDFOrdner string `toml:"pdf_ordner"`
+	DBName    string `toml:"db_name"`
 	// UrkunderStil controls the participant certificate style.
 	// "text" (default): group members table. "picture": group photo.
 	UrkunderStil string `toml:"urkunden_stil"`
