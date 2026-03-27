@@ -23,6 +23,8 @@ export function GenerateParticipantCertificates():Promise<Record<string, any>>;
 
 export function GetAllGroups():Promise<Record<string, any>>;
 
+export function GetCertLayoutRaw():Promise<Record<string, any>>;
+
 export function GetConfig():Promise<Record<string, any>>;
 
 export function GetConfigRaw():Promise<Record<string, any>>;
@@ -40,6 +42,8 @@ export function LoadFile():Promise<Record<string, any>>;
 export function ResetToFreshDB():Promise<Record<string, any>>;
 
 export function RestoreDatabase(arg1:string):Promise<Record<string, any>>;
+
+export function SaveCertLayoutRaw(arg1:string):Promise<Record<string, any>>;
 
 export function SaveConfigRaw(arg1:string):Promise<Record<string, any>>;
 

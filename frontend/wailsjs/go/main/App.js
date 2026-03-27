@@ -46,6 +46,10 @@ export function GetAllGroups() {
   return window['go']['main']['App']['GetAllGroups']();
 }
 
+export function GetCertLayoutRaw() {
+  return window['go']['main']['App']['GetCertLayoutRaw']();
+}
+
 export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
@@ -80,6 +84,10 @@ export function ResetToFreshDB() {
 
 export function RestoreDatabase(arg1) {
   return window['go']['main']['App']['RestoreDatabase'](arg1);
+}
+
+export function SaveCertLayoutRaw(arg1) {
+  return window['go']['main']['App']['SaveCertLayoutRaw'](arg1);
 }
 
 export function SaveConfigRaw(arg1) {

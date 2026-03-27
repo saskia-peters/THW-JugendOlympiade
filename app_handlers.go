@@ -24,6 +24,14 @@ func (a *App) SaveConfigRaw(content string) map[string]interface{} {
 	return result
 }
 
+func (a *App) GetCertLayoutRaw() map[string]interface{} {
+	return handlers.GetCertLayoutRaw()
+}
+
+func (a *App) SaveCertLayoutRaw(content string) map[string]interface{} {
+	return handlers.SaveCertLayoutRaw(content)
+}
+
 // --- Files / Startup ---
 
 func (a *App) CheckStartup() map[string]interface{} {
