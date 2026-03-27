@@ -121,11 +121,13 @@ THW-JugendOlympiade/
 ### Backend Architecture
 
 **Layered Architecture:**
-1. **main.go**: Entry point, Wails bindings, high-level orchestration
-2. **backend/database**: Data access layer (DAL)
-3. **backend/services**: Business logic layer
-4. **backend/io**: File I/O operations
-5. **backend/models**: Shared data structures
+1. **main.go**: Entry point, App struct, startup/shutdown hooks, Wails bootstrap
+2. **app_handlers.go**: Thin `App` method wrappers — delegates every bound method to `backend/handlers/`
+3. **backend/handlers**: Domain handler functions (no Wails dependency)
+4. **backend/database**: Data access layer (DAL)
+5. **backend/services**: Business logic layer
+6. **backend/io**: File I/O operations
+7. **backend/models**: Shared data structures
 
 **Key Design Patterns:**
 - **App-scoped DB Connection**: `a.db` on the App struct (thread-safe, testable)
@@ -160,8 +162,13 @@ const result = await window.go.main.App.LoadFile();
 ```
 
 ```go
-// Backend (main.go)
+// Backend (app_handlers.go) — thin wrapper
 func (a *App) LoadFile() map[string]interface{} {
+    return handlers.LoadFile(a.ctx, &a.db)
+}
+
+// Backend (backend/handlers/files.go) — actual logic
+func LoadFile(ctx context.Context, db **sql.DB) map[string]interface{} {
     // Implementation
 }
 ```
@@ -387,9 +394,13 @@ Tests are located in `test/` directory:
 test/
 ├── database_test.go       # Database operation tests
 ├── distribution_test.go   # Group distribution (8 tests)
+├── evaluations_test.go    # Evaluation query tests
 ├── input_test.go          # Excel import validation (10 tests)
+├── inserts_test.go        # Insert operation tests
 ├── models_test.go         # Data model tests
+├── queries_test.go        # Query tests
 ├── scores_test.go         # Score assignment tests
+├── services_test.go       # Service layer tests
 └── README.md              # Detailed test documentation
 ```
 
@@ -760,6 +771,8 @@ max_punkte = 1200  # Maximum score per station
 [ausgabe]
 pdf_ordner = "pdfdocs"  # Output directory for generated PDFs
 db_name = "data.db"     # SQLite database filename
+urkunden_stil = "text"  # Participant certificate style: "text" (members table) or "picture" (group photo)
+bilder_ordner = "pictures"  # Directory containing group photos (only used when urkunden_stil = "picture")
 ```
 
 The in-app editor (Admin → "Konfiguration bearbeiten") calls `GetConfigRaw()` / `SaveConfigRaw()` to read and write this file with server-side TOML validation.
@@ -791,10 +804,10 @@ The in-app editor (Admin → "Konfiguration bearbeiten") calls `GetConfigRaw()` 
 
 **Database filename** (`backend/models/types.go`):
 ```go
-const DbFile = "data.db"
+var DbFile = "data.db"
 ```
 
-All other previously hardcoded values (group size, score bounds, PDF directory, event name) are now read from `config.toml` at runtime.
+All other previously hardcoded values (group size, score bounds, PDF directory, event name, certificate style) are now read from `config.toml` at runtime.
 
 ### Icons and Branding
 

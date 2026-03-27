@@ -44,7 +44,7 @@ The Jugendolympiade Verwaltung application is a **well-structured Wails desktop 
 | 2 | Redundant Tables (gruppe + rel\_tn\_grp) | High | Data Consistency | Potential data inconsistency, double writes | ✅ **RESOLVED** |
 | 3 | Missing Database Indexes | High | Performance | Poor query performance at scale (>1000 records) | ✅ **RESOLVED** |
 | 4 | No Connection Pool Management | High | Reliability | Resource leaks, connection exhaustion | ✅ **RESOLVED** |
-| 5 | Empty Handlers Directory | Low | Code Quality | Project confusion, dead code | ⚠️ Open |
+| 5 | Empty Handlers Directory | Low | Code Quality | Project confusion, dead code | ✅ **RESOLVED** |
 | 6 | Hardcoded Configuration Values | Medium | Maintainability | Difficult to customize for different events | ✅ **RESOLVED** |
 | 7 | No Error Recovery Mechanisms | Medium | Reliability | Poor user experience on transient failures | ⚠️ Open |
 | 8 | Frontend DOM Manipulation | Low | Maintainability | Harder to maintain as UI grows | ⚠️ Open |
@@ -132,59 +132,11 @@ COMMENT ON TABLE gruppe IS 'DEPRECATED: Use rel_tn_grp instead. Maintained for b
 
 ---
 
-### 5. Empty Handlers Directory 🔍 LOW
+### 5. Empty Handlers Directory ✅ RESOLVED
 
-**Severity:** Low  
-**Category:** Code Organization  
-**Files:** `backend/handlers/` (empty directory)
+**Status:** Resolved — **Option B implemented** (March 25, 2026).
 
-**Description:**
-The `backend/handlers/` directory exists but is empty.
-
-**Possible Reasons:**
-1. **Planned Feature**: Reserved for future HTTP/RPC handlers
-2. **Refactoring Artifact**: Handlers moved to main.go
-3. **Template Leftover**: From initial project scaffold
-
-**Current Handler Location:**
-All request handlers are currently in `main.go` as `App` methods:
-- `LoadFile()`, `ShowGroups()`, `ShowStations()`, etc.
-- Total: 13 public methods
-
-**Impact:**
-- Minimal: Just directory clutter
-- Slight confusion for new developers
-
-**Recommendation:**
-
-**Option A** (Remove):
-```bash
-rm -rf backend/handlers
-```
-
-**Option B** (Use):
-Move handler methods from `main.go` to`backend/handlers/`:
-```go
-// backend/handlers/file_handlers.go
-package handlers
-
-func LoadFile(ctx context.Context, db *sql.DB) map[string]interface{} {
-    // Move implementation from main.go
-}
-
-// main.go
-func (a *App) LoadFile() map[string]interface{} {
-    return handlers.LoadFile(a.ctx, a.db)
-}
-```
-
-**Option C** (Document):
-Add `backend/handlers/README.md` explaining future use.
-
-**Recommendation**: **Option A** (Remove) - handlers are simple enough to stay in main.go for a desktop app.
-
-**Effort:** Minimal (5 minutes)  
-**Impact:** Low (code cleanliness)
+All handler logic was moved from `main.go` into `backend/handlers/` (6 domain files: `admin.go`, `backup.go`, `certificates.go`, `files.go`, `queries.go`, `reports.go`). A dedicated `app_handlers.go` file in the project root provides the thin `App` method wrappers that Wails requires, grouped by domain section. `main.go` now contains only bootstrap code (`App` struct, `startup`, `shutdown`, `main`).
 
 ---
 

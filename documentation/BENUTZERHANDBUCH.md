@@ -204,7 +204,10 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
    - Ortsverband
    - Gruppenbezeichnung
    - Erreichter Platz der Gruppe
-   - Liste aller Gruppenmitglieder
+   - **Stil `text`** (Standard): Liste aller Gruppenmitglieder als Tabelle
+   - **Stil `picture`**: Foto der Gruppe (Datei `group_picture_XXX.jpg` aus dem konfigurierten Bilderordner)
+
+> **Hinweis:** Der Stil wird über `urkunden_stil` in `config.toml` gesteuert (`"text"` oder `"picture"`). Beim Stil `picture` werden Fotos aus dem Ordner `bilder_ordner` (Standard: `pictures/`) erwartet. Dateinamen: `group_picture_001.jpg`, `group_picture_002.jpg`, usw. Der Ordner wird beim Programmstart automatisch angelegt.
 
 > **Hinweis:** Falls die Datei `certificate_template.png` im Programmverzeichnis liegt, wird sie als Hintergrundbild genutzt.
 
@@ -232,7 +235,7 @@ Alle erzeugten PDFs werden im Unterordner **`pdfdocs/`** im Programmverzeichnis 
 | `Auswertung_nach_Gruppe.pdf` | Gruppenrangliste nach Gesamtpunktzahl | „📄 PDF erstellen" in Gruppenauswertung |
 | `Auswertung_nach_Ortsverband.pdf` | Ortsverbandsrangliste nach Ø-Score | „📄 PDF erstellen" in Ortsverbandsauswertung |
 | `Urkunden_Teilnehmende.pdf` | Eine Urkunde pro Teilnehmende/r | „Urkunden Teilnehmende" |
-| `Urkunden_Ortsverbaende.pdf` | Eine Urkunde pro Ortsverband (Siegerurkunde für den Besten) | „Urkunden Ortsverbände" |
+| `Urkunden_Ortsverbaende.pdf` | Eine Urkunde pro Ortsverband (Siegerurkunde für alle Besten bei Gleichstand) | „Urkunden Ortsverbände“ |
 
 ---
 
@@ -262,6 +265,8 @@ max_punkte = 1200  # Größtes erlaubtes Ergebnis pro Station
 [ausgabe]
 pdf_ordner = "pdfdocs"  # Unterordner für erzeugte PDFs
 db_name = "data.db"     # Dateiname der SQLite-Datenbank
+urkunden_stil = "text"  # Urkunden-Stil: "text" (Mitgliedertabelle) oder "picture" (Gruppenfoto)
+bilder_ordner = "pictures"  # Unterordner mit Gruppenfotos (nur bei urkunden_stil = "picture")
 ```
 
 > **Hinweis:** Änderungen an Gruppengröße und Punktegrenzen werden erst nach einem Neustart der Anwendung vollständig wirksam. Änderungen am PDF-Ausgabeordner werden sofort übernommen.

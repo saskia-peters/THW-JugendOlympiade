@@ -14,7 +14,7 @@
 | 2 | Redundant tables (gruppe + rel\_tn\_grp) | High | ✅ Resolved | ✅ Still resolved |
 | 3 | Missing database indexes | High | ✅ Resolved | ✅ Still resolved |
 | 4 | No connection pool management | High | ✅ Resolved | ✅ Still resolved |
-| 5 | Empty `backend/handlers/` directory | Low | ⚠️ Open | ⚠️ **Still open** |
+| 5 | Empty `backend/handlers/` directory | Low | ⚠️ Open | ✅ **Resolved (Mar 25)** |
 | 6 | Hardcoded configuration values | Medium | ✅ Resolved | ✅ Still resolved |
 | 7 | No error recovery / retry mechanisms | Medium | ⚠️ Open | ⚠️ **Still open** |
 | 8 | Frontend DOM manipulation | Low | ⚠️ Open | ⚠️ **Escalated — see below** |
@@ -31,18 +31,11 @@ All resolved findings confirmed still resolved. Four originally-open findings re
 
 ## Open Findings — Detailed Status
 
-### 5. Empty `backend/handlers/` Directory — ⚠️ Still Open
+### 5. Empty `backend/handlers/` Directory — ✅ Resolved (March 25, 2026)
 
-**Verified:** Directory exists and is empty.
+**Option B implemented.** `backend/handlers/` now contains 6 domain files (`admin.go`, `backup.go`, `certificates.go`, `files.go`, `queries.go`, `reports.go`). A new project-root file `app_handlers.go` provides the Wails-required `App` method wrappers. `main.go` is now bootstrap-only.
 
-```
-backend/handlers/   ← empty
-```
-
-All handler methods remain on `main.go` as `App` methods (spread across `main.go`, `handlers_files.go`, `handlers_certificates.go`, `handlers_queries.go`, `handlers_reports.go`).  
-No decision was made between Option A (remove), Option B (use), or Option C (document).
-
-**Recommendation unchanged:** Remove the empty directory or add a `README.md` explaining intent.
+---
 
 ---
 
@@ -172,9 +165,7 @@ Test count grew from 18 (March 10) to 122 (March 25). New tests cover the Fahrer
 ## Priority Actions
 
 | Priority | Action | Effort | Finding |
-|----------|--------|--------|---------|
-| Low / Immediate | Delete `frontend/app.old.js` | 1 min | #8 |
-| Low | Remove or document `backend/handlers/` | 5 min | #5 |
+|----------|--------|--------|--------|
 | Low | Fix coverage reporting with `-coverpkg` flag | 1–2 h | #10 |
 | Medium | Add retry logic to PDF and Excel I/O operations | 1–2 d | #7 |
 | Low | Externalize certificate layout (only if customization needed) | 2–3 d | #9 |

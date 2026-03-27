@@ -31,9 +31,11 @@ All PDFs are automatically saved to the configured output directory (default: `p
 - **Participant Certificates**: Individual certificates for all participants
   - Supports custom certificate templates (`certificate_template.png`)
   - Shows participant details, group assignment, and ranking
-  - Lists all group members
+  - **Style `text`** (default): lists all group members as a table
+  - **Style `picture`**: embeds a group photo (`pictures/group_picture_XXX.jpg`)
+  - Style controlled via `urkunden_stil` in `config.toml`
 - **Ortsverband Certificates**: One certificate per Ortsverband
-  - Best Ortsverband gets a special Siegerurkunde with `ov_winner_image.png`
+  - Best Ortsverband(e) (all tied on highest average score) get a special Siegerurkunde with `ov_winner_image.png`
   - All others get an identical participation certificate (no ranking)
   - Fully programmatic, centered A4 layout (no background image)
 

@@ -8,6 +8,26 @@ The application generates two types of PDF certificates. Both support optional c
 
 One certificate per participant. Generated via **📊 Ausgabe → „Urkunden Teilnehmende"**.
 
+Two styles are available, controlled by `urkunden_stil` in `config.toml`:
+
+| Setting | Effect |
+|---------|--------|
+| `urkunden_stil = "text"` | Members table (default) — lists all group members below the rank |
+| `urkunden_stil = "picture"` | Group photo — embeds a photo of the group instead of the members table |
+
+### Style `picture` — Group Photos
+
+Set `urkunden_stil = "picture"` in `config.toml`. Place JPEG photos in the configured picture directory (default: `pictures/`, set via `bilder_ordner`):
+
+```
+pictures/
+├── group_picture_001.jpg   ← Group 1
+├── group_picture_002.jpg   ← Group 2
+└── ...
+```
+
+The `pictures/` directory is created automatically on first launch. If a photo file is missing, a grey placeholder rectangle is shown instead.
+
 ### Optional Background Image
 
 Place a file named `certificate_template.png` in the application directory:
@@ -68,7 +88,7 @@ pdf.SetXY(0, 85)  // second number = Y position in mm
 
 One certificate page per Ortsverband. Generated via **📊 Ausgabe → „Urkunden Ortsverbände"**.
 
-- The **best Ortsverband** (highest average score) receives a **Siegerurkunde** with trophy image and "Bester Ortsverband" heading.
+- The **best Ortsverband(e)** (highest average score; all tied Ortsverbände) receive a **Siegerurkunde** with trophy image and "Bester Ortsverband" heading.
 - All other Ortsverbände receive a standard participation certificate.
 - The event name used on each certificate is taken from `config.toml` (`veranstaltung.name`).
 
