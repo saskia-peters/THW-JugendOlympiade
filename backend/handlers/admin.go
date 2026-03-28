@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"THW-JugendOlympiade/backend/config"
@@ -120,6 +121,70 @@ func GetImageAsBase64(filename string) map[string]interface{} {
 		return map[string]interface{}{"status": "error", "message": "Nur PNG/JPG erlaubt"}
 	}
 	data, err := os.ReadFile(filename)
+	if err != nil {
+		return map[string]interface{}{"status": "error", "message": err.Error()}
+	}
+	mime := "image/png"
+	if strings.HasSuffix(lower, ".jpg") || strings.HasSuffix(lower, ".jpeg") {
+		mime = "image/jpeg"
+	}
+	return map[string]interface{}{
+		"status":  "ok",
+		"dataURL": "data:" + mime + ";base64," + base64.StdEncoding.EncodeToString(data),
+	}
+}
+
+// ListGroupPictures returns names of image files in the configured picture directory.
+// If the directory does not exist yet an empty list is returned (not an error).
+func ListGroupPictures(pictureDir string) map[string]interface{} {
+	if pictureDir == "" {
+		pictureDir = "pictures"
+	}
+	entries, err := os.ReadDir(pictureDir)
+	if err != nil {
+		// Directory may not exist yet — not an error, just return empty
+		return map[string]interface{}{"status": "ok", "files": []string{}, "dir": pictureDir}
+	}
+	var files []string
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		lower := strings.ToLower(e.Name())
+		if strings.HasSuffix(lower, ".png") || strings.HasSuffix(lower, ".jpg") || strings.HasSuffix(lower, ".jpeg") {
+			files = append(files, e.Name())
+		}
+	}
+	if files == nil {
+		files = []string{}
+	}
+	return map[string]interface{}{"status": "ok", "files": files, "dir": pictureDir}
+}
+
+// GetGroupPictureAsBase64 reads a PNG/JPG from the picture directory and returns it as a data URL.
+// Rejects filenames with directory separators for security; verifies the resolved path stays
+// within the picture directory.
+func GetGroupPictureAsBase64(pictureDir, filename string) map[string]interface{} {
+	if pictureDir == "" {
+		pictureDir = "pictures"
+	}
+	if strings.ContainsAny(filename, "/\\") || strings.HasPrefix(filename, ".") {
+		return map[string]interface{}{"status": "error", "message": "Ungültiger Dateiname"}
+	}
+	lower := strings.ToLower(filename)
+	if !strings.HasSuffix(lower, ".png") && !strings.HasSuffix(lower, ".jpg") && !strings.HasSuffix(lower, ".jpeg") {
+		return map[string]interface{}{"status": "error", "message": "Nur PNG/JPG erlaubt"}
+	}
+	absDir, err := filepath.Abs(pictureDir)
+	if err != nil {
+		return map[string]interface{}{"status": "error", "message": err.Error()}
+	}
+	absFile := filepath.Join(absDir, filename)
+	// Guard: resolved path must be strictly inside absDir
+	if !strings.HasPrefix(absFile, absDir+string(filepath.Separator)) {
+		return map[string]interface{}{"status": "error", "message": "Pfad außerhalb des Bildordners"}
+	}
+	data, err := os.ReadFile(absFile)
 	if err != nil {
 		return map[string]interface{}{"status": "error", "message": err.Error()}
 	}

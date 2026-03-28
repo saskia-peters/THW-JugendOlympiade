@@ -709,6 +709,10 @@ func renderElement(pdf *gofpdf.Fpdf, theme PDFTheme, el CertLayoutElement, ctx C
 		certDrawGroupPictureAt(pdf, theme, ctx.PicturePath, imgX, startY, imgW)
 
 	case "ov_image":
+		imgFile := "ov_winner_image.png"
+		if el.Content != "" {
+			imgFile = el.Content
+		}
 		imgW := el.ImgWidth
 		if imgW <= 0 {
 			imgW = 140
@@ -719,8 +723,8 @@ func renderElement(pdf *gofpdf.Fpdf, theme PDFTheme, el CertLayoutElement, ctx C
 		if startY < 0 {
 			startY = pdf.GetY()
 		}
-		if _, statErr := os.Stat("ov_winner_image.png"); statErr == nil {
-			pdf.Image("ov_winner_image.png", imgX, startY, imgW, 0, false, "", 0, "")
+		if _, statErr := os.Stat(imgFile); statErr == nil {
+			pdf.Image(imgFile, imgX, startY, imgW, 0, false, "", 0, "")
 		}
 	}
 }

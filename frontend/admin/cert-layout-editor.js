@@ -2,11 +2,14 @@
 // Imported by config-editor.js; all internal symbols are prefixed _gfx.
 
 // ---- module state -------------------------------------------------------
-let _gfxData      = null;   // CertLayoutFile as JS object
-let _gfxVariant   = 'participant';
-let _gfxImageList = [];     // filenames from ListBackgroundImages
+let _gfxData         = null;   // CertLayoutFile as JS object
+let _gfxVariant      = 'participant';
+let _gfxImageList    = [];     // filenames from ListBackgroundImages (root dir)
+let _gfxGroupPicList = [];     // filenames from ListGroupPictures (picture dir)
+let _gfxGroupPicDir  = '';     // picture directory name (for display)
 const _gfxExpanded = new Set();
-const _gfxImgCache = new Map(); // filename → base64 data URL
+const _gfxImgCache    = new Map(); // filename → base64 data URL  (root dir)
+const _gfxGroupCache  = new Map(); // filename → base64 data URL  (picture dir)
 
 const _GFX_VARIANTS = {
     participant:         'Teilnehmende',
@@ -30,11 +33,13 @@ function _hexToRgb(hex) {
 // ---- public API ---------------------------------------------------------
 export function getCertLayoutData()     { return _gfxData; }
 export function resetCertLayoutEditor() {
-    _gfxData      = null;
-    _gfxVariant   = 'participant';
-    _gfxImageList = [];
+    _gfxData         = null;
+    _gfxVariant      = 'participant';
+    _gfxImageList    = [];
+    _gfxGroupPicList = [];
+    _gfxGroupPicDir  = '';
     _gfxExpanded.clear();
-    // Image cache intentionally kept — data doesn't change within a session
+    // Image caches intentionally kept — data doesn't change within a session
 }
 
 /** Returns the static inner HTML planted inside the graphical editor panel. */
@@ -72,9 +77,10 @@ export function gfxPanelHTML() {
 /** Loads layout data and image list from the backend, then renders the editor. */
 export async function loadCertLayoutEditor() {
     try {
-        const [layoutResult, imgResult] = await Promise.all([
+        const [layoutResult, imgResult, grpResult] = await Promise.all([
             window.go.main.App.GetCertLayoutJSON(),
             window.go.main.App.ListBackgroundImages(),
+            window.go.main.App.ListGroupPictures(),
         ]);
 
         if (layoutResult.status === 'error') {
@@ -83,23 +89,55 @@ export async function loadCertLayoutEditor() {
             return;
         }
 
-        _gfxData      = layoutResult.data;
-        _gfxVariant   = 'participant';
-        _gfxImageList = (imgResult.status === 'ok' && imgResult.files) ? imgResult.files : [];
+        _gfxData         = layoutResult.data;
+        _gfxVariant      = 'participant';
+        _gfxImageList    = (imgResult.status === 'ok' && imgResult.files) ? imgResult.files : [];
+        _gfxGroupPicList = (grpResult.status === 'ok' && grpResult.files) ? grpResult.files : [];
+        _gfxGroupPicDir  = (grpResult.status === 'ok' && grpResult.dir)   ? grpResult.dir  : 'pictures';
         _gfxExpanded.clear();
 
-        // Pre-fetch background images for all variants so the preview renders immediately
+        // Pre-fetch background images for all variants
         const bgNames = [...new Set(
             Object.keys(_GFX_VARIANTS)
                 .map(v => _gfxData[v]?.background_image)
                 .filter(f => f && !_gfxImgCache.has(f))
         )];
-        await Promise.all(bgNames.map(async f => {
-            try {
-                const r = await window.go.main.App.GetImageAsBase64(f);
-                if (r.status === 'ok') _gfxImgCache.set(f, r.dataURL);
-            } catch (_) { /* non-fatal */ }
-        }));
+
+        // Pre-fetch ov_image content files for all variants' elements
+        const ovNames = [...new Set(
+            Object.keys(_GFX_VARIANTS).flatMap(v =>
+                (_gfxData[v]?.elements || [])
+                    .filter(el => el.type === 'ov_image')
+                    .map(el => el.content || 'ov_winner_image.png')
+            ).filter(f => f && !_gfxImgCache.has(f))
+        )];
+
+        await Promise.all([
+            ...bgNames.map(async f => {
+                try {
+                    const r = await window.go.main.App.GetImageAsBase64(f);
+                    if (r.status === 'ok') _gfxImgCache.set(f, r.dataURL);
+                } catch (_) { /* non-fatal */ }
+            }),
+            ...ovNames.map(async f => {
+                try {
+                    const r = await window.go.main.App.GetImageAsBase64(f);
+                    if (r.status === 'ok') _gfxImgCache.set(f, r.dataURL);
+                } catch (_) { /* non-fatal */ }
+            }),
+            // Pre-fetch first group picture as a sample for preview
+            (async () => {
+                if (_gfxGroupPicList.length > 0) {
+                    const sample = _gfxGroupPicList[0];
+                    if (!_gfxGroupCache.has(sample)) {
+                        try {
+                            const r = await window.go.main.App.GetGroupPictureAsBase64(sample);
+                            if (r.status === 'ok') _gfxGroupCache.set(sample, r.dataURL);
+                        } catch (_) { /* non-fatal */ }
+                    }
+                }
+            })(),
+        ]);
 
         const loading = document.getElementById('gfx-loading');
         const main    = document.getElementById('gfx-main');
@@ -302,9 +340,45 @@ function _gfxElementForm(el, idx) {
             ${isImage ? `<label style="${lS}">Bildbreite (mm)
                 <input type="number" step="1" min="10" max="200" style="${iS}" value="${el.img_width??120}"
                     oninput="window._gfxUpdateElement(${idx},'img_width',+this.value)">
-            </label>` : ''}
-            ${el.type==='members_table' ? `<p style="${s2}margin:4px 0 0;font-size:11px;color:#888;font-style:italic;">Nur X, Y und Breite sind relevant. Inhalt wird automatisch bef\u00fcllt.</p>` : ''}
+            </label>` : ''}            ${el.type==='ov_image' ? _gfxOvImagePicker(el, idx) : ''}
+            ${el.type==='group_picture' ? _gfxGroupPicInfo(el) : ''}            ${el.type==='members_table' ? `<p style="${s2}margin:4px 0 0;font-size:11px;color:#888;font-style:italic;">Nur X, Y und Breite sind relevant. Inhalt wird automatisch bef\u00fcllt.</p>` : ''}
         </div>
+    </div>`;
+}
+
+function _gfxOvImagePicker(el, idx) {
+    const sS  = 'padding:4px 6px;border:1px solid #ccc;border-radius:4px;font-size:12px;width:100%;background:white;box-sizing:border-box;';
+    const lS  = 'display:flex;flex-direction:column;gap:2px;font-size:11px;color:#666;';
+    const s2  = 'grid-column:span 2;';
+    const current = el.content || 'ov_winner_image.png';
+    const fileMissing = !_gfxImgCache.has(current);
+    const borderColor = fileMissing ? '#e53935' : '#ccc';
+    const sSc = sS.replace('border:1px solid #ccc', `border:1px solid ${borderColor}`);
+    // Include current file even if it doesn't appear in imageList
+    const allFiles = _gfxImageList.includes(current) ? _gfxImageList : [current, ..._gfxImageList];
+    const options = allFiles.map(f => {
+        const sel = f === current ? 'selected' : '';
+        return `<option value="${_escHtml(f)}" ${sel}>${_escHtml(f)}</option>`;
+    }).join('');
+    const warning = fileMissing
+        ? `<span style="color:#e53935;font-size:11px;">&#9888; Datei nicht gefunden: ${_escHtml(current)}</span>`
+        : '';
+    return `<label style="${lS};${s2}">Bilddatei
+        <select style="${sSc}" onchange="window._gfxUpdateElementImage(${idx},this.value)">${options}</select>
+        ${warning}
+    </label>`;
+}
+
+function _gfxGroupPicInfo(el) {
+    const lS = 'display:flex;flex-direction:column;gap:2px;font-size:11px;color:#666;';
+    const s2 = 'grid-column:span 2;';
+    const sample = _gfxGroupPicList.length > 0
+        ? `Beispiel: <code>${_escHtml(_gfxGroupPicDir)}/${_escHtml(_gfxGroupPicList[0])}</code>`
+        : `(noch keine Fotos in <code>${_escHtml(_gfxGroupPicDir)}/</code>)`;
+    return `<div style="${lS};${s2};background:#fff8e1;border-radius:4px;padding:6px 8px;border-left:3px solid #ffb300;">
+        <span style="font-weight:600;color:#e65100;">Dynamisches Foto</span>
+        <span>Muster: <code>${_escHtml(_gfxGroupPicDir)}/group_picture_NNN.jpg</code></span>
+        <span>${sample}</span>
     </div>`;
 }
 
@@ -357,10 +431,32 @@ function _gfxRenderPreview() {
         } else if (el.type === 'group_picture' || el.type === 'ov_image') {
             const imgW  = (el.img_width || 120) * S;
             const imgX  = px + (pw - imgW) / 2;
-            const label = el.type === 'group_picture' ? '\ud83d\udcf7 Foto' : '\ud83c\udfc6 Bild';
-            html += `<div style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;height:${22*S}px;
+            const imgH  = 22 * S;   // estimated placeholder height
+
+            if (el.type === 'ov_image') {
+                // Static image — show the actual file if available
+                const ovFile = el.content || 'ov_winner_image.png';
+                const dataURL = _gfxImgCache.get(ovFile);
+                if (dataURL) {
+                    html += `<img src="${dataURL}" style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;object-fit:contain;pointer-events:none;">`;
+                } else {
+                    html += `<div style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;height:${imgH}px;
                         background:#e8eaf6;border:1px solid #9fa8da;font-size:8px;color:#5c6bc0;
-                        display:flex;align-items:center;justify-content:center;pointer-events:none;">${label}</div>`;
+                        display:flex;align-items:center;justify-content:center;pointer-events:none;">\ud83c\udfc6 ${_escHtml(ovFile)}</div>`;
+                }
+            } else {
+                // group_picture — dynamic per group, show a sample if available
+                const sampleName = _gfxGroupPicList[0];
+                const sampleURL  = sampleName ? _gfxGroupCache.get(sampleName) : null;
+                if (sampleURL) {
+                    const badge = `<div style="position:absolute;left:${imgX}px;top:${py}px;padding:2px 4px;font-size:7px;background:rgba(0,0,0,0.45);color:#fff;border-radius:2px;pointer-events:none;">Beispielfoto</div>`;
+                    html += `<img src="${sampleURL}" style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;object-fit:contain;pointer-events:none;opacity:0.85;">` + badge;
+                } else {
+                    html += `<div style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;height:${imgH}px;
+                        background:#fce4ec;border:1px dashed #e91e63;font-size:8px;color:#e91e63;
+                        display:flex;align-items:center;justify-content:center;pointer-events:none;">\ud83d\udcf7 Gruppenfoto</div>`;
+                }
+            }
         }
     }
     preview.innerHTML = html;
@@ -392,6 +488,20 @@ window._gfxUpdateBgImage = async function (filename) {
             if (r.status === 'ok') _gfxImgCache.set(filename, r.dataURL);
         } catch (_) { /* non-fatal */ }
     }
+    _gfxRenderPreview();
+};
+
+window._gfxUpdateElementImage = async function (idx, filename) {
+    const vd = _gfxCurrentVariantData();
+    if (!vd || !vd.elements || !vd.elements[idx]) return;
+    vd.elements[idx].content = filename;
+    if (filename && !_gfxImgCache.has(filename)) {
+        try {
+            const r = await window.go.main.App.GetImageAsBase64(filename);
+            if (r.status === 'ok') _gfxImgCache.set(filename, r.dataURL);
+        } catch (_) { /* non-fatal */ }
+    }
+    _gfxRenderElements();
     _gfxRenderPreview();
 };
 

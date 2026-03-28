@@ -48,6 +48,14 @@ func (a *App) GetImageAsBase64(filename string) map[string]interface{} {
 	return handlers.GetImageAsBase64(filename)
 }
 
+func (a *App) ListGroupPictures() map[string]interface{} {
+	return handlers.ListGroupPictures(a.cfg.Ausgabe.BilderOrdner)
+}
+
+func (a *App) GetGroupPictureAsBase64(filename string) map[string]interface{} {
+	return handlers.GetGroupPictureAsBase64(a.cfg.Ausgabe.BilderOrdner, filename)
+}
+
 // --- Files / Startup ---
 
 func (a *App) CheckStartup() map[string]interface{} {

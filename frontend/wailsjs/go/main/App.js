@@ -66,6 +66,10 @@ export function GetGroupEvaluations() {
   return window['go']['main']['App']['GetGroupEvaluations']();
 }
 
+export function GetGroupPictureAsBase64(arg1) {
+  return window['go']['main']['App']['GetGroupPictureAsBase64'](arg1);
+}
+
 export function GetImageAsBase64(arg1) {
   return window['go']['main']['App']['GetImageAsBase64'](arg1);
 }
@@ -84,6 +88,10 @@ export function ListBackgroundImages() {
 
 export function ListBackups() {
   return window['go']['main']['App']['ListBackups']();
+}
+
+export function ListGroupPictures() {
+  return window['go']['main']['App']['ListGroupPictures']();
 }
 
 export function LoadFile() {
