@@ -78,7 +78,7 @@ func (a *App) LoadFile() map[string]interface{} {
 	return handlers.LoadFile(a.ctx, &a.db)
 }
 
-func (a *App) HasScores() bool {
+func (a *App) HasScores() (bool, error) {
 	return handlers.HasScores(a.db)
 }
 

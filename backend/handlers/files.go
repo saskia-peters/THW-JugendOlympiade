@@ -42,7 +42,12 @@ func UseExistingDB(db **sql.DB) map[string]interface{} {
 	}
 	*db = newDB
 	var count int
-	_ = (*db).QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&count)
+	if err := (*db).QueryRow("SELECT COUNT(*) FROM teilnehmende").Scan(&count); err != nil {
+		return map[string]interface{}{
+			"status":  "error",
+			"message": fmt.Sprintf("Teilnehmerzahl konnte nicht gelesen werden: %v", err),
+		}
+	}
 	return map[string]interface{}{
 		"status": "ok",
 		"count":  count,
@@ -247,13 +252,15 @@ func LoadFile(ctx context.Context, db **sql.DB) map[string]interface{} {
 }
 
 // HasScores returns whether any score has been saved to the database.
-func HasScores(db *sql.DB) bool {
+func HasScores(db *sql.DB) (bool, error) {
 	if db == nil {
-		return false
+		return false, nil
 	}
 	var count int
-	_ = db.QueryRow("SELECT COUNT(*) FROM group_station_scores WHERE score IS NOT NULL").Scan(&count)
-	return count > 0
+	if err := db.QueryRow("SELECT COUNT(*) FROM group_station_scores WHERE score IS NOT NULL").Scan(&count); err != nil {
+		return false, fmt.Errorf("Fehler beim Prüfen der Punkte: %w", err)
+	}
+	return count > 0, nil
 }
 
 // DistributeGroups creates balanced groups from the loaded participants.
