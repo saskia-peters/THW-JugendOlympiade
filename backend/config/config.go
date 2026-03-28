@@ -74,6 +74,9 @@ func LoadOrCreate() (Config, error) {
 	if _, err := toml.DecodeFile(ConfigFile, &cfg); err != nil {
 		return Default(), fmt.Errorf("config.toml konnte nicht geladen werden: %w", err)
 	}
+	if err := cfg.Validate(); err != nil {
+		return Default(), fmt.Errorf("config.toml enthält ungültige Werte: %w", err)
+	}
 	return cfg, nil
 }
 
@@ -124,12 +127,27 @@ func ReadRaw() (string, error) {
 	return string(data), nil
 }
 
-// ValidateAndSave parses content as TOML, writes it to config.toml, and
-// returns the resulting Config so the caller can update its in-memory copy.
+// Validate checks semantic constraints that TOML parsing cannot enforce.
+func (c Config) Validate() error {
+	if c.Gruppen.MaxGroesse < 1 {
+		return fmt.Errorf("max_groesse muss mindestens 1 sein (aktuell: %d)", c.Gruppen.MaxGroesse)
+	}
+	if c.Ergebnisse.MaxPunkte <= c.Ergebnisse.MinPunkte {
+		return fmt.Errorf("max_punkte (%d) muss größer als min_punkte (%d) sein", c.Ergebnisse.MaxPunkte, c.Ergebnisse.MinPunkte)
+	}
+	return nil
+}
+
+// ValidateAndSave parses content as TOML, validates semantic constraints,
+// writes it to config.toml, and returns the resulting Config so the caller
+// can update its in-memory copy.
 func ValidateAndSave(content string) (Config, error) {
 	var cfg Config
 	if _, err := toml.Decode(content, &cfg); err != nil {
 		return Config{}, fmt.Errorf("ungültige TOML-Syntax: %w", err)
+	}
+	if err := cfg.Validate(); err != nil {
+		return Config{}, err
 	}
 	if err := os.WriteFile(ConfigFile, []byte(content), 0644); err != nil {
 		return Config{}, fmt.Errorf("Konfiguration konnte nicht gespeichert werden: %w", err)

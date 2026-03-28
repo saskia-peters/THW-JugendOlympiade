@@ -94,6 +94,9 @@ func distributeIntoGroups(teilnehmende []models.Teilnehmende, maxGroupSize int) 
 	if len(teilnehmende) == 0 {
 		return nil
 	}
+	if maxGroupSize < 1 {
+		return nil
+	}
 
 	// Step 1: Separate participants with and without PreGroup
 	preGroupMap := make(map[string][]models.Teilnehmende)
