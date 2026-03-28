@@ -6,6 +6,7 @@ import (
 	iolib "io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"THW-JugendOlympiade/backend/models"
@@ -116,7 +117,17 @@ func ListBackups() map[string]interface{} {
 // RestoreDatabase restores the database from a backup file.
 func RestoreDatabase(db **sql.DB, backupFilename string) map[string]interface{} {
 	backupDir := "dbbackups"
-	backupPath := filepath.Join(backupDir, backupFilename)
+
+	// Guard against path traversal (e.g. "../config.toml").
+	absDir, err := filepath.Abs(backupDir)
+	if err != nil {
+		return map[string]interface{}{"status": "error", "message": "Interner Fehler beim Prüfen des Backup-Verzeichnisses."}
+	}
+	absFile, err := filepath.Abs(filepath.Join(backupDir, backupFilename))
+	if err != nil || !strings.HasPrefix(absFile, absDir+string(filepath.Separator)) {
+		return map[string]interface{}{"status": "error", "message": "Ungültiger Dateiname."}
+	}
+	backupPath := absFile
 
 	if _, err := os.Stat(backupPath); os.IsNotExist(err) {
 		return map[string]interface{}{
