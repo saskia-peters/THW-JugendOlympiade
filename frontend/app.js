@@ -66,12 +66,14 @@ async function _handleStartupDBChoice(dbName) {
             setStatus(`Vorhandene Datenbank geladen (${result.count} Teilnehmende).`, 'success');
             // Re-enable buttons that require a loaded DB
             if (btnBackup) btnBackup.disabled = false;
-            if (btnDistribute) btnDistribute.disabled = false;
             if (btnShow) btnShow.disabled = false;
             if (btnStations) btnStations.disabled = false;
             if (btnOverview) btnOverview.disabled = false;
             if (btnPDF) btnPDF.disabled = false;
-            setEvalButtonsEnabled(true);
+            // Only allow redistribution when no scores have been entered yet
+            const hasScores = await window.go.main.App.HasScores();
+            if (btnDistribute) btnDistribute.disabled = hasScores;
+            setEvalButtonsEnabled(hasScores);
             output.style.display = 'block';
             output.textContent = `✔ Vorhandene Daten geladen (${result.count} Teilnehmende).`;
         } else {
