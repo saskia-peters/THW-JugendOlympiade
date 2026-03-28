@@ -42,7 +42,7 @@ async function _handleStartupDBChoice(dbName) {
         box.innerHTML = `
             <h2 style="margin:0 0 12px;font-size:1.2em;color:#333">Datenbank gefunden</h2>
             <p style="margin:0 0 20px;color:#555;line-height:1.5">
-                Die Datenbankdatei <strong>${dbName}</strong> ist bereits vorhanden.<br>
+                Die Datenbankdatei <strong><span id="_dbNameSpan"></span></strong> ist bereits vorhanden.<br>
                 Möchten Sie mit den vorhandenen Daten weiterarbeiten oder eine neue, leere Datenbank erstellen?
             </p>
             <p style="margin:0 0 24px;font-size:0.85em;color:#888">
@@ -52,6 +52,7 @@ async function _handleStartupDBChoice(dbName) {
                 <button id="_btnFresh" style="padding:10px 20px;background:#e53935;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Neu starten</button>
                 <button id="_btnKeep"  style="padding:10px 20px;background:#1976d2;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Weiterarbeiten</button>
             </div>`;
+        box.querySelector('#_dbNameSpan').textContent = dbName;
 
         overlay.appendChild(box);
         document.body.appendChild(overlay);
