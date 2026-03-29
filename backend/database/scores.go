@@ -4,21 +4,14 @@ import (
 	"database/sql"
 )
 
-// AssignGroupStationScore inserts or updates a score for a group at a station
+// AssignGroupStationScore inserts or updates a score for a group at a station.
+// Uses a single atomic upsert exploiting the UNIQUE(group_id, station_id) constraint
+// so there is no SELECT + INSERT/UPDATE race condition.
 func AssignGroupStationScore(db *sql.DB, groupID int, stationID int, score int) error {
-	// Check if score already exists
-	var existingID int
-	err := db.QueryRow("SELECT id FROM group_station_scores WHERE group_id = ? AND station_id = ?", groupID, stationID).Scan(&existingID)
-
-	if err == sql.ErrNoRows {
-		// Insert new score
-		_, err = db.Exec("INSERT INTO group_station_scores (group_id, station_id, score) VALUES (?, ?, ?)", groupID, stationID, score)
-		return err
-	} else if err != nil {
-		return err
-	} else {
-		// Update existing score
-		_, err = db.Exec("UPDATE group_station_scores SET score = ? WHERE id = ?", score, existingID)
-		return err
-	}
+	_, err := db.Exec(`
+		INSERT INTO group_station_scores (group_id, station_id, score)
+		VALUES (?, ?, ?)
+		ON CONFLICT(group_id, station_id) DO UPDATE SET score = excluded.score`,
+		groupID, stationID, score)
+	return err
 }
