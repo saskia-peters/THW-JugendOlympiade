@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"THW-JugendOlympiade/backend/config"
 	"THW-JugendOlympiade/backend/io"
@@ -19,6 +22,7 @@ import (
 )
 
 //go:embed all:frontend
+//go:embed assets
 var assets embed.FS
 
 // App struct
@@ -53,6 +57,9 @@ func (a *App) startup(ctx context.Context) {
 	if cfg.Ausgabe.DBName != "" {
 		models.DbFile = cfg.Ausgabe.DBName
 	}
+
+	// Seed templates/, example/ etc. on first run from embedded defaults.
+	extractDefaultAssets(assets)
 }
 
 // shutdown is called when the app is closing
@@ -84,4 +91,33 @@ func main() {
 	if err != nil {
 		println("Error:", err.Error())
 	}
+}
+
+// extractDefaultAssets walks the embedded "assets/" tree and writes any file that
+// does not yet exist on disk, stripping the leading "assets/" prefix so that
+// "assets/templates/foo.png" is placed at "templates/foo.png" relative to the cwd.
+// Existing files are never overwritten, preserving user customisations.
+func extractDefaultAssets(fsys embed.FS) {
+	_ = fs.WalkDir(fsys, "assets", func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
+		}
+		dest := strings.TrimPrefix(path, "assets/")
+		if _, statErr := os.Stat(dest); statErr == nil {
+			return nil // already exists — never overwrite user's file
+		}
+		data, readErr := fsys.ReadFile(path)
+		if readErr != nil {
+			fmt.Printf("Standarddatei konnte nicht gelesen werden (%s): %v\n", path, readErr)
+			return nil
+		}
+		if mkdirErr := os.MkdirAll(filepath.Dir(dest), 0755); mkdirErr != nil {
+			fmt.Printf("Ordner konnte nicht erstellt werden (%s): %v\n", filepath.Dir(dest), mkdirErr)
+			return nil
+		}
+		if writeErr := os.WriteFile(dest, data, 0644); writeErr != nil {
+			fmt.Printf("Standarddatei konnte nicht extrahiert werden (%s): %v\n", dest, writeErr)
+		}
+		return nil
+	})
 }

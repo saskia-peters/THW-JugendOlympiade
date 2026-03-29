@@ -29,7 +29,7 @@ All PDFs are automatically saved to the configured output directory (default: `p
 - **Group Evaluations**: Rankings by group with scores
 - **Ortsverband Evaluations**: Rankings by location
 - **Participant Certificates**: Individual certificates for all participants
-  - Supports custom certificate templates (`certificate_template.png`)
+  - Supports custom certificate templates (`templates/background_urkunde_teilnehmende.png`)
   - Shows participant details, group assignment, and ranking
   - **Style `text`** (default): lists all group members as a table
   - **Style `picture`**: embeds a group photo (`pictures/group_picture_XXX.jpg`)
@@ -37,7 +37,7 @@ All PDFs are automatically saved to the configured output directory (default: `p
 - **Ortsverband Certificates**: One certificate per Ortsverband
   - Best Ortsverband(e) (all tied on highest average score) get a special Siegerurkunde with `ov_winner_image.png`
   - All others get an identical participation certificate (no ranking)
-  - Fully programmatic, centered A4 layout (no background image)
+  - Optional background template: `templates/background_urkunde_ovs.png`
 
 ### ���️ Desktop Application
 - **Cross-Platform**: Runs on Windows, macOS, and Linux
@@ -64,6 +64,7 @@ Download the latest release for your platform:
 
 **Prepare Your Excel File:**
 - Create an XLSX file with a sheet named "Teilnehmende"
+- You can start from `example/example_data.xlsx` (auto-extracted on first launch)
 - Required columns (in order):
   1. **Name**: Participant name
   2. **Ortsverband**: Location/district
@@ -141,8 +142,8 @@ Create professional-looking certificates with custom designs:
 
 1. **Create Template File:**
    - Design your certificate in A4 size (210mm × 297mm)
-   - Save as `certificate_template.png`
-   - Place in the same directory as the application
+  - Save as `background_urkunde_teilnehmende.png`
+  - Place in `templates/background_urkunde_teilnehmende.png`
 
 2. **Template Specifications:**
    - **Size**: A4 (210mm × 297mm)

@@ -16,7 +16,7 @@ import (
 // GenerateParticipantCertificates creates a PDF with one certificate per participant.
 // certStyle: "text" (default) shows a group members table; "picture" embeds a group photo.
 // pictureDir: directory containing group photos named group_picture_XXX.jpg.
-// If certificate_template.png exists in the working directory it is used as background.
+// If templates/background_urkunde_teilnehmende.png exists it is used as background.
 // Layout positions are loaded from certificate_layout.toml (created with defaults on first run).
 func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string, pictureDir string) error {
 	if err := ensurePDFDirectory(); err != nil {
@@ -52,7 +52,7 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string
 		bgFile = certLayout.ParticipantPicture.BackgroundImage
 	}
 	if bgFile == "" {
-		bgFile = "certificate_template.png"
+		bgFile = "templates/background_urkunde_teilnehmende.png"
 	}
 	_, bgStatErr := os.Stat(bgFile)
 	useBg := bgStatErr == nil

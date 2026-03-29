@@ -26,7 +26,7 @@
 # ===========================================================================
 
 [participant]
-background_image = "certificate_template.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
 
 [participant.content_area]
 # Die Vorlage lässt die linken ~148 mm für Inhalt frei.
@@ -130,7 +130,7 @@ width = 0
 # ===========================================================================
 
 [participant_picture]
-background_image = "certificate_template.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
 
 [participant_picture.content_area]
 left   = 10
@@ -223,7 +223,7 @@ width     = 0
 # ===========================================================================
 
 [ov_winner]
-background_image = "cert_background_ov.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
 
 [ov_winner.content_area]
 # Vollbedruckbare Seite mit 15 mm Rändern
@@ -323,7 +323,7 @@ width = 0
 # ===========================================================================
 
 [ov_participant]
-background_image = "cert_background_ov.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
 
 [ov_participant.content_area]
 left   = 15

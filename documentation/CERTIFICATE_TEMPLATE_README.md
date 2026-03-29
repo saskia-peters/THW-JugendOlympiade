@@ -30,10 +30,10 @@ The `pictures/` directory is created automatically on first launch. If a photo f
 
 ### Optional Background Image
 
-Place a file named `certificate_template.png` in the application directory:
+Place a file at `templates/background_urkunde_teilnehmende.png`:
 
 ```
-certificate_template.png
+templates/background_urkunde_teilnehmende.png
 ```
 
 If the file is absent, a built-in programmatic layout is used instead.
@@ -96,7 +96,7 @@ One certificate page per Ortsverband. Generated via **📊 Ausgabe → „Urkund
 
 | File | Purpose |
 |------|---------|
-| `cert_background_ov.png` | Background image for OV certificates (A4 PNG, same specs as above). Gracefully skipped if missing or invalid. |
+| `templates/background_urkunde_ovs.png` | Background image for OV certificates (A4 PNG, same specs as above). Gracefully skipped if missing or invalid. |
 | `ov_winner_image.png` | Trophy/winner image displayed on the Siegerurkunde. Skipped if missing. |
 
 ### Dynamic Content on OV Certificates
@@ -140,10 +140,10 @@ Leave space for the dynamic content that will be overlaid:
 
 ### 3. Save the Template
 
-Save your template as the following file in the application directory:
+Save your template to the following path:
 
 ```
-certificate_template.png
+templates/background_urkunde_teilnehmende.png
 ```
 
 **Note:** If you have a PDF or JPG template, convert it to PNG first using:

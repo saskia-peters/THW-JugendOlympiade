@@ -21,7 +21,7 @@ const ovMarginLR = 15.0
 //   - Ortsverbände sharing the top score → Siegerurkunde (ov_winner layout)
 //   - All others → Urkunde (ov_participant layout)
 //
-// If cert_background_ov.png exists in the working directory it is rendered as a
+// If templates/background_urkunde_ovs.png exists it is rendered as a
 // full-page background on every certificate page before the text content.
 // Layout positions are loaded from certificate_layout.toml.
 func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int, eventName string) error {
@@ -62,11 +62,11 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int, eventName string
 	// Background images per variant: use layout settings, fall back to legacy filename
 	bgWinner := certLayout.OVWinner.BackgroundImage
 	if bgWinner == "" {
-		bgWinner = "cert_background_ov.png"
+		bgWinner = "templates/background_urkunde_ovs.png"
 	}
 	bgParticipant := certLayout.OVParticipant.BackgroundImage
 	if bgParticipant == "" {
-		bgParticipant = "cert_background_ov.png"
+		bgParticipant = "templates/background_urkunde_ovs.png"
 	}
 	if _, err := os.Stat(bgWinner); err != nil {
 		bgWinner = ""

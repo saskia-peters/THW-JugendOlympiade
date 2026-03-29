@@ -59,7 +59,7 @@ The modal shows raw TOML with no inline documentation of allowed values or range
 ### 🟡 Suggestions — PDF & Certificates
 
 **[backend/io/pdf_cert_teilnehmende.go] No fallback message when template image is missing**
-If `certificate_template.png` is absent the programmatic layout is used silently. The user never learns that the background template was not applied. A status message ("Kein Zertifikat-Template gefunden, Layout wird automatisch erstellt.") would avoid confusion when the printed output looks different to expectations.
+If `templates/background_urkunde_teilnehmende.png` is absent the programmatic layout is used silently. The user never learns that the background template was not applied. A status message ("Kein Zertifikat-Template gefunden, Layout wird automatisch erstellt.") would avoid confusion when the printed output looks different to expectations.
 
 **[backend/io/pdf_evaluations.go] No "stations completed" column in group evaluation PDF**
 The group ranking PDF currently shows Rank, Group ID, Station Count, and Total Score. For transparency it would be useful to flag groups where `station_count` is less than the total number of stations, so the printed result sheet clearly shows any incomplete entries.

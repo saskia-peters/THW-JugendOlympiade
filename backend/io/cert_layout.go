@@ -128,7 +128,7 @@ const defaultCertLayoutTOML = `
 # ===========================================================================
 
 [participant]
-background_image = "certificate_template.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
 
 [participant.content_area]
 # Die Vorlage lässt die linken ~148 mm für Inhalt frei.
@@ -232,7 +232,7 @@ width = 0
 # ===========================================================================
 
 [participant_picture]
-background_image = "certificate_template.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
 
 [participant_picture.content_area]
 left   = 10
@@ -325,7 +325,7 @@ width     = 0
 # ===========================================================================
 
 [ov_winner]
-background_image = "cert_background_ov.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
 
 [ov_winner.content_area]
 # Vollbedruckbare Seite mit 15 mm Rändern
@@ -425,7 +425,7 @@ width = 0
 # ===========================================================================
 
 [ov_participant]
-background_image = "cert_background_ov.png"  # "" = kein Hintergrundbild
+background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
 
 [ov_participant.content_area]
 left   = 15
@@ -536,19 +536,19 @@ func LoadCertLayout() (CertLayoutFile, error) {
 func applyLayoutDefaults(l *CertLayoutFile) bool {
 	changed := false
 	if l.Participant.BackgroundImage == "" {
-		l.Participant.BackgroundImage = "certificate_template.png"
+		l.Participant.BackgroundImage = "templates/background_urkunde_teilnehmende.png"
 		changed = true
 	}
 	if l.ParticipantPicture.BackgroundImage == "" {
-		l.ParticipantPicture.BackgroundImage = "certificate_template.png"
+		l.ParticipantPicture.BackgroundImage = "templates/background_urkunde_teilnehmende.png"
 		changed = true
 	}
 	if l.OVWinner.BackgroundImage == "" {
-		l.OVWinner.BackgroundImage = "cert_background_ov.png"
+		l.OVWinner.BackgroundImage = "templates/background_urkunde_ovs.png"
 		changed = true
 	}
 	if l.OVParticipant.BackgroundImage == "" {
-		l.OVParticipant.BackgroundImage = "cert_background_ov.png"
+		l.OVParticipant.BackgroundImage = "templates/background_urkunde_ovs.png"
 		changed = true
 	}
 	return changed
@@ -593,10 +593,10 @@ func injectMissingBackgroundImages(raw string, layout CertLayoutFile) string {
 		current string
 	}
 	for _, e := range []entry{
-		{"participant", "certificate_template.png", layout.Participant.BackgroundImage},
-		{"participant_picture", "certificate_template.png", layout.ParticipantPicture.BackgroundImage},
-		{"ov_winner", "cert_background_ov.png", layout.OVWinner.BackgroundImage},
-		{"ov_participant", "cert_background_ov.png", layout.OVParticipant.BackgroundImage},
+		{"participant", "templates/background_urkunde_teilnehmende.png", layout.Participant.BackgroundImage},
+		{"participant_picture", "templates/background_urkunde_teilnehmende.png", layout.ParticipantPicture.BackgroundImage},
+		{"ov_winner", "templates/background_urkunde_ovs.png", layout.OVWinner.BackgroundImage},
+		{"ov_participant", "templates/background_urkunde_ovs.png", layout.OVParticipant.BackgroundImage},
 	} {
 		if e.current != "" {
 			continue // already present

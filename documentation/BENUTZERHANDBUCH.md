@@ -209,7 +209,7 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
 
 > **Hinweis:** Der Stil wird über `urkunden_stil` in `config.toml` gesteuert (`"text"` oder `"picture"`). Beim Stil `picture` werden Fotos aus dem Ordner `bilder_ordner` (Standard: `pictures/`) erwartet. Dateinamen: `group_picture_001.jpg`, `group_picture_002.jpg`, usw. Der Ordner wird beim Programmstart automatisch angelegt.
 
-> **Hinweis:** Falls die Datei `certificate_template.png` im Programmverzeichnis liegt, wird sie als Hintergrundbild genutzt.
+> **Hinweis:** Als Hintergrundbild wird standardmäßig `templates/background_urkunde_teilnehmende.png` verwendet (wird beim ersten Start automatisch angelegt).
 
 ### Urkunden Ortsverbände
 
@@ -221,7 +221,7 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
    - Jede Seite enthält die Liste der Teilnehmenden des Ortsverbands.
    - Der Name der Veranstaltung wird aus der Konfiguration (`config.toml`) übernommen.
 
-> **Hinweis:** Falls die Datei `cert_background_ov.png` im Programmverzeichnis liegt, wird sie als Hintergrundbild für OV-Urkunden genutzt. Falls die Datei `ov_winner_image.png` vorhanden ist, erscheint sie als Trophäenbild auf der Siegerurkunde.
+> **Hinweis:** Als Hintergrundbild für OV-Urkunden wird standardmäßig `templates/background_urkunde_ovs.png` verwendet (wird beim ersten Start automatisch angelegt). Falls die Datei `ov_winner_image.png` vorhanden ist, erscheint sie als Trophäenbild auf der Siegerurkunde.
 
 ---
 
@@ -273,6 +273,8 @@ bilder_ordner = "pictures"  # Unterordner mit Gruppenfotos (nur bei urkunden_sti
 
 
 Bevor die Anwendung gestartet wird, muss eine Excel-Datei im Format **XLSX** bereitgestellt werden. Der Dateiname ist frei wählbar – die Datei wird beim Import über einen Dateidialog ausgewählt. Entscheidend ist ausschließlich die korrekte Struktur der Datei.
+
+Als Startvorlage wird beim ersten Programmstart automatisch `example/example_data.xlsx` bereitgestellt.
 
 Die Datei muss **zwei Tabellenblätter** enthalten:
 
@@ -413,7 +415,7 @@ Sobald alle Ergebnisse eingetragen sind, können die Auswertungen in der Anwendu
    - Erreichter Platz der Gruppe
    - Liste aller Gruppenmitglieder
 
-> **Hinweis:** Falls die Datei `certificate_template.png` im Programmverzeichnis liegt, wird sie als Hintergrundbild genutzt.
+> **Hinweis:** Als Hintergrundbild wird standardmäßig `templates/background_urkunde_teilnehmende.png` verwendet (wird beim ersten Start automatisch angelegt).
 
 ### Urkunden Ortsverbände
 
