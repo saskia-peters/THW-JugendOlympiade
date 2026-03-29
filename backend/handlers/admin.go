@@ -11,6 +11,8 @@ import (
 	"THW-JugendOlympiade/backend/io"
 )
 
+const templateDir = "templates"
+
 // GetConfig returns the user-facing configuration values needed by the frontend.
 func GetConfig(cfg config.Config) map[string]interface{} {
 	return map[string]interface{}{
@@ -91,11 +93,13 @@ func SaveCertLayoutJSON(jsonData string) map[string]interface{} {
 	}
 }
 
-// ListBackgroundImages returns names of PNG/JPG files in the current working directory.
+// ListBackgroundImages returns names of PNG/JPG files in templates/.
+// The returned names are bare filenames (without directory prefix).
 func ListBackgroundImages() map[string]interface{} {
-	entries, err := os.ReadDir(".")
+	entries, err := os.ReadDir(templateDir)
 	if err != nil {
-		return map[string]interface{}{"status": "error", "message": err.Error()}
+		// Directory may not exist yet — not an error, just return empty.
+		return map[string]interface{}{"status": "ok", "files": []string{}}
 	}
 	var files []string
 	for _, e := range entries {
@@ -107,20 +111,44 @@ func ListBackgroundImages() map[string]interface{} {
 			files = append(files, e.Name())
 		}
 	}
+	if files == nil {
+		files = []string{}
+	}
 	return map[string]interface{}{"status": "ok", "files": files}
 }
 
-// GetImageAsBase64 reads a PNG/JPG from the working directory and returns it as a data URL.
-// Rejects paths with directory separators or non-image extensions for security.
+// GetImageAsBase64 reads a PNG/JPG and returns it as a data URL.
+// It resolves from templates/ first, then falls back to root for
+// legacy/static files (e.g. ov_winner_image.png).
+// Accepts either a bare filename ("foo.png") or "templates/foo.png".
+// Any path traversal attempt is rejected.
 func GetImageAsBase64(filename string) map[string]interface{} {
-	if strings.ContainsAny(filename, "/\\") || strings.HasPrefix(filename, ".") {
+	name := strings.TrimSpace(filename)
+	if name == "" {
 		return map[string]interface{}{"status": "error", "message": "Ung\u00fcltiger Dateiname"}
 	}
-	lower := strings.ToLower(filename)
+	name = strings.TrimPrefix(name, templateDir+"/")
+	name = strings.TrimPrefix(name, templateDir+"\\")
+	if strings.ContainsAny(name, "/\\") || strings.HasPrefix(name, ".") {
+		return map[string]interface{}{"status": "error", "message": "Ung\u00fcltiger Dateiname"}
+	}
+	lower := strings.ToLower(name)
 	if !strings.HasSuffix(lower, ".png") && !strings.HasSuffix(lower, ".jpg") && !strings.HasSuffix(lower, ".jpeg") {
 		return map[string]interface{}{"status": "error", "message": "Nur PNG/JPG erlaubt"}
 	}
-	data, err := os.ReadFile(filename)
+	absDir, err := filepath.Abs(templateDir)
+	if err != nil {
+		return map[string]interface{}{"status": "error", "message": err.Error()}
+	}
+	absFile := filepath.Join(absDir, name)
+	if !strings.HasPrefix(absFile, absDir+string(filepath.Separator)) {
+		return map[string]interface{}{"status": "error", "message": "Pfad außerhalb des Template-Ordners"}
+	}
+	data, err := os.ReadFile(absFile)
+	if err != nil {
+		// Backward compatibility: allow files in cwd for legacy/static assets.
+		data, err = os.ReadFile(name)
+	}
 	if err != nil {
 		return map[string]interface{}{"status": "error", "message": err.Error()}
 	}

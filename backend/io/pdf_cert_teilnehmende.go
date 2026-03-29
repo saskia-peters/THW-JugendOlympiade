@@ -18,7 +18,7 @@ import (
 // pictureDir: directory containing group photos named group_picture_XXX.jpg.
 // If templates/background_urkunde_teilnehmende.png exists it is used as background.
 // Layout positions are loaded from certificate_layout.toml (created with defaults on first run).
-func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string, pictureDir string) error {
+func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string, pictureDir string, eventLocation string) error {
 	if err := ensurePDFDirectory(); err != nil {
 		return err
 	}
@@ -54,8 +54,8 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string
 	if bgFile == "" {
 		bgFile = "templates/background_urkunde_teilnehmende.png"
 	}
-	_, bgStatErr := os.Stat(bgFile)
-	useBg := bgStatErr == nil
+	bgFile = resolveTemplateImagePath(bgFile)
+	useBg := bgFile != ""
 
 	theme := DefaultTheme
 	pdf := fpdf.New("P", "mm", "A4", "")
@@ -66,6 +66,13 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string
 	if currentYear == 0 {
 		currentYear = time.Now().Year()
 	}
+
+	months := []string{
+		"Januar", "Februar", "März", "April", "Mai", "Juni",
+		"Juli", "August", "September", "Oktober", "November", "Dezember",
+	}
+	now := time.Now()
+	eventDate := fmt.Sprintf("%d. %s %d", now.Day(), months[now.Month()-1], now.Year())
 
 	for _, group := range groups {
 		rank := groupRanks[group.GroupID]
@@ -78,14 +85,16 @@ func GenerateParticipantCertificates(db *sql.DB, eventYear int, certStyle string
 				pdf.Image(bgFile, 0, 0, 210, 297, false, imageTypeFromFile(bgFile), 0, "")
 			}
 			ctx := CertContext{
-				EventName:   "Jugendolympiade",
-				Year:        currentYear,
-				Name:        participant.Name,
-				Ortsverband: participant.Ortsverband,
-				GroupID:     group.GroupID,
-				RankText:    rankText,
-				PicturePath: picturePath,
-				Members:     group.Teilnehmende,
+				EventName:     "Jugendolympiade",
+				Year:          currentYear,
+				Name:          participant.Name,
+				Ortsverband:   participant.Ortsverband,
+				GroupID:       group.GroupID,
+				RankText:      rankText,
+				PicturePath:   picturePath,
+				Members:       group.Teilnehmende,
+				EventLocation: eventLocation,
+				EventDate:     eventDate,
 			}
 			if certStyle == "picture" {
 				RenderCertPage(pdf, theme, certLayout.ParticipantPicture, ctx)

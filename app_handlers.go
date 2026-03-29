@@ -129,7 +129,7 @@ func (a *App) GenerateOrtsverbandEvaluationPDF() map[string]interface{} {
 // --- Certificates ---
 
 func (a *App) GenerateParticipantCertificates() map[string]interface{} {
-	return handlers.GenerateParticipantCertificates(a.db, a.cfg.Veranstaltung.Jahr, a.cfg.Ausgabe.UrkunderStil, a.cfg.Ausgabe.BilderOrdner)
+	return handlers.GenerateParticipantCertificates(a.db, a.cfg.Veranstaltung.Jahr, a.cfg.Ausgabe.UrkunderStil, a.cfg.Ausgabe.BilderOrdner, a.cfg.Veranstaltung.Ort)
 }
 
 func (a *App) GenerateOrtsverbandCertificates() map[string]interface{} {

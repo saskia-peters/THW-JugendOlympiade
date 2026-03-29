@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"THW-JugendOlympiade/backend/config"
 	"THW-JugendOlympiade/backend/io"
@@ -22,7 +21,8 @@ import (
 )
 
 //go:embed all:frontend
-//go:embed assets
+//go:embed templates
+//go:embed example
 var assets embed.FS
 
 // App struct
@@ -93,31 +93,32 @@ func main() {
 	}
 }
 
-// extractDefaultAssets walks the embedded "assets/" tree and writes any file that
-// does not yet exist on disk, stripping the leading "assets/" prefix so that
-// "assets/templates/foo.png" is placed at "templates/foo.png" relative to the cwd.
+// extractDefaultAssets walks embedded default-data roots and writes any file that
+// does not yet exist on disk, preserving relative paths (e.g. templates/foo.png).
 // Existing files are never overwritten, preserving user customisations.
 func extractDefaultAssets(fsys embed.FS) {
-	_ = fs.WalkDir(fsys, "assets", func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
+	for _, root := range []string{"templates", "example"} {
+		_ = fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return nil
+			}
+			dest := path
+			if _, statErr := os.Stat(dest); statErr == nil {
+				return nil // already exists — never overwrite user's file
+			}
+			data, readErr := fsys.ReadFile(path)
+			if readErr != nil {
+				fmt.Printf("Standarddatei konnte nicht gelesen werden (%s): %v\n", path, readErr)
+				return nil
+			}
+			if mkdirErr := os.MkdirAll(filepath.Dir(dest), 0755); mkdirErr != nil {
+				fmt.Printf("Ordner konnte nicht erstellt werden (%s): %v\n", filepath.Dir(dest), mkdirErr)
+				return nil
+			}
+			if writeErr := os.WriteFile(dest, data, 0644); writeErr != nil {
+				fmt.Printf("Standarddatei konnte nicht extrahiert werden (%s): %v\n", dest, writeErr)
+			}
 			return nil
-		}
-		dest := strings.TrimPrefix(path, "assets/")
-		if _, statErr := os.Stat(dest); statErr == nil {
-			return nil // already exists — never overwrite user's file
-		}
-		data, readErr := fsys.ReadFile(path)
-		if readErr != nil {
-			fmt.Printf("Standarddatei konnte nicht gelesen werden (%s): %v\n", path, readErr)
-			return nil
-		}
-		if mkdirErr := os.MkdirAll(filepath.Dir(dest), 0755); mkdirErr != nil {
-			fmt.Printf("Ordner konnte nicht erstellt werden (%s): %v\n", filepath.Dir(dest), mkdirErr)
-			return nil
-		}
-		if writeErr := os.WriteFile(dest, data, 0644); writeErr != nil {
-			fmt.Printf("Standarddatei konnte nicht extrahiert werden (%s): %v\n", dest, writeErr)
-		}
-		return nil
-	})
+		})
+	}
 }

@@ -11,6 +11,18 @@ const _gfxExpanded = new Set();
 const _gfxImgCache    = new Map(); // filename → base64 data URL  (root dir)
 const _gfxGroupCache  = new Map(); // filename → base64 data URL  (picture dir)
 
+const _gfxTemplatePrefix = 'templates/';
+
+function _gfxBgBaseName(path) {
+    if (!path) return '';
+    return String(path).split(/[/\\]/).pop() || '';
+}
+
+function _gfxBgStorePath(fileName) {
+    if (!fileName) return '';
+    return _gfxTemplatePrefix + _gfxBgBaseName(fileName);
+}
+
 const _GFX_VARIANTS = {
     participant:         'Teilnehmende',
     participant_picture: 'Teiln. (Foto)',
@@ -198,24 +210,25 @@ function _gfxRenderAreaForm() {
 function _gfxRenderBgForm() {
     const div = document.getElementById('gfx-bg-form');
     if (!div) return;
-    const vd      = _gfxCurrentVariantData();
-    const current = (vd && vd.background_image) || '';
+    const vd          = _gfxCurrentVariantData();
+    const currentPath = (vd && vd.background_image) || '';
+    const currentFile = _gfxBgBaseName(currentPath);
     const lS      = 'display:flex;flex-direction:column;gap:2px;font-size:12px;color:#555;';
     // Always include the currently configured file as an option even if the file
     // doesn't exist on disk yet (so the dropdown shows what is actually saved).
-    const fileMissing = current !== '' && !_gfxImageList.includes(current);
+    const fileMissing = currentPath !== '' && !_gfxImageList.includes(currentFile);
     const allFiles = fileMissing
-        ? [current, ..._gfxImageList]
+        ? [currentFile, ..._gfxImageList]
         : _gfxImageList;
     const borderColor = fileMissing ? '#e53935' : '#ccc';
     const sS = `padding:4px 6px;border:1px solid ${borderColor};border-radius:4px;font-size:12px;width:100%;background:white;box-sizing:border-box;`;
     const options = ['', ...allFiles].map(f => {
-        const sel   = f === current ? 'selected' : '';
+        const sel   = f === currentFile ? 'selected' : '';
         const label = f === '' ? '(kein Hintergrundbild)' : f;
         return `<option value="${_escHtml(f)}" ${sel}>${_escHtml(label)}</option>`;
     }).join('');
     const warning = fileMissing
-        ? `<span style="color:#e53935;font-size:11px;">&#9888; Datei nicht gefunden: ${_escHtml(current)}</span>`
+        ? `<span style="color:#e53935;font-size:11px;">&#9888; Datei nicht gefunden: ${_escHtml(currentFile || currentPath)}</span>`
         : '';
     div.innerHTML = `<label style="${lS}">Hintergrundbild
         <select style="${sS}" onchange="window._gfxUpdateBgImage(this.value)">${options}</select>
@@ -267,8 +280,20 @@ function _gfxElementForm(el, idx) {
 
     const typeOpts  = ['dynamic','text','members_table','group_picture','ov_image']
         .map(t => `<option value="${t}" ${el.type===t?'selected':''}>${t}</option>`).join('');
-    const fieldOpts = ['event_name','year','name','ortsverband','group','rank','winner_label']
-        .map(f => `<option value="${f}" ${el.field===f?'selected':''}>${f}</option>`).join('');
+    const fieldLabels = {
+        event_date:     'Datum',                // aktuelles Datum
+        group:          'Gruppe',
+        year:           'Jahr',                 // veranstaltung.jahr
+        name:           'Name',
+        location_date:  'Ort & Datum',          // veranstaltung.ort + Datum
+        ortsverband:    'Ortsverband',
+        rank:           'Platzierung',
+        winner_label:   'Siegerbezeichnung',
+        event_name:     'Veranstaltungsname',   // veranstaltung.name
+        event_location: 'Veranstaltungsort',    // veranstaltung.ort
+    };
+    const fieldOpts = Object.entries(fieldLabels)
+        .map(([f, label]) => `<option value="${f}" ${el.field===f?'selected':''}>${label}</option>`).join('');
 
     const isText  = el.type === 'text' || el.type === 'dynamic';
     const isImage = el.type === 'group_picture' || el.type === 'ov_image';
@@ -481,11 +506,12 @@ window._gfxUpdateArea = function (field, value) {
 window._gfxUpdateBgImage = async function (filename) {
     const vd = _gfxCurrentVariantData();
     if (!vd) return;
-    vd.background_image = filename;
-    if (filename && !_gfxImgCache.has(filename)) {
+    const storedPath = _gfxBgStorePath(filename);
+    vd.background_image = storedPath;
+    if (storedPath && !_gfxImgCache.has(storedPath)) {
         try {
-            const r = await window.go.main.App.GetImageAsBase64(filename);
-            if (r.status === 'ok') _gfxImgCache.set(filename, r.dataURL);
+            const r = await window.go.main.App.GetImageAsBase64(storedPath);
+            if (r.status === 'ok') _gfxImgCache.set(storedPath, r.dataURL);
         } catch (_) { /* non-fatal */ }
     }
     _gfxRenderPreview();

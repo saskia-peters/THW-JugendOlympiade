@@ -3,7 +3,6 @@ package io
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -68,12 +67,8 @@ func GenerateOrtsverbandCertificates(db *sql.DB, eventYear int, eventName string
 	if bgParticipant == "" {
 		bgParticipant = "templates/background_urkunde_ovs.png"
 	}
-	if _, err := os.Stat(bgWinner); err != nil {
-		bgWinner = ""
-	}
-	if _, err := os.Stat(bgParticipant); err != nil {
-		bgParticipant = ""
-	}
+	bgWinner = resolveTemplateImagePath(bgWinner)
+	bgParticipant = resolveTemplateImagePath(bgParticipant)
 
 	currentYear := eventYear
 	if currentYear == 0 {

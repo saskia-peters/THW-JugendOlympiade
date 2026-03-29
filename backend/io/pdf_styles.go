@@ -3,9 +3,32 @@ package io
 import (
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/go-pdf/fpdf"
 )
+
+// resolveTemplateImagePath returns the first existing path for a template image.
+// It accepts either a bare filename or a path and resolves across common folders.
+func resolveTemplateImagePath(path string) string {
+	if path == "" {
+		return ""
+	}
+	if _, err := os.Stat(path); err == nil {
+		return path
+	}
+	base := filepath.Base(path)
+	for _, cand := range []string{
+		filepath.Join("templates", base),
+		filepath.Join("assets", "templates", base),
+		filepath.Join("assets", "emplates", base),
+	} {
+		if _, err := os.Stat(cand); err == nil {
+			return cand
+		}
+	}
+	return ""
+}
 
 // imageTypeFromFile returns the gofpdf image-type string ("PNG" or "JPEG") by
 // reading the file's magic bytes. This avoids failures when an image is stored

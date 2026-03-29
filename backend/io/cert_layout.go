@@ -113,7 +113,7 @@ const defaultCertLayoutTOML = `
 #
 # ELEMENT-TYPEN (type)
 #   text          – fester Text in  content = "…"
-#   dynamic       – Laufzeitwert;  field = "event_name|year|name|ortsverband|group|rank|winner_label"
+#   dynamic       – Laufzeitwert;  field = "event_name|year|name|ortsverband|group|rank|winner_label|event_location|event_date|location_date"
 #   members_table – Tabelle der Gruppenmitglieder
 #   group_picture – Gruppenfoto;  img_width = Breite in mm
 #   ov_image      – ov_winner_image.png;  img_width = Breite in mm
@@ -227,6 +227,18 @@ y     = 167
 x     = -1
 width = 0
 
+[[participant.elements]]
+type       = "dynamic"
+field      = "location_date"
+y          = 262
+height     = 10
+font_style = "B"
+font_size  = 12
+align      = "C"
+color      = [102, 126, 234]
+x          = -1
+width      = 0
+
 # ===========================================================================
 # Urkunde Teilnehmende – Bildstil (mit Gruppenfoto)
 # ===========================================================================
@@ -319,6 +331,18 @@ y         = 148
 img_width = 120
 x         = -1
 width     = 0
+
+[[participant_picture.elements]]
+type       = "dynamic"
+field      = "location_date"
+y          = 262
+height     = 10
+font_style = "B"
+font_size  = 12
+align      = "C"
+color      = [102, 126, 234]
+x          = -1
+width      = 0
 
 # ===========================================================================
 # Siegerurkunde Ortsverband
@@ -636,15 +660,17 @@ func ValidateAndSaveCertLayoutRaw(content string) (CertLayoutFile, error) {
 
 // CertContext holds the per-certificate dynamic values passed to the renderer.
 type CertContext struct {
-	EventName   string
-	Year        int
-	Name        string // participant name (empty for OV certs)
-	Ortsverband string
-	GroupID     int
-	RankText    string
-	PicturePath string                // group photo path (picture style)
-	Members     []models.Teilnehmende // group members (text style)
-	OVNames     []string              // OV participant names (OV certs)
+	EventName     string
+	Year          int
+	Name          string // participant name (empty for OV certs)
+	Ortsverband   string
+	GroupID       int
+	RankText      string
+	PicturePath   string                // group photo path (picture style)
+	Members       []models.Teilnehmende // group members (text style)
+	OVNames       []string              // OV participant names (OV certs)
+	EventLocation string                // event location from config (printed at bottom)
+	EventDate     string                // date of generation, formatted in German
 }
 
 // RenderCertPage renders all elements of a CertPageLayout onto the current
@@ -774,6 +800,15 @@ func resolveDynamicField(field string, ctx CertContext) string {
 		return enc(ctx.RankText)
 	case "winner_label":
 		return "Bester Ortsverband"
+	case "event_location":
+		return enc(ctx.EventLocation)
+	case "event_date":
+		return enc(ctx.EventDate)
+	case "location_date":
+		if ctx.EventLocation != "" {
+			return enc(ctx.EventLocation + ", " + ctx.EventDate)
+		}
+		return enc(ctx.EventDate)
 	default:
 		return field
 	}

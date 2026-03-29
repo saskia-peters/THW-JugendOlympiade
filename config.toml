@@ -7,6 +7,8 @@
 name = "THW-JugendOlympiade"
 # Jahreszahl der Veranstaltung
 jahr = 2026
+# Veranstaltungsort (erscheint auf Urkunden unten)
+ort = "Singen am Hohentwiel"
 
 [gruppen]
 # Maximale Anzahl Teilnehmende pro Gruppe

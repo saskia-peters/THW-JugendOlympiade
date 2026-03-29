@@ -20,6 +20,7 @@ type Config struct {
 type VeranstaltungConfig struct {
 	Name string `toml:"name"`
 	Jahr int    `toml:"jahr"`
+	Ort  string `toml:"ort"`
 }
 
 type GruppenConfig struct {
@@ -46,6 +47,7 @@ func Default() Config {
 		Veranstaltung: VeranstaltungConfig{
 			Name: "THW-JugendOlympiade",
 			Jahr: 2026,
+			Ort:  "",
 		},
 		Gruppen: GruppenConfig{
 			MaxGroesse: 8,
@@ -90,6 +92,8 @@ const defaultTOML = `# Jugendolympiade - Konfiguration
 name = "THW-JugendOlympiade"
 # Jahreszahl der Veranstaltung
 jahr = 2026
+# Veranstaltungsort (erscheint auf Urkunden unten)
+ort = ""
 
 [gruppen]
 # Maximale Anzahl Teilnehmende pro Gruppe

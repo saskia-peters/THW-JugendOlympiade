@@ -1,398 +1,527 @@
-
-# ---------------------------------------------------------------------------
-# certificate_layout.toml
-# Definiert das visuelle Layout aller vier Urkunden-Varianten.
-# Alle Maße in Millimetern (A4 = 210 × 297 mm).
-#
-# INHALTSBEREICHE (content_area)
-#   Definieren den Bereich, den das Hintergrundbild freilässt.
-#   x = -1  → linker Rand des Inhaltsbereichs
-#   width = 0 → volle Breite des Inhaltsbereichs (right − left)
-#
-# ELEMENT-TYPEN (type)
-#   text          – fester Text in  content = "…"
-#   dynamic       – Laufzeitwert;  field = "event_name|year|name|ortsverband|group|rank|winner_label"
-#   members_table – Tabelle der Gruppenmitglieder
-#   group_picture – Gruppenfoto;  img_width = Breite in mm
-#   ov_image      – ov_winner_image.png;  img_width = Breite in mm
-#
-# SCHRIFT  font_style: ""=normal  "B"=fett  "I"=kursiv  "BI"=fett-kursiv
-# AUSRICH  align:  "C"=zentriert  "L"=links  "R"=rechts
-# FARBE    color = [R, G, B]  – Werte 0-255
-# ---------------------------------------------------------------------------
-
-# ===========================================================================
-# Urkunde Teilnehmende – Textstil (kein Foto)
-# ===========================================================================
-
 [participant]
-background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
+  background_image = "templates/background_urkunde_teilnehmende.png"
+  [participant.content_area]
+    left = 10.0
+    top = 55.0
+    right = 147.83
+    bottom = 275.0
 
-[participant.content_area]
-# Die Vorlage lässt die linken ~148 mm für Inhalt frei.
-left   = 10
-top    = 55
-right  = 147.83
-bottom = 275
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "event_name"
+    x = -1.0
+    y = 60.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "event_name"
-y          = 60      # mm von oben
-height     = 12
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [102, 126, 234]
-x          = -1      # -1 = content_area.left
-width      = 0       # 0  = volle content_area-Breite
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "year"
+    x = -1.0
+    y = 74.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 24.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "year"
-y          = 74
-height     = 10
-font_style = "B"
-font_size  = 24
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "name"
+    x = -1.0
+    y = 95.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "name"
-y          = 95
-height     = 10
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "ortsverband"
+    x = -1.0
+    y = 105.0
+    width = 0.0
+    height = 8.0
+    img_width = 0.0
+    font_family = ""
+    font_style = ""
+    font_size = 14.0
+    align = "C"
+    color = [100, 100, 100]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "ortsverband"
-y          = 105
-height     = 8
-font_style = ""
-font_size  = 14
-align      = "C"
-color      = [100, 100, 100]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "group"
+    x = -1.0
+    y = 125.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "group"
-y          = 125
-height     = 10
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "rank"
+    x = -1.0
+    y = 140.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 22.0
+    align = "C"
+    color = [180, 140, 10]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "dynamic"
-field      = "rank"
-y          = 140
-height     = 12
-font_style = "B"
-font_size  = 22
-align      = "C"
-color      = [180, 140, 10]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "text"
+    content = "Gruppenmitglieder"
+    field = ""
+    x = -1.0
+    y = 157.0
+    width = 0.0
+    height = 8.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 12.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant.elements]]
-type       = "text"
-content    = "Gruppenmitglieder"
-y          = 157
-height     = 8
-font_style = "B"
-font_size  = 12
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[participant.elements]]
+    type = "members_table"
+    content = ""
+    field = ""
+    x = -1.0
+    y = 167.0
+    width = 0.0
+    height = 0.0
+    img_width = 0.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant.elements]]
-type  = "members_table"
-y     = 167
-x     = -1
-width = 0
-
-# ===========================================================================
-# Urkunde Teilnehmende – Bildstil (mit Gruppenfoto)
-# ===========================================================================
+  [[participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "location_date"
+    x = -1.0
+    y = 262.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 12.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
 [participant_picture]
-background_image = "templates/background_urkunde_teilnehmende.png"  # "" = kein Hintergrundbild
+  background_image = "templates/background_urkunde_teilnehmende.png"
+  [participant_picture.content_area]
+    left = 10.0
+    top = 55.0
+    right = 147.83
+    bottom = 275.0
 
-[participant_picture.content_area]
-left   = 10
-top    = 55
-right  = 147.83
-bottom = 275
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "event_name"
+    x = -1.0
+    y = 60.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "event_name"
-y          = 60
-height     = 12
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "year"
+    x = -1.0
+    y = 74.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 24.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "year"
-y          = 74
-height     = 10
-font_style = "B"
-font_size  = 24
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "name"
+    x = -1.0
+    y = 95.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "name"
-y          = 95
-height     = 10
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "ortsverband"
+    x = -1.0
+    y = 105.0
+    width = 0.0
+    height = 8.0
+    img_width = 0.0
+    font_family = ""
+    font_style = ""
+    font_size = 14.0
+    align = "C"
+    color = [100, 100, 100]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "ortsverband"
-y          = 105
-height     = 8
-font_style = ""
-font_size  = 14
-align      = "C"
-color      = [100, 100, 100]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "group"
+    x = -1.0
+    y = 120.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "group"
-y          = 120
-height     = 10
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "rank"
+    x = -1.0
+    y = 132.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 22.0
+    align = "C"
+    color = [180, 140, 10]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-type       = "dynamic"
-field      = "rank"
-y          = 132
-height     = 12
-font_style = "B"
-font_size  = 22
-align      = "C"
-color      = [180, 140, 10]
-x          = -1
-width      = 0
+  [[participant_picture.elements]]
+    type = "group_picture"
+    content = ""
+    field = ""
+    x = -1.0
+    y = 148.0
+    width = 0.0
+    height = 0.0
+    img_width = 120.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[participant_picture.elements]]
-# img_width: Breite des Fotos in mm; wird innerhalb des Inhaltsbereichs zentriert
-type      = "group_picture"
-y         = 148
-img_width = 120
-x         = -1
-width     = 0
-
-# ===========================================================================
-# Siegerurkunde Ortsverband
-# ===========================================================================
+  [[participant_picture.elements]]
+    type = "dynamic"
+    content = ""
+    field = "location_date"
+    x = -1.0
+    y = 262.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
 [ov_winner]
-background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
+  background_image = "templates/background_urkunde_ovs.png"
+  [ov_winner.content_area]
+    left = 15.0
+    top = 20.0
+    right = 195.0
+    bottom = 277.0
 
-[ov_winner.content_area]
-# Vollbedruckbare Seite mit 15 mm Rändern
-left   = 15
-top    = 20
-right  = 195
-bottom = 277
+  [[ov_winner.elements]]
+    type = "dynamic"
+    content = ""
+    field = "event_name"
+    x = -1.0
+    y = 25.0
+    width = 0.0
+    height = 14.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "dynamic"
-field      = "event_name"
-y          = 25
-height     = 14
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[ov_winner.elements]]
+    type = "dynamic"
+    content = ""
+    field = "year"
+    x = -1.0
+    y = 44.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 24.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "dynamic"
-field      = "year"
-y          = 44
-height     = 12
-font_style = "B"
-font_size  = 24
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[ov_winner.elements]]
+    type = "text"
+    content = "Siegerurkunde"
+    field = ""
+    x = -1.0
+    y = 62.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "text"
-content    = "Siegerurkunde"
-y          = 62
-height     = 12
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[ov_winner.elements]]
+    type = "dynamic"
+    content = ""
+    field = "ortsverband"
+    x = -1.0
+    y = 78.0
+    width = 0.0
+    height = 14.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "dynamic"
-field      = "ortsverband"
-y          = 78
-height     = 14
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[ov_winner.elements]]
+    type = "ov_image"
+    content = ""
+    field = ""
+    x = -1.0
+    y = 88.0
+    width = 0.0
+    height = 0.0
+    img_width = 140.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-# img_width: Breite des OV-Siegerbilds in mm
-type      = "ov_image"
-y         = 88
-img_width = 140
-x         = -1
-width     = 0
+  [[ov_winner.elements]]
+    type = "dynamic"
+    content = ""
+    field = "winner_label"
+    x = -1.0
+    y = 187.0
+    width = 0.0
+    height = 14.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 22.0
+    align = "C"
+    color = [180, 140, 10]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "dynamic"
-field      = "winner_label"
-y          = 187
-height     = 14
-font_style = "B"
-font_size  = 22
-align      = "C"
-color      = [180, 140, 10]
-x          = -1
-width      = 0
+  [[ov_winner.elements]]
+    type = "text"
+    content = "Teilnehmende"
+    field = ""
+    x = -1.0
+    y = 201.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_winner.elements]]
-type       = "text"
-content    = "Teilnehmende"
-y          = 201
-height     = 10
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
-
-[[ov_winner.elements]]
-type  = "members_table"
-y     = 212
-x     = -1
-width = 0
-
-# ===========================================================================
-# Teilnahmeurkunde Ortsverband
-# ===========================================================================
+  [[ov_winner.elements]]
+    type = "members_table"
+    content = ""
+    field = ""
+    x = -1.0
+    y = 212.0
+    width = 0.0
+    height = 0.0
+    img_width = 0.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
 
 [ov_participant]
-background_image = "templates/background_urkunde_ovs.png"  # "" = kein Hintergrundbild
+  background_image = "templates/background_urkunde_ovs.png"
+  [ov_participant.content_area]
+    left = 15.0
+    top = 20.0
+    right = 195.0
+    bottom = 277.0
 
-[ov_participant.content_area]
-left   = 15
-top    = 20
-right  = 195
-bottom = 277
+  [[ov_participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "event_name"
+    x = -1.0
+    y = 40.0
+    width = 0.0
+    height = 14.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[ov_participant.elements]]
-type       = "dynamic"
-field      = "event_name"
-y          = 40
-height     = 14
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[ov_participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "year"
+    x = -1.0
+    y = 60.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 24.0
+    align = "C"
+    color = [102, 126, 234]
+    space_before = 0.0
 
-[[ov_participant.elements]]
-type       = "dynamic"
-field      = "year"
-y          = 60
-height     = 12
-font_style = "B"
-font_size  = 24
-align      = "C"
-color      = [102, 126, 234]
-x          = -1
-width      = 0
+  [[ov_participant.elements]]
+    type = "text"
+    content = "Urkunde"
+    field = ""
+    x = -1.0
+    y = 80.0
+    width = 0.0
+    height = 12.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_participant.elements]]
-type       = "text"
-content    = "Urkunde"
-y          = 80
-height     = 12
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[ov_participant.elements]]
+    type = "dynamic"
+    content = ""
+    field = "ortsverband"
+    x = -1.0
+    y = 100.0
+    width = 0.0
+    height = 14.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 28.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_participant.elements]]
-type       = "dynamic"
-field      = "ortsverband"
-y          = 100
-height     = 14
-font_style = "B"
-font_size  = 28
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
+  [[ov_participant.elements]]
+    type = "text"
+    content = "Teilnehmende"
+    field = ""
+    x = -1.0
+    y = 125.0
+    width = 0.0
+    height = 10.0
+    img_width = 0.0
+    font_family = ""
+    font_style = "B"
+    font_size = 16.0
+    align = "C"
+    color = [0, 0, 0]
+    space_before = 0.0
 
-[[ov_participant.elements]]
-type       = "text"
-content    = "Teilnehmende"
-y          = 125
-height     = 10
-font_style = "B"
-font_size  = 16
-align      = "C"
-color      = [0, 0, 0]
-x          = -1
-width      = 0
-
-[[ov_participant.elements]]
-type  = "members_table"
-y     = 138
-x     = -1
-width = 0
+  [[ov_participant.elements]]
+    type = "members_table"
+    content = ""
+    field = ""
+    x = -1.0
+    y = 138.0
+    width = 0.0
+    height = 0.0
+    img_width = 0.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
