@@ -186,7 +186,7 @@ func TestInsertStations_SkipsEmptyNames(t *testing.T) {
 	rows := [][]string{
 		{"Stationsname"},
 		{"Bogenschießen"},
-		{""},    // empty — should be skipped
+		{""},   // empty — should be skipped
 		{"  "}, // whitespace — should be skipped
 		{"Sanitätsdienst"},
 	}
