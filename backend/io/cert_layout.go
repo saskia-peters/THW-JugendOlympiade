@@ -409,6 +409,7 @@ width      = 0
 [[ov_winner.elements]]
 # img_width: Breite des OV-Siegerbilds in mm
 type      = "ov_image"
+content   = "templates/ov_winner_image.png"
 y         = 88
 img_width = 140
 x         = -1
@@ -735,10 +736,11 @@ func renderElement(pdf *fpdf.Fpdf, theme PDFTheme, el CertLayoutElement, ctx Cer
 		certDrawGroupPictureAt(pdf, theme, ctx.PicturePath, imgX, startY, imgW)
 
 	case "ov_image":
-		imgFile := "ov_winner_image.png"
+		imgFile := "templates/ov_winner_image.png"
 		if el.Content != "" {
 			imgFile = el.Content
 		}
+		imgFile = resolveTemplateImagePath(imgFile)
 		imgW := el.ImgWidth
 		if imgW <= 0 {
 			imgW = 140

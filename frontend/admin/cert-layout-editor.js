@@ -120,7 +120,7 @@ export async function loadCertLayoutEditor() {
             Object.keys(_GFX_VARIANTS).flatMap(v =>
                 (_gfxData[v]?.elements || [])
                     .filter(el => el.type === 'ov_image')
-                    .map(el => el.content || 'ov_winner_image.png')
+                    .map(el => el.content || 'templates/ov_winner_image.png')
             ).filter(f => f && !_gfxImgCache.has(f))
         )];
 
@@ -375,7 +375,7 @@ function _gfxOvImagePicker(el, idx) {
     const sS  = 'padding:4px 6px;border:1px solid #ccc;border-radius:4px;font-size:12px;width:100%;background:white;box-sizing:border-box;';
     const lS  = 'display:flex;flex-direction:column;gap:2px;font-size:11px;color:#666;';
     const s2  = 'grid-column:span 2;';
-    const current = el.content || 'ov_winner_image.png';
+    const current = el.content || 'templates/ov_winner_image.png';
     const fileMissing = !_gfxImgCache.has(current);
     const borderColor = fileMissing ? '#e53935' : '#ccc';
     const sSc = sS.replace('border:1px solid #ccc', `border:1px solid ${borderColor}`);
@@ -460,7 +460,7 @@ function _gfxRenderPreview() {
 
             if (el.type === 'ov_image') {
                 // Static image — show the actual file if available
-                const ovFile = el.content || 'ov_winner_image.png';
+                const ovFile = el.content || 'templates/ov_winner_image.png';
                 const dataURL = _gfxImgCache.get(ovFile);
                 if (dataURL) {
                     html += `<img src="${dataURL}" style="position:absolute;left:${imgX}px;top:${py}px;width:${imgW}px;object-fit:contain;pointer-events:none;">`;

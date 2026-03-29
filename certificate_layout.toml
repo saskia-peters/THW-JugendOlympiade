@@ -360,7 +360,7 @@
 
   [[ov_winner.elements]]
     type = "ov_image"
-    content = ""
+    content = "templates/ov_winner_image.png"
     field = ""
     x = -1.0
     y = 88.0
