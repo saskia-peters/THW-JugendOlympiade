@@ -21,6 +21,7 @@ func GetConfig(cfg config.Config) map[string]interface{} {
 		"maxGroupSize": cfg.Gruppen.MaxGroesse,
 		"eventName":    cfg.Veranstaltung.Name,
 		"eventYear":    cfg.Veranstaltung.Jahr,
+		"certStyle":    cfg.Ausgabe.UrkunderStil,
 	}
 }
 
