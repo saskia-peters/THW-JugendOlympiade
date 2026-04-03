@@ -1,0 +1,104 @@
+site_name: Jugendolympiade Verwaltung
+site_description: Plattformübergreifende Desktop-Anwendung für die Organisation von Jugendolympiaden — gebaut mit Go und Wails v2.
+site_author: THW Jugendolympiade Team
+docs_dir: mkdocs
+site_dir: ../docs
+
+repo_url: https://github.com/saskia/experiment1
+repo_name: experiment1
+edit_uri: edit/main/assets/mkdocs/
+
+theme:
+  name: material
+  language: de
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Zu Dunkelmodus wechseln
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Zu Hellmodus wechseln
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/trophy
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search:
+      lang: de
+
+nav:
+  - Start: index.md
+  - Schnellstart: getting-started.md
+  - Benutzerhandbuch:
+    - Excel-Import: user-guide/excel-import.md
+    - Gruppenverteilung: user-guide/groups.md
+    - Ergebniseingabe: user-guide/scoring.md
+    - Auswertung: user-guide/evaluations.md
+    - PDF & Urkunden: user-guide/pdf-generation.md
+  - Entwickler-Dokumentation:
+    - Architektur: developer/architecture.md
+    - Datenbankschema: developer/database.md
+    - Konfiguration: developer/configuration.md
+    - Tests: developer/testing.md
+    - Build & Entwicklung: developer/building.md
+    - Sicherheit & Performance: developer/security.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/saskia/experiment1

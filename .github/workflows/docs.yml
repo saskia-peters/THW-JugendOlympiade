@@ -1,0 +1,48 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "assets/mkdocs/**"
+      - "assets/mkdocs.yml"
+      - "assets/pyproject.toml"
+      - "assets/uv.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-docs:
+    name: Build & commit docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python via uv
+        run: uv python install
+
+      - name: Install documentation dependencies
+        run: uv sync --project assets
+
+      - name: Build documentation
+        run: uv run --project assets mkdocs build --config-file assets/mkdocs.yml --strict
+
+      - name: Commit built documentation to docs/
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "docs: rebuild site [skip ci]"
+          git push

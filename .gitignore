@@ -27,3 +27,10 @@ pdfdocs/
 
 # Go workspace files
 go.work
+
+# Python / uv (files live in assets/)
+assets/.venv/
+__pycache__/
+*.pyc
+*.pyo
+main.py

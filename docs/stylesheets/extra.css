@@ -1,0 +1,32 @@
+/* THW-Markenfarben */
+:root {
+  --thw-blue: #003082;
+  --thw-gold: #f5a800;
+  --thw-light-blue: #4a7fc1;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:       var(--thw-blue);
+  --md-primary-fg-color--light: var(--thw-light-blue);
+  --md-primary-fg-color--dark:  #001d52;
+  --md-accent-fg-color:        var(--thw-gold);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: var(--thw-light-blue);
+  --md-accent-fg-color:  var(--thw-gold);
+}
+
+/* Hero-Banner auf der Startseite */
+.hero-banner {
+  background: linear-gradient(135deg, var(--thw-blue) 0%, var(--thw-light-blue) 100%);
+  color: #fff !important;
+  padding: 1.5rem 2rem;
+  border-radius: .5rem;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+.hero-banner a { color: var(--thw-gold) !important; }
+
+/* Aktiver Navigationseintrag */
+.md-nav__link--active { font-weight: 700; }
