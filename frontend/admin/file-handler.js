@@ -292,7 +292,7 @@ function askEventChoice() {
         overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999';
 
         const box = document.createElement('div');
-        box.style.cssText = 'background:#fff;border-radius:10px;padding:32px 36px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);font-family:Arial,sans-serif';
+        box.style.cssText = 'background:#fff;border-radius:10px;padding:32px 36px;max-width:480px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);font-family:Arial,sans-serif';
 
         box.innerHTML = `
             <h2 style="margin:0 0 12px;font-size:1.2em;color:#333">Veranstaltung auswählen</h2>
@@ -300,9 +300,11 @@ function askEventChoice() {
                 Welche Veranstaltung soll aus dem Master-Excel extrahiert werden?
             </p>
             <div style="display:flex;gap:12px;justify-content:flex-end">
-                <button id="_btnCancel" style="padding:10px 20px;background:#9e9e9e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Abbrechen</button>
                 <button id="_btnMini"   style="padding:10px 20px;background:#1976d2;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Mini</button>
                 <button id="_btnJugend" style="padding:10px 20px;background:#2e7d32;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Jugend</button>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px;padding-top:12px;border-top:1px solid #eee">
+                <button id="_btnCancel" style="padding:10px 20px;background:#9e9e9e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600">Abbrechen</button>
             </div>`;
 
         overlay.appendChild(box);
