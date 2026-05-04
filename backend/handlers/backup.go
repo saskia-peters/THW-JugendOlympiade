@@ -9,7 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"THW-JugendOlympiade/backend/database"
 	"THW-JugendOlympiade/backend/models"
+	"THW-JugendOlympiade/backend/services"
 )
 
 // BackupDatabase creates a timestamped backup of the database.
@@ -218,6 +220,12 @@ func RestoreDatabase(db **sql.DB, backupFilename string) map[string]interface{} 
 		}
 	}
 	*db = newDB
+
+	// Reload in-memory CarGroups from the restored database so that
+	// ShowGroups and PDF generation work correctly without an app restart.
+	if cgs, err := database.LoadCarGroups(*db); err == nil {
+		services.SetLastCarGroups(cgs)
+	}
 
 	return map[string]interface{}{
 		"status":  "success",
