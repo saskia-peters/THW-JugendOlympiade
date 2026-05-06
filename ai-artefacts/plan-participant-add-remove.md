@@ -49,11 +49,14 @@ and leave the group structure, CarGroups, vehicles and caretakers untouched.
 
 #### Free-slot rules by mode
 
-| Mode | "Free slot" definition |
-|------|------------------------|
-| `FixGroupSize` + CarGroups = `ja` | Group member count < `fixedGroupSize` **AND** the CarGroup pool total seats > current total headcount (participants + caretakers in the pool) |
-| `FixGroupSize` + CarGroups = `nein` | Group member count < `fixedGroupSize` |
-| `Klassisch` / `Fahrzeuge` | Group member count < seats in the vehicle assigned to that group (`gruppe_fahrzeuge` → `fahrzeuge.sitzplaetze`). If no vehicle is assigned, fall back to `MaxGroesse`. |
+The handler derives capacity using raw DB data + config, not a DB-layer
+mode-switching function:
+
+| Mode | "Free slot" definition | Data source |
+|------|------------------------|-------------|
+| `FixGroupSize` + CarGroups = `ja` | Group member count < `fixedGroupSize` **AND** pool total seats > pool total headcount (participants + caretakers) | `services.GetLastCarGroups()` for pool structure (in-memory is canonical; DB tables are a stale snapshot) |
+| `FixGroupSize` + CarGroups = `nein` | Group member count < `fixedGroupSize` | config only |
+| `Klassisch` / `Fahrzeuge` | Group member count < vehicle `sitzplaetze` assigned to group; if no vehicle, fall back to `MaxGroesse` | `GetGroupVehicleSeats()` + config |
 
 ---
 
@@ -131,41 +134,63 @@ not rolled back.
 
 ### 4.1 New Database Functions (`backend/database/`)
 
+Raw data functions only — no mode-switching logic in the DB layer (mode logic
+belongs in the handler/service layer).
+
 | Function | Description |
 |----------|-------------|
-| `DeleteTeilnehmer(db, teilnehmerID int) error` | DELETE FROM gruppe + teilnehmende in a transaction |
-| `InsertTeilnehmer(db, t models.Teilnehmende) (int64, error)` | INSERT into teilnehmende, returns new id |
-| `AssignTeilnehmerToGroup(db, teilnehmerID int, groupID int) error` | INSERT into gruppe |
-| `GetGroupMemberCounts(db) (map[int]int, error)` | Returns map[group_id]count for all groups |
-| `GetGroupSeatCapacity(db, mode string, fixedGroupSize int) (map[int]int, error)` | Returns map[group_id]maxSeats based on mode (vehicle seats or fixedGroupSize) |
-| `NextTeilnehmerID(db) (int, error)` | SELECT MAX(teilnehmer_id)+1 from teilnehmende |
-| `AnyScoreExists(db) (bool, error)` | Checks if `group_station_scores` has any row at all (global lock) |
+| `DeleteTeilnehmer(tx *sql.Tx, teilnehmerID int64) error` | DELETE FROM gruppe, then teilnehmende; also deletes orphaned gruppe_fahrzeuge/cargroup_groups rows if group becomes empty |
+| `AddTeilnehmerToGroup(tx *sql.Tx, t models.Teilnehmende, groupID int) (int64, error)` | Single atomic function: INSERT teilnehmende + INSERT gruppe; **owns the full add in one call** |
+| `GetGroupMemberCounts(db *sql.DB) (map[int]int, error)` | Returns map[group_id]count for all groups |
+| `GetGroupVehicleSeats(db *sql.DB) (map[int]int, error)` | Returns map[group_id]sitzplaetze from gruppe_fahrzeuge join fahrzeuge |
+| `NextTeilnehmerID(tx *sql.Tx) (int64, error)` | `SELECT COALESCE(MAX(teilnehmer_id),0)+1 FROM teilnehmende` — handles empty table |
+| `AnyScoreExists(db *sql.DB) (bool, error)` | `SELECT 1 FROM group_station_scores LIMIT 1` — global lock check |
 
-### 4.2 New Handlers (`backend/handlers/admin.go` or new file `admin_participants.go`)
+> **Note on `InsertTeilnehmer` + `AssignTeilnehmerToGroup` split**: these are
+> merged into a single `AddTeilnehmerToGroup` to prevent partial state if the
+> second call fails after the first succeeds.
+
+### 4.2 New Handlers (`backend/handlers/` — new file `participants.go`)
+
+**Transaction pattern**: use `db.Conn(ctx)` to obtain a dedicated connection,
+then `conn.ExecContext(ctx, "BEGIN IMMEDIATE")` manually. This is required
+because `db.Begin()` maps to `BEGIN DEFERRED` in SQLite, and the score-lock
+check must be inside the same IMMEDIATE transaction to avoid a TOCTOU race.
+The DB must also have `SetMaxOpenConns(1)` set at open time to prevent
+`SQLITE_BUSY` under concurrent Wails calls (set this in `db.go` / `OpenExistingDB`).
 
 | Handler / Wails Export | Input | Output |
 |------------------------|-------|--------|
-| `RemoveTeilnehmer(id int)` | DB teilnehmer id | `{status, message, name, groupName, pdfResults []PDFResult}` |
-| `GetParticipantsWithGroups()` | — | `[]ParticipantRow{ID, Name, Ortsverband, Alter, Geschlecht, GroupID, GroupName}` + top-level `scoresLocked bool` flag |
-| `GetEligibleGroups()` | — | `[]EligibleGroup{GroupID, GroupName, CurrentCount, MaxSlots}` |
-| `AddTeilnehmer(name, ortsverband string, alter int, geschlecht, groupID)` | — | `{status, message, newID, groupName, pdfResults []PDFResult}` |
+| `RemoveTeilnehmer(id int64)` | DB teilnehmer id | `ParticipantMutationResult` |
+| `GetParticipantsWithGroups()` | — | `ParticipantsResponse{Rows []ParticipantRow, ScoresLocked bool}` |
+| `GetEligibleGroups()` | — | `[]EligibleGroup` |
+| `AddTeilnehmer(name, ortsverband string, alter int, geschlecht string, groupID int)` | — | `ParticipantMutationResult` |
 
-`PDFResult` is a small struct: `{Name string, Status string, Error string}` —
-one entry per PDF attempted, with `Status = "ok"` or `"error"`.
+Each mutating handler (Add / Remove) runs the following sequence:
+1. Open dedicated `*sql.Conn`; execute `BEGIN IMMEDIATE`.
+2. Call `AnyScoreExists` **inside** the transaction — return error if locked.
+3. Perform DB mutation (delete or insert) using the same connection.
+4. `COMMIT`.
+5. **After commit**: call each applicable `Generate*PDF` sequentially (outside
+   the transaction — holding a tx open during PDF rendering is wrong).
+6. Collect `PDFResult` entries (failures do **not** roll back the DB mutation).
+7. Return `ParticipantMutationResult`.
 
-Each mutating handler (Add / Remove) runs the following sequence **before returning**:
-1. DB transaction (delete or insert) — if this fails, return early with error.
-2. Call each applicable `Generate*PDF` function in order (§8).
-3. Collect successes and failures into `pdfResults`.
-4. Return combined result — the frontend builds the result modal from this.
+> **PDF failure is not a data failure.** The add/remove is always committed
+> before PDF generation begins. A PDF error is reported to the user as a
+> warning in the result modal, not as an operation failure.
 
 ### 4.3 New / Updated Models
 
-A lightweight response struct for the UI:
+Named structs are used for all new handler return types. This is a deliberate
+improvement over the existing `map[string]interface{}` pattern and should be
+adopted for new handlers going forward.
 
 ```go
+// All IDs use int64 to match database/sql's LastInsertId / scan conventions.
+
 type ParticipantRow struct {
-    ID          int
+    ID          int64
     Name        string
     Ortsverband string
     Alter       int
@@ -174,11 +199,31 @@ type ParticipantRow struct {
     GroupName   string
 }
 
+type ParticipantsResponse struct {
+    Rows         []ParticipantRow
+    ScoresLocked bool
+}
+
 type EligibleGroup struct {
     GroupID      int
     GroupName    string
     CurrentCount int
-    MaxSlots     int   // -1 means unlimited (edge case: no vehicle assigned in Klassisch mode)
+    MaxSlots     int   // -1 = unlimited (no vehicle assigned in Klassisch mode)
+}
+
+type PDFResult struct {
+    Name   string
+    Status string // "ok" | "error"
+    Error  string
+}
+
+type ParticipantMutationResult struct {
+    Status    string      // "success" | "error"
+    Message   string
+    Name      string
+    GroupName string
+    NewID     int64       // only for Add; 0 for Remove
+    PDFResults []PDFResult
 }
 ```
 
@@ -219,14 +264,51 @@ build runs: `RemoveTeilnehmer`, `GetParticipantsWithGroups`, `GetEligibleGroups`
 
 ## 6. Transaction Safety
 
-Both Remove and Add must run inside a **single DB transaction** to avoid partial
-state if the app crashes mid-operation:
+Both Remove and Add use a **dedicated `*sql.Conn`** with a manually issued
+`BEGIN IMMEDIATE` (not `db.Begin()` which produces `BEGIN DEFERRED`).
 
-- **Remove**: `DELETE FROM gruppe` + `DELETE FROM teilnehmende` — atomic.
-- **Add**: `INSERT INTO teilnehmende` + `INSERT INTO gruppe` — atomic.
-  The free-slot re-validation must happen inside the same transaction (using
-  `SELECT COUNT` with `FOR UPDATE` semantics, or a SQLite `IMMEDIATE` transaction
-  to prevent TOCTOU between the frontend check and the actual insert).
+**Why IMMEDIATE?** SQLite serialises all writers under an IMMEDIATE transaction.
+This means the `AnyScoreExists` check runs inside the lock, eliminating the
+TOCTOU race between the check and the INSERT/DELETE.
+
+**Why dedicated conn?** `db.Exec("BEGIN IMMEDIATE")` risks the statement and
+subsequent queries landing on different pooled connections. Using `db.Conn(ctx)`
+pins all operations to one connection.
+
+**SetMaxOpenConns(1)**: Must be set on the `*sql.DB` handle at open time
+(in `OpenExistingDB` / `CreateNewDB`). This serialises all Wails-dispatched
+concurrent calls and prevents `SQLITE_BUSY` errors.
+
+**Add sequence:**
+```
+conn.ExecContext("BEGIN IMMEDIATE")
+→ AnyScoreExists check (inside tx — if locked, ROLLBACK + return error)
+→ NextTeilnehmerID (COALESCE(MAX,0)+1)
+→ INSERT INTO teilnehmende
+→ INSERT INTO gruppe
+→ COMMIT
+→ [PDF generation outside tx]
+```
+
+**Remove sequence:**
+```
+conn.ExecContext("BEGIN IMMEDIATE")
+→ AnyScoreExists check (inside tx — if locked, ROLLBACK + return error)
+→ SELECT group_id for this teilnehmer_id
+→ DELETE FROM gruppe WHERE teilnehmer_id = ?
+→ DELETE FROM teilnehmende WHERE id = ?
+→ if COUNT(gruppe WHERE group_id = ?) == 0:
+    DELETE FROM gruppe_fahrzeuge WHERE group_id = ?
+    DELETE FROM cargroup_groups WHERE group_id = ?
+→ COMMIT
+→ [PDF generation outside tx]
+```
+
+> **Orphaned rows**: if a removal empties a group entirely, the corresponding
+> `gruppe_fahrzeuge` and `cargroup_groups` rows are cleaned up in the same
+> transaction. If cargroup_groups is deleted, the in-memory CarGroups state
+> (`services.GetLastCarGroups()`) must also be updated — reload from DB after
+> the commit (same pattern as `RestoreDatabase`).
 
 ---
 
@@ -238,13 +320,12 @@ participant-level score rows**. Consequences:
 - Removing a participant **never deletes any score data** — the group's scores remain intact.
 - The **score-gate rule applies globally**: the moment any single score row exists
   in `group_station_scores`, both Add and Remove are locked for the entire event.
-- `AnyScoreExists(db) (bool, error)` is the single guard for both operations.
+- `AnyScoreExists` is the single guard for both operations, and it runs **inside**
+  the `BEGIN IMMEDIATE` transaction to prevent TOCTOU (see §6).
 - Once locked, all "Entfernen" buttons are disabled and the Add form is hidden
   or replaced with an informational message:
   > "Hinzufügen und Entfernen ist nicht mehr möglich, da bereits Wertungen
   > eingetragen wurden."
-
----
 
 ## 8. PDF Auto-Regeneration
 
@@ -259,7 +340,7 @@ become stale after any membership change.
 | Stationslaufzettel (station run sheets) | `GenerateStationSheetsPDF` | Always |
 | OV-Zuweisungen (ortsverband assignment list) | `GenerateOVAssignmentsPDF` | Always |
 | Übersicht (overview) | `GenerateOverviewPDF` | Always |
-| Fahrgemeinschaften (carpool seating) | `GenerateCarGroupsPDF` | Only if CarGroups = `ja` |
+| Fahrgemeinschaften (carpool seating) | `GenerateCarGroupsPDF` | Only if `Verteilungsmodus == "FixGroupSize"` AND `CarGroups == "ja"` AND `len(services.GetLastCarGroups()) > 0` |
 
 PDFs that are **not** regenerated (unaffected by membership changes):
 - `GenerateGroupEvaluationPDF` — scores-based, no participant list
@@ -296,3 +377,5 @@ The following are explicitly **not** part of this plan:
 | 4 | Should a removed participant be logged anywhere (audit trail) for on-site record-keeping? | New `audit_log` table or skip entirely |
 | 5 | Should the result modal show a "Backup erstellen" shortcut button, since a membership change is a good moment to back up? | Post-action modal UX |
 | 6 | If PDF regeneration is slow (e.g. >2 seconds), should the UI show a spinner while the backend processes, or is a blocking call acceptable? | Handler response time vs. UX |
+| 7 | `SetMaxOpenConns(1)` on the DB handle: confirm this is not already set (or conflicts with any existing concurrent usage). | DB open code in `db.go` |
+| 8 | The bulk Excel import uses XLSX row index as `teilnehmer_id`. The new Add path uses `MAX+1`. Document the owning convention to prevent future collisions on re-import. | `NextTeilnehmerID` logic |
