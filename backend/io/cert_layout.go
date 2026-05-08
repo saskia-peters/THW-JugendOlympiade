@@ -720,7 +720,7 @@ func renderElement(pdf *fpdf.Fpdf, theme PDFTheme, el CertLayoutElement, ctx Cer
 		if len(ctx.Members) > 0 {
 			certMembersTable(pdf, theme, ctx.Members, x, width, el.Y)
 		} else {
-			renderOVMembersList(pdf, theme, el, ctx.OVNames, x, width)
+			renderOVMembersList(pdf, theme, el, ctx.OVNames, x, width, area)
 		}
 
 	case "group_picture":
@@ -742,6 +742,10 @@ func renderElement(pdf *fpdf.Fpdf, theme PDFTheme, el CertLayoutElement, ctx Cer
 			imgFile = el.Content
 		}
 		imgFile = resolveTemplateImagePath(imgFile)
+		if imgFile == "" {
+			// specified file not found – fall back to default winner image
+			imgFile = resolveTemplateImagePath("templates/ov_winner_image.png")
+		}
 		imgW := el.ImgWidth
 		if imgW <= 0 {
 			imgW = 140
@@ -837,16 +841,43 @@ func certDrawGroupPictureAt(pdf *fpdf.Fpdf, theme PDFTheme, picturePath string, 
 	}
 }
 
-// renderOVMembersList renders names for OV certs when using JSON layout
-// (the members_table element in an OV layout uses OVNames, not Members).
-func renderOVMembersList(pdf *fpdf.Fpdf, theme PDFTheme, el CertLayoutElement, names []string, x, width float64) {
-	if el.Y >= 0 {
-		pdf.SetXY(x, el.Y)
+// renderOVMembersList renders names for OV certs.
+// When all names fit in the available vertical space (area.Bottom − el.Y) they
+// are rendered in a single centred column. Otherwise the list is split into as
+// many equally-wide columns as needed so that every name stays on the page.
+func renderOVMembersList(pdf *fpdf.Fpdf, theme PDFTheme, el CertLayoutElement, names []string, x, width float64, area ContentArea) {
+	if len(names) == 0 {
+		return
 	}
+
+	const rowH = 6.0
+	startY := el.Y
+	if startY < 0 {
+		startY = pdf.GetY()
+	}
+
+	availH := area.Bottom - startY
+	rowsPerCol := int(availH / rowH)
+	if rowsPerCol < 1 {
+		rowsPerCol = 1
+	}
+
+	numCols := (len(names) + rowsPerCol - 1) / rowsPerCol
+	if numCols < 1 {
+		numCols = 1
+	}
+	// Redistribute evenly: recalculate rows per column now that numCols is known
+	rowsPerCol = (len(names) + numCols - 1) / numCols
+	colW := width / float64(numCols)
+
 	theme.Font(pdf, "", 12)
 	pdf.SetTextColor(0, 0, 0)
-	for _, name := range names {
-		pdf.SetX(x)
-		pdf.CellFormat(width, 6, enc(name), "", 1, "C", false, 0, "")
+	for i, name := range names {
+		col := i / rowsPerCol
+		row := i % rowsPerCol
+		cellX := x + float64(col)*colW
+		cellY := startY + float64(row)*rowH
+		pdf.SetXY(cellX, cellY)
+		pdf.CellFormat(colW, rowH, enc(name), "", 0, "C", false, 0, "")
 	}
 }

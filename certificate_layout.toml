@@ -363,7 +363,7 @@
     content = "templates/ov_winner_image.png"
     field = ""
     x = -1.0
-    y = 88.0
+    y = 93.0
     width = 0.0
     height = 0.0
     img_width = 140.0
@@ -435,7 +435,7 @@
     content = ""
     field = "event_name"
     x = -1.0
-    y = 40.0
+    y = 25.0
     width = 0.0
     height = 14.0
     img_width = 0.0
@@ -451,7 +451,7 @@
     content = ""
     field = "year"
     x = -1.0
-    y = 60.0
+    y = 44.0
     width = 0.0
     height = 12.0
     img_width = 0.0
@@ -467,7 +467,7 @@
     content = "Urkunde"
     field = ""
     x = -1.0
-    y = 80.0
+    y = 62.0
     width = 0.0
     height = 12.0
     img_width = 0.0
@@ -483,7 +483,7 @@
     content = ""
     field = "ortsverband"
     x = -1.0
-    y = 100.0
+    y = 78.0
     width = 0.0
     height = 14.0
     img_width = 0.0
@@ -495,11 +495,27 @@
     space_before = 0.0
 
   [[ov_participant.elements]]
+    type = "ov_image"
+    content = "templates/jo26_olymp_final.jpg"
+    field = ""
+    x = -1.0
+    y = 93.0
+    width = 0.0
+    height = 0.0
+    img_width = 140.0
+    font_family = ""
+    font_style = ""
+    font_size = 0.0
+    align = ""
+    color = [0, 0, 0]
+    space_before = 0.0
+
+  [[ov_participant.elements]]
     type = "text"
     content = "Teilnehmende"
     field = ""
     x = -1.0
-    y = 125.0
+    y = 188.0
     width = 0.0
     height = 10.0
     img_width = 0.0
@@ -515,7 +531,7 @@
     content = ""
     field = ""
     x = -1.0
-    y = 138.0
+    y = 199.0
     width = 0.0
     height = 0.0
     img_width = 0.0
