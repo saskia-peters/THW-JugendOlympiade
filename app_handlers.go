@@ -183,3 +183,29 @@ func (a *App) ListBackups() map[string]interface{} {
 func (a *App) RestoreDatabase(backupFilename string) map[string]interface{} {
 	return handlers.RestoreDatabase(&a.db, backupFilename)
 }
+
+// --- Participant management ---
+
+// GetParticipantsWithGroups returns all participants with group assignments and
+// a scoresLocked flag that disables add/remove when scores exist.
+func (a *App) GetParticipantsWithGroups() map[string]interface{} {
+	return handlers.GetParticipantsWithGroups(a.db, a.cfg.Gruppen.Gruppennamen)
+}
+
+// GetEligibleGroups returns groups that have a free participant slot, taking
+// carpool seat capacity into account. No redistribution is ever performed.
+func (a *App) GetEligibleGroups() map[string]interface{} {
+	return handlers.GetEligibleGroups(a.db, a.cfg, a.cfg.Gruppen.Gruppennamen)
+}
+
+// AddTeilnehmer inserts a new participant into the chosen group and regenerates
+// the affected PDFs. Blocked once any score exists.
+func (a *App) AddTeilnehmer(name, ortsverband string, alter int, geschlecht string, groupID int) map[string]interface{} {
+	return handlers.AddTeilnehmer(a.db, name, ortsverband, alter, geschlecht, groupID, a.cfg, a.cfg.Gruppen.Gruppennamen)
+}
+
+// RemoveTeilnehmer deletes a participant (by teilnehmer_id) and regenerates
+// the affected PDFs. Blocked once any score exists.
+func (a *App) RemoveTeilnehmer(teilnehmerID int64) map[string]interface{} {
+	return handlers.RemoveTeilnehmer(a.db, teilnehmerID, a.cfg, a.cfg.Gruppen.Gruppennamen)
+}

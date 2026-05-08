@@ -26,6 +26,8 @@ func OpenExistingDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open existing database: %w", err)
 	}
+	// Serialise all Wails-dispatched concurrent calls to prevent SQLITE_BUSY.
+	db.SetMaxOpenConns(1)
 	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
@@ -62,6 +64,8 @@ func InitDatabase() (retDB *sql.DB, retErr error) {
 			db.Close()
 		}
 	}()
+	// Serialise all Wails-dispatched concurrent calls to prevent SQLITE_BUSY.
+	db.SetMaxOpenConns(1)
 
 	// PRAGMA must be set outside a transaction (connection-scope setting).
 	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {

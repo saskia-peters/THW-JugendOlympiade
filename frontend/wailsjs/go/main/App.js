@@ -6,6 +6,10 @@ export function AddStation(arg1) {
   return window['go']['main']['App']['AddStation'](arg1);
 }
 
+export function AddTeilnehmer(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['AddTeilnehmer'](arg1, arg2, arg3, arg4, arg5);
+}
+
 export function AssignScore(arg1, arg2, arg3) {
   return window['go']['main']['App']['AssignScore'](arg1, arg2, arg3);
 }
@@ -78,6 +82,10 @@ export function GetConfigRaw() {
   return window['go']['main']['App']['GetConfigRaw']();
 }
 
+export function GetEligibleGroups() {
+  return window['go']['main']['App']['GetEligibleGroups']();
+}
+
 export function GetGroupEvaluations() {
   return window['go']['main']['App']['GetGroupEvaluations']();
 }
@@ -96,6 +104,10 @@ export function GetOrtsverbandEvaluations() {
 
 export function GetOrtsverbands() {
   return window['go']['main']['App']['GetOrtsverbands']();
+}
+
+export function GetParticipantsWithGroups() {
+  return window['go']['main']['App']['GetParticipantsWithGroups']();
 }
 
 export function GetPersonenByOrtsverband(arg1) {
@@ -120,6 +132,10 @@ export function ListGroupPictures() {
 
 export function LoadFile() {
   return window['go']['main']['App']['LoadFile']();
+}
+
+export function RemoveTeilnehmer(arg1) {
+  return window['go']['main']['App']['RemoveTeilnehmer'](arg1);
 }
 
 export function ResetToFreshDB() {

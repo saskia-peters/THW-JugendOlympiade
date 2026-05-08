@@ -527,3 +527,73 @@ func getFahrzeugeByID(db *sql.DB) (map[int]models.Fahrzeug, error) {
 	}
 	return result, rows.Err()
 }
+
+// GetGroupMemberCounts returns a map[groupID]participantCount for all groups.
+func GetGroupMemberCounts(db *sql.DB) (map[int]int, error) {
+	rows, err := db.Query("SELECT group_id, COUNT(*) FROM gruppe GROUP BY group_id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make(map[int]int)
+	for rows.Next() {
+		var gid, cnt int
+		if err := rows.Scan(&gid, &cnt); err != nil {
+			return nil, err
+		}
+		result[gid] = cnt
+	}
+	return result, rows.Err()
+}
+
+// GetGroupCaretakerCounts returns a map[groupID]caretakerCount for all groups.
+func GetGroupCaretakerCounts(db *sql.DB) (map[int]int, error) {
+	rows, err := db.Query("SELECT group_id, COUNT(*) FROM gruppe_betreuende GROUP BY group_id")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make(map[int]int)
+	for rows.Next() {
+		var gid, cnt int
+		if err := rows.Scan(&gid, &cnt); err != nil {
+			return nil, err
+		}
+		result[gid] = cnt
+	}
+	return result, rows.Err()
+}
+
+// GetGroupVehicleSeats returns a map[groupID]totalSitzplaetze for groups with
+// directly assigned vehicles (Fahrzeuge mode).
+func GetGroupVehicleSeats(db *sql.DB) (map[int]int, error) {
+	rows, err := db.Query(`
+		SELECT gf.group_id, SUM(f.sitzplaetze)
+		FROM gruppe_fahrzeuge gf
+		JOIN fahrzeuge f ON f.id = gf.fahrzeug_id
+		GROUP BY gf.group_id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make(map[int]int)
+	for rows.Next() {
+		var gid, seats int
+		if err := rows.Scan(&gid, &seats); err != nil {
+			return nil, err
+		}
+		result[gid] = seats
+	}
+	return result, rows.Err()
+}
+
+// AnyScoreExists reports whether any score row exists in group_station_scores.
+func AnyScoreExists(db *sql.DB) (bool, error) {
+	rows, err := db.Query("SELECT 1 FROM group_station_scores LIMIT 1")
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	return rows.Next(), rows.Err()
+}

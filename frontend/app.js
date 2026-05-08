@@ -3,6 +3,7 @@ import { openFileDialog, handleBackupDatabase, handleRestoreDatabase, handleDist
 import { handleEditConfig } from './admin/config-editor.js';
 import { handleEditNames } from './admin/name-editor.js';
 import { handleEditStations } from './admin/station-editor.js';
+import { handleParticipantManagement } from './admin/participants.js';
 import { handleShowGroups } from './groups/groups.js';
 import { handleShowStations, handleShowStationsForGroup, handleShowInputOverview } from './stations/stations.js';
 import { handleGroupEvaluation, handleOrtsverbandEvaluation, toggleOVScores } from './evaluations/evaluations.js';
@@ -106,6 +107,7 @@ window.handleBackupDatabase = handleBackupDatabase;
 window.handleRestoreDatabase = handleRestoreDatabase;
 window.handleDistributeGroups = handleDistributeGroups;
 window.handleEditConfig = handleEditConfig;
+window.handleParticipantManagement = handleParticipantManagement;
 window.handleShowGroups = handleShowGroups;
 window.handleShowStations = handleShowStations;
 window.handleShowStationsForGroup = handleShowStationsForGroup;

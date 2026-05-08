@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
@@ -399,4 +400,67 @@ func SaveCarGroups(db *sql.DB, carGroups []*models.CarGroup) error {
 	}
 
 	return tx.Commit()
+}
+
+// NextTeilnehmerIDConn returns the next available teilnehmer_id.
+// Must be called on a conn that is already inside a transaction.
+func NextTeilnehmerIDConn(conn *sql.Conn, ctx context.Context) (int64, error) {
+	var id int64
+	err := conn.QueryRowContext(ctx, "SELECT COALESCE(MAX(teilnehmer_id),0)+1 FROM teilnehmende").Scan(&id)
+	return id, err
+}
+
+// AddTeilnehmerToGroupConn inserts a participant and assigns them to a group
+// atomically. Must be called on a conn that is already inside a transaction.
+func AddTeilnehmerToGroupConn(conn *sql.Conn, ctx context.Context, t models.Teilnehmende, groupID int) error {
+	if _, err := conn.ExecContext(ctx,
+		"INSERT INTO teilnehmende (teilnehmer_id, name, ortsverband, age, geschlecht, pregroup) VALUES (?, ?, ?, ?, ?, '')",
+		t.TeilnehmendeID, t.Name, t.Ortsverband, t.Alter, t.Geschlecht,
+	); err != nil {
+		return fmt.Errorf("teilnehmende insert failed: %w", err)
+	}
+	if _, err := conn.ExecContext(ctx,
+		"INSERT INTO gruppe (group_id, teilnehmer_id) VALUES (?, ?)",
+		groupID, t.TeilnehmendeID,
+	); err != nil {
+		return fmt.Errorf("gruppe insert failed: %w", err)
+	}
+	return nil
+}
+
+// DeleteTeilnehmerConn removes a participant (by teilnehmer_id) and their
+// gruppe row. Returns the groupID they belonged to and whether that group is
+// now empty (triggering orphaned-row cleanup).
+// Must be called on a conn that is already inside a transaction.
+func DeleteTeilnehmerConn(conn *sql.Conn, ctx context.Context, teilnehmerID int64) (groupID int, groupEmpty bool, err error) {
+	err = conn.QueryRowContext(ctx, "SELECT group_id FROM gruppe WHERE teilnehmer_id = ?", teilnehmerID).Scan(&groupID)
+	if err == sql.ErrNoRows {
+		groupID = 0
+	} else if err != nil {
+		return 0, false, fmt.Errorf("gruppe lookup failed: %w", err)
+	}
+
+	if _, err = conn.ExecContext(ctx, "DELETE FROM gruppe WHERE teilnehmer_id = ?", teilnehmerID); err != nil {
+		return 0, false, fmt.Errorf("gruppe delete failed: %w", err)
+	}
+	if _, err = conn.ExecContext(ctx, "DELETE FROM teilnehmende WHERE teilnehmer_id = ?", teilnehmerID); err != nil {
+		return 0, false, fmt.Errorf("teilnehmende delete failed: %w", err)
+	}
+
+	if groupID > 0 {
+		var cnt int
+		if err = conn.QueryRowContext(ctx, "SELECT COUNT(*) FROM gruppe WHERE group_id = ?", groupID).Scan(&cnt); err != nil {
+			return groupID, false, fmt.Errorf("group count check failed: %w", err)
+		}
+		groupEmpty = cnt == 0
+		if groupEmpty {
+			if _, err = conn.ExecContext(ctx, "DELETE FROM gruppe_fahrzeuge WHERE group_id = ?", groupID); err != nil {
+				return groupID, true, fmt.Errorf("gruppe_fahrzeuge cleanup failed: %w", err)
+			}
+			if _, err = conn.ExecContext(ctx, "DELETE FROM cargroup_groups WHERE group_id = ?", groupID); err != nil {
+				return groupID, true, fmt.Errorf("cargroup_groups cleanup failed: %w", err)
+			}
+		}
+	}
+	return groupID, groupEmpty, nil
 }

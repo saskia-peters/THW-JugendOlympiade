@@ -91,3 +91,30 @@ type OrtsverbandEvaluation struct {
 	ParticipantCount int
 	AverageScore     float64
 }
+
+// ParticipantRow is a single row returned by GetParticipantsWithGroups.
+type ParticipantRow struct {
+	ID          int64 // = teilnehmer_id (business key)
+	Name        string
+	Ortsverband string
+	Alter       int
+	Geschlecht  string
+	GroupID     int
+	GroupName   string
+}
+
+// EligibleGroup is a group that has at least one free participant slot,
+// taking carpool seat constraints into account.
+type EligibleGroup struct {
+	GroupID      int
+	GroupName    string
+	CurrentCount int
+	MaxSlots     int // capacity cap for this group (fixedGroupSize or vehicle seats or MaxGroesse)
+}
+
+// PDFResult records the outcome of one PDF regeneration attempt.
+type PDFResult struct {
+	Name   string
+	Status string // "ok" | "error"
+	Error  string
+}

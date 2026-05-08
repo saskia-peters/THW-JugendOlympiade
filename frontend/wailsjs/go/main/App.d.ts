@@ -3,6 +3,8 @@
 
 export function AddStation(arg1:string):Promise<Record<string, any>>;
 
+export function AddTeilnehmer(arg1:string,arg2:string,arg3:number,arg4:string,arg5:number):Promise<Record<string, any>>;
+
 export function AssignScore(arg1:number,arg2:number,arg3:number):Promise<Record<string, any>>;
 
 export function BackupDatabase():Promise<Record<string, any>>;
@@ -39,6 +41,8 @@ export function GetConfig():Promise<Record<string, any>>;
 
 export function GetConfigRaw():Promise<Record<string, any>>;
 
+export function GetEligibleGroups():Promise<Record<string, any>>;
+
 export function GetGroupEvaluations():Promise<Record<string, any>>;
 
 export function GetGroupPictureAsBase64(arg1:string):Promise<Record<string, any>>;
@@ -48,6 +52,8 @@ export function GetImageAsBase64(arg1:string):Promise<Record<string, any>>;
 export function GetOrtsverbandEvaluations():Promise<Record<string, any>>;
 
 export function GetOrtsverbands():Promise<Record<string, any>>;
+
+export function GetParticipantsWithGroups():Promise<Record<string, any>>;
 
 export function GetPersonenByOrtsverband(arg1:string):Promise<Record<string, any>>;
 
@@ -60,6 +66,8 @@ export function ListBackups():Promise<Record<string, any>>;
 export function ListGroupPictures():Promise<Record<string, any>>;
 
 export function LoadFile():Promise<Record<string, any>>;
+
+export function RemoveTeilnehmer(arg1:number):Promise<Record<string, any>>;
 
 export function ResetToFreshDB():Promise<Record<string, any>>;
 
